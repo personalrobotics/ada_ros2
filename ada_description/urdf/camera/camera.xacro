@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<xacro:macro name="camera" params="base_parent" />
+	<link name="nano_arm_mount">
+		<visual>
+			<geometry>
+				<mesh
+					filename="package://ada_description/meshes/camera/2023_03_09_nanoArmMount.stl"/>
+			</geometry>
+			<material name=""
+
+</xacro:macro>
