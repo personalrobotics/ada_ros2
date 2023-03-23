@@ -7,47 +7,38 @@
 #include <librealsense2/rs.hpp>
 
 // ROS
+#include "cv_bridge/cv_bridge.h"
 #include "image_transport/image_transport.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "cv_bridge/cv_bridge.h"
 
 using namespace std::chrono_literals;
 
 // Convert rs2::frame to cv::Mat
-static cv::Mat frame_to_mat(const rs2::frame& f)
+static cv::Mat frame_to_mat(const rs2::frame & f)
 {
-    using namespace cv;
-    using namespace rs2;
+  using namespace cv;
+  using namespace rs2;
 
-    auto vf = f.as<video_frame>();
-    const int w = vf.get_width();
-    const int h = vf.get_height();
+  auto vf = f.as<video_frame>();
+  const int w = vf.get_width();
+  const int h = vf.get_height();
 
-    if (f.get_profile().format() == RS2_FORMAT_BGR8)
-    {
-        return Mat(Size(w, h), CV_8UC3, (void*)f.get_data(), Mat::AUTO_STEP);
-    }
-    else if (f.get_profile().format() == RS2_FORMAT_RGB8)
-    {
-        auto r_rgb = Mat(Size(w, h), CV_8UC3, (void*)f.get_data(), Mat::AUTO_STEP);
-        Mat r_bgr;
-        cvtColor(r_rgb, r_bgr, COLOR_RGB2BGR);
-        return r_bgr;
-    }
-    else if (f.get_profile().format() == RS2_FORMAT_Z16)
-    {
-        return Mat(Size(w, h), CV_16UC1, (void*)f.get_data(), Mat::AUTO_STEP);
-    }
-    else if (f.get_profile().format() == RS2_FORMAT_Y8)
-    {
-        return Mat(Size(w, h), CV_8UC1, (void*)f.get_data(), Mat::AUTO_STEP);
-    }
-    else if (f.get_profile().format() == RS2_FORMAT_DISPARITY32)
-    {
-        return Mat(Size(w, h), CV_32FC1, (void*)f.get_data(), Mat::AUTO_STEP);
-    }
+  if (f.get_profile().format() == RS2_FORMAT_BGR8) {
+    return Mat(Size(w, h), CV_8UC3, (void *)f.get_data(), Mat::AUTO_STEP);
+  } else if (f.get_profile().format() == RS2_FORMAT_RGB8) {
+    auto r_rgb = Mat(Size(w, h), CV_8UC3, (void *)f.get_data(), Mat::AUTO_STEP);
+    Mat r_bgr;
+    cvtColor(r_rgb, r_bgr, COLOR_RGB2BGR);
+    return r_bgr;
+  } else if (f.get_profile().format() == RS2_FORMAT_Z16) {
+    return Mat(Size(w, h), CV_16UC1, (void *)f.get_data(), Mat::AUTO_STEP);
+  } else if (f.get_profile().format() == RS2_FORMAT_Y8) {
+    return Mat(Size(w, h), CV_8UC1, (void *)f.get_data(), Mat::AUTO_STEP);
+  } else if (f.get_profile().format() == RS2_FORMAT_DISPARITY32) {
+    return Mat(Size(w, h), CV_32FC1, (void *)f.get_data(), Mat::AUTO_STEP);
+  }
 
-    throw std::runtime_error("Frame format is not supported yet!");
+  throw std::runtime_error("Frame format is not supported yet!");
 }
 
 /* Camera Node */
@@ -66,7 +57,8 @@ public:
     declare_parameter("host", "192.168.2.7", param_desc);
   }
 
-  void init_net_camera() {
+  void init_net_camera()
+  {
     // Get Parameters
     auto host = get_parameter("host").get_parameter_value().get<std::string>();
 
@@ -79,8 +71,8 @@ public:
 
     // Configure pipeline
     rs2::config cfg;
-    //cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
     cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, 30);
+    cfg.enable_stream(RS2_STREAM_DEPTH);
 
     // Start Pipeline
     mPipeline.start(cfg);
@@ -90,7 +82,7 @@ public:
   try {
     // Setup ROS Publishers
     mColorPub = transport.advertiseCamera("~/color", 1);
-    //mAlignedDepthPub = transport.advertiseCamera("~/aligned_depth", 1);
+    mAlignedDepthPub = transport.advertiseCamera("~/aligned_depth", 1);
 
     // Init Camera
     init_net_camera();
@@ -110,18 +102,25 @@ public:
 
 private:
   // For reading and publishing camera frames
-  void timer_callback() try
-  {
+  void timer_callback()
+  try {
     // Block program until frames arrive
     rs2::frameset frames = mPipeline.wait_for_frames(1000);
+    rs2::align align_to_color(RS2_STREAM_COLOR);
+    frames = align_to_color.process(frames);
 
     auto color = frame_to_mat(frames.get_color_frame());
+    auto depth = frame_to_mat(frames.get_depth_frame());
 
     std_msgs::msg::Header hdr;
     sensor_msgs::msg::CameraInfo::SharedPtr info = std::make_shared<sensor_msgs::msg::CameraInfo>();
-    sensor_msgs::msg::Image::SharedPtr msg = cv_bridge::CvImage(hdr, "bgr8", color).toImageMsg();
+    sensor_msgs::msg::Image::SharedPtr colorMsg =
+      cv_bridge::CvImage(hdr, "bgr8", color).toImageMsg();
+    sensor_msgs::msg::Image::SharedPtr depthMsg =
+      cv_bridge::CvImage(hdr, "mono16", depth).toImageMsg();
 
-    mColorPub.publish(msg, info);
+    mColorPub.publish(colorMsg, info);
+    mAlignedDepthPub.publish(depthMsg, info);
   } catch (const rs2::error & e) {
     RCLCPP_WARN(get_logger(), "Did not receive frame, re-initializing.");
     init_net_camera();
