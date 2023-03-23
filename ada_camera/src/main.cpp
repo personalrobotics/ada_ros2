@@ -54,7 +54,14 @@ public:
     param_desc.type = rclcpp::ParameterType::PARAMETER_STRING;
     param_desc.description = "IP or Hostname of Camera";
     param_desc.read_only = true;
-    declare_parameter("host", "192.168.2.7", param_desc);
+    declare_parameter("host", "camera", param_desc);
+
+    // Frame Parameter
+    param_desc.name = "frame";
+    param_desc.type = rclcpp::ParameterType::PARAMETER_STRING;
+    param_desc.description = "TF Frame ID for Image, Default 'camera_color_optical_frame'";
+    param_desc.read_only = false;
+    declare_parameter("frame", "camera_color_optical_frame", param_desc);
   }
 
   void init_net_camera()
@@ -72,7 +79,7 @@ public:
     // Configure pipeline
     rs2::config cfg;
     cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGB8, 30);
-    cfg.enable_stream(RS2_STREAM_DEPTH);
+    cfg.enable_stream(RS2_STREAM_DEPTH, 640, 480, RS2_FORMAT_Z16, 30);
 
     // Start Pipeline
     mPipeline.start(cfg);
@@ -88,7 +95,7 @@ public:
     init_net_camera();
 
     // Setup Timer
-    mTimer = this->create_wall_timer(33ms, std::bind(&CameraNode::timer_callback, this));
+    mTimer = this->create_wall_timer(10ms, std::bind(&CameraNode::timer_callback, this));
     RCLCPP_INFO(get_logger(), "Initialization Successful");
     return true;
   } catch (const rs2::error & e) {
@@ -105,20 +112,34 @@ private:
   void timer_callback()
   try {
     // Block program until frames arrive
-    rs2::frameset frames = mPipeline.wait_for_frames(1000);
+    rs2::frameset frames = mPipeline.wait_for_frames(2000);
+
+    // Align depth frame
     rs2::align align_to_color(RS2_STREAM_COLOR);
     frames = align_to_color.process(frames);
 
+    // Convert to CV
     auto color = frame_to_mat(frames.get_color_frame());
     auto depth = frame_to_mat(frames.get_depth_frame());
 
+    // Rescale Depth Image
+    float scale = mDevice->query_sensors().front().as<rs2::depth_sensor>().get_depth_scale();
+
+    depth = depth * (scale / 0.001f);
+
+    // Construct Image Header
     std_msgs::msg::Header hdr;
+    hdr.frame_id = get_parameter("frame").get_parameter_value().get<std::string>();
+    hdr.stamp = now();
+
+    // Convert to Image Message
     sensor_msgs::msg::CameraInfo::SharedPtr info = std::make_shared<sensor_msgs::msg::CameraInfo>();
     sensor_msgs::msg::Image::SharedPtr colorMsg =
-      cv_bridge::CvImage(hdr, "bgr8", color).toImageMsg();
+      cv_bridge::CvImage(hdr, sensor_msgs::image_encodings::BGR8, color).toImageMsg();
     sensor_msgs::msg::Image::SharedPtr depthMsg =
-      cv_bridge::CvImage(hdr, "mono16", depth).toImageMsg();
+      cv_bridge::CvImage(hdr, sensor_msgs::image_encodings::TYPE_16UC1, depth).toImageMsg();
 
+    // Publish
     mColorPub.publish(colorMsg, info);
     mAlignedDepthPub.publish(depthMsg, info);
   } catch (const rs2::error & e) {
