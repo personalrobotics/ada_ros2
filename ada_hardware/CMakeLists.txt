@@ -9,7 +9,15 @@ endif()
 find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+add_library(ada_hardware SHARED
+  src/jaco2.cpp)
+
+target_include_directories(ada_hardware include)
+
+target_link_libraries(ada_hardware -l:Kinova.API.CommLayerUbuntu.so -l:Kinova.API.USBCommandLayerUbuntu.so)
+
+ament_target_dependencies(ada_hardware rclcpp rclcpp_lifecycle pluginlib hardware_interface)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
