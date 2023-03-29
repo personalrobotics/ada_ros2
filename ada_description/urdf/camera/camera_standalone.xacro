@@ -24,11 +24,12 @@
   <joint name="connect_root_and_world" type="fixed">
     <child link="root" />
     <parent link="world" />
-    <origin xyz="0 0 0" rpy="0 0 0" />    
+    <origin xyz="0 0 0" rpy="0 0 0" />
   </joint> 
 
   <xacro:property name="robot_root" value="root" />
 
-  <xacro:armMount_link base_parent="${robot_root}"/>
+  <xacro:camera_assembly base_parent="${robot_root}"/>
+
 
 </robot>
