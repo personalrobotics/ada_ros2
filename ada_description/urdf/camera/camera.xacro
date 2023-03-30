@@ -33,7 +33,7 @@
 	</xacro:macro>
 
 	<xacro:macro name="camera_assembly_joint" params="joint_name parent child joint_origin_xyz joint_origin_rpy">
-		<joint name="${joint_name}" type="continuous">
+		<joint name="${joint_name}" type="fixed">
 			<parent link="${parent}"/>
 			<child link="${child}"/>
 			<axis xyz="0 0 1"/>
@@ -51,15 +51,16 @@
 
 		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom"/>
 		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
-
+		<!--
 		<xacro:camera_assembly_link link_name="nano" link_mesh="2023_03_21_jetsonNano"/>
-		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
-
+		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0.0105 0.014 -0.0015" joint_origin_rpy="0 0 0"/>
+		-->
 		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop"/>
 		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
-
+		
 		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
-		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="-0.072824 -0.041 0.05442" joint_origin_rpy="0 0 0"/>
+		
 
 	</xacro:macro>
 
