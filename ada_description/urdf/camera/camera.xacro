@@ -14,6 +14,8 @@
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
 	xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+	<xacro:include filename="$(find ada_description)/urdf/camera/d415urdf.xacro"/>
+
 	<xacro:property name="camColor" value="1 0 0 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
 
@@ -51,16 +53,22 @@
 
 		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom"/>
 		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
-		<!--
+		
 		<xacro:camera_assembly_link link_name="nano" link_mesh="2023_03_21_jetsonNano"/>
 		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0.0105 0.014 -0.0015" joint_origin_rpy="0 0 0"/>
-		-->
+		
 		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop"/>
 		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 		
 		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
-		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="-0.072824 -0.041 0.05442" joint_origin_rpy="0 0 0"/>
+		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
+
 		
+
+		<!--
+		<xacro:camera_assembly_link link_name="cameraLink" link_mesh="2023_03_30_realsenseD415"/>
+		<xacro:camera_assembly_joint joint_name="cameraLink_to_stabilizer" parent="stabilizer" child="cameraLink" joint_origin_xyz="0.03672 0 0.004" joint_origin_rpy="0 ${3*J_PI/2} ${J_PI}"/>
+		-->
 
 	</xacro:macro>
 
