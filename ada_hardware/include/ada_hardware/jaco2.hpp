@@ -1,7 +1,41 @@
+// Copyright 2023 Personal Robotics Lab, University of Washington
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//    * Redistributions of source code must retain the above copyright
+//      notice, this list of conditions and the following disclaimer.
+//
+//    * Redistributions in binary form must reproduce the above copyright
+//      notice, this list of conditions and the following disclaimer in the
+//      documentation and/or other materials provided with the distribution.
+//
+//    * Neither the name of the {copyright_holder} nor the names of its
+//      contributors may be used to endorse or promote products derived from
+//      this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+// Author: Ethan K. Gordon
+
 #ifndef ADA_HARDWARE_JACO2_H_
 #define ADA_HARDWARE_JACO2_H_
 
+#include <cmath>
+#include <memory>
+
+// ROS
 #include "hardware_interface/system_interface.hpp"
+#include "rclcpp/macros.hpp"
 
 namespace ada_hardware
 {
@@ -9,7 +43,7 @@ namespace ada_hardware
 class Jaco2 : public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(Jaco2);
+  RCLCPP_SHARED_PTR_DEFINITIONS(Jaco2)
 
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
@@ -56,10 +90,17 @@ private:
   std::vector<double> hw_states_velocities_;
   std::vector<double> hw_states_efforts_;
 
+  std::pair<size_t, size_t> num_dofs_;
+
   // Command Mode
   // Enum defining at which control level we are
   // Dumb way of maintaining the command_interface type per joint.
-  enum integration_level_t : std::uint8_t { UNDEFINED = 0, POSITION = 1, VELOCITY = 2, EFFORT = 3 };
+  enum integration_level_t : std::uint8_t {
+    kUNDEFINED = 0,
+    kPOSITION = 1,
+    kVELOCITY = 2,
+    kEFFORT = 3
+  };
 
   integration_level_t control_level_;
 
@@ -70,20 +111,6 @@ private:
   bool setTorqueMode(bool torqueMode);
 
   bool initializeOffsets();
-
-  inline double radiansToFingerTicks(double radians)
-  {
-    return (6800.0 / 80) * radians * 180.0 /
-           M_PI;  // this magic number was found in the kinova-ros code,
-                  // kinova_driver/src/kinova_arm.cpp
-  }
-
-  inline double fingerTicksToRadians(double ticks)
-  {
-    return ticks * (80 / 6800.0) * M_PI /
-           180.0;  // this magic number was found in the kinova-ros code,
-                   // kinova_driver/src/kinova_arm.cpp
-  }
 
 };  // End class Jaco2
 
