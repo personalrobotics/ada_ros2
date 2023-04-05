@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+    xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+    xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+    xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+  xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+    xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+    xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+  xmlns:xacro="http://www.ros.org/wiki/xacro" name="camera">
+
+ <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
+ <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
+  <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
+
+  <link name="root"/>
+
+  <!-- for gazebo -->
+  <link name="world"/>
+  
+  <joint name="connect_root_and_world" type="fixed">
+    <child link="root" />
+    <parent link="world" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint> 
+
+  <xacro:property name="robot_root" value="root" />
+
+
+  <xacro:j2n6s200 base_parent="${robot_root}"/>
+
+  <xacro:camera_assembly base_parent="j2n6s200_link_6" base_xyz="0.0165 0 0" base_rpy="${3*J_PI/2} 0 ${3*J_PI/2}"/>
+
+  <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2023_03_09_FTArmMount"/>
+  <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" parent="j2n6s200_link_6" child="FTArmMount" joint_origin_xyz="0 -0.01 0" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
+
+
+</robot>

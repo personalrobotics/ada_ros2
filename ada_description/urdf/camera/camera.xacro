@@ -31,6 +31,12 @@
 					<color rgba="${camColor}" />
 				</material>
 			</visual>
+			<collision>
+                <geometry>
+                    <mesh
+                        filename="package://ada_description/meshes/camera/${link_mesh}.stl"/>
+                </geometry>
+            </collision>
 		</link>
 	</xacro:macro>
 
@@ -45,11 +51,12 @@
 
 
 
+	<xacro:property name="default_origin" value="0 0 0"/>
 
-	<xacro:macro name="camera_assembly" params="base_parent">
+	<xacro:macro name="camera_assembly" params="base_parent base_xyz:=${default_origin} base_rpy:=${default_origin}">
 
 		<xacro:camera_assembly_link link_name="nanoMount" link_mesh="2023_03_09_nanoArmMount"/>
-	  	<xacro:camera_assembly_joint joint_name="nanoMount_to_world" parent="${base_parent}" child="nanoMount" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+	  	<xacro:camera_assembly_joint joint_name="nanoMount_to_world" parent="${base_parent}" child="nanoMount" joint_origin_xyz="${base_xyz}" joint_origin_rpy="${base_rpy}"/>
 
 		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom"/>
 		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
@@ -63,17 +70,12 @@
 		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
 		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
 
-		
+		<xacro:sensor_d415 parent="stabilizer" use_mesh="true">
+			<origin xyz="0.0165 0 0.0005" rpy="0 0 0" />
+		</xacro:sensor_d415>
 
-		<!--
-		<xacro:camera_assembly_link link_name="cameraLink" link_mesh="2023_03_30_realsenseD415"/>
-		<xacro:camera_assembly_joint joint_name="cameraLink_to_stabilizer" parent="stabilizer" child="cameraLink" joint_origin_xyz="0.03672 0 0.004" joint_origin_rpy="0 ${3*J_PI/2} ${J_PI}"/>
-		-->
 
 	</xacro:macro>
-
-
-
 
 
 </root>

@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<root xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+    xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+	xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+	xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+    xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+    xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+	xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+	xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+	xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+    xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+    xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:property name="forque_color" value="1 0 0 1" />
+	<xacro:property name="J_PI" value="3.1415926535897931" />
+
+	<xacro:macro name="forque_assembly_link" params="link_name link_mesh">
+		<link name="${link_name}">
+			<visual>
+				<geometry>
+					<mesh
+						filename="package://ada_description/meshes/forque/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
+				</geometry>
+				<material name="abs">
+					<color rgba="${forque_color}" />
+				</material>
+			</visual>
+			<collision>
+                <geometry>
+                    <mesh
+                        filename="package://ada_description/meshes/forque/${link_mesh}.stl"/>
+                </geometry>
+            </collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="forque_assembly_joint" params="joint_name parent child joint_origin_xyz joint_origin_rpy">
+		<joint name="${joint_name}" type="fixed">
+			<parent link="${parent}"/>
+			<child link="${child}"/>
+			<axis xyz="0 0 1"/>
+			<origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
+		</joint>
+	</xacro:macro>
+
+
+
+
+	<xacro:macro name="forque_assembly" params="base_parent">
+
+		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2023_03_09_FTMount"/>
+	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" parent="${base_parent}" child="FTMount" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+	  	<xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT"/>
+	  	<xacro:forque_assembly_joint joint_name="FT_to_FTMount" parent="FTMount" child="FT" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+	  	<xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna"/>
+	  	<xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" parent="FT" child="FTAntenna" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle"/>
+	  	<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+
+	</xacro:macro>
+
+
+</root>
