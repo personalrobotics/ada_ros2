@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <memory>
+#include <mutex>
 
 // ROS
 #include "hardware_interface/system_interface.hpp"
@@ -44,6 +45,8 @@ class Jaco2 : public hardware_interface::SystemInterface
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(Jaco2)
+
+  virtual ~Jaco2();
 
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
@@ -91,6 +94,8 @@ private:
   std::vector<double> hw_states_efforts_;
 
   std::pair<size_t, size_t> num_dofs_;
+
+  std::mutex mMutex;
 
   // Command Mode
   // Enum defining at which control level we are

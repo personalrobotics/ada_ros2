@@ -37,6 +37,11 @@ install(TARGETS ada_hardware
   RUNTIME DESTINATION bin
 )
 
+install(
+  DIRECTORY config launch urdf
+  DESTINATION share/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   ### Linting
   find_package(ament_lint_auto REQUIRED)
