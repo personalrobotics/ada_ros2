@@ -168,10 +168,20 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
       }
     }
   }
-  // Criterion: All joints must be given new command mode at the same time
-  if (new_modes.size() != info_.joints.size()) {
+  // Criterion: All hand or all arm or all joints must be given new command mode at the same time
+  if (
+    new_modes.size() != num_dofs_.first && new_modes.size() != num_dofs_.second &&
+    new_modes.size() != info_.joints.size()) {
     return hardware_interface::return_type::ERROR;
   }
+
+  // Criterion: if finger joints only, must be the same mode as what's already here
+  if (new_modes.size() == num_dofs_.second) {
+    if (control_level_ != integration_level_t::kUNDEFINED && new_modes[0] != control_level_) {
+      return hardware_interface::return_type::ERROR;
+    }
+  }
+
   // Criterion: All joints must have the same command mode
   if (!std::all_of(new_modes.begin() + 1, new_modes.end(), [&](integration_level_t mode) {
         return mode == new_modes[0];
