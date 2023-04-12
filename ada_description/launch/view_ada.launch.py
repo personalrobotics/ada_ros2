@@ -52,8 +52,16 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="j2n6s200_standalone.xacro",
+            default_value="ada.xacro",
             description="URDF/XACRO description file with the robot.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_forque",
+            default_value="false",
+            description="If the forque apparatus is being used.",            
+
         )
     )
 
@@ -61,12 +69,16 @@ def generate_launch_description():
     # General arguments
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
+    use_forque = LaunchConfiguration("use_forque")
 
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
+            " ",
+            "use_forque:=",
+            use_forque,
         ]
     )
     robot_description = {"robot_description": ParameterValue(robot_description_content, value_type=str)}

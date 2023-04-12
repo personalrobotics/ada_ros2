@@ -23,7 +23,7 @@ aluminum peripherial evaluation case.
 <robot name="sensor_d415" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <material name="aluminum">
-    <color rgba="0.5 0.5 0.5 1"/>
+    <color rgba="0.4 0.4 0.4 1"/>
   </material>
   <material name="plastic">
     <color rgba="0.1 0.1 0.1 1"/>

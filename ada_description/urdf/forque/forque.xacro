@@ -14,7 +14,7 @@
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
 	xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-	<xacro:property name="forque_color" value="1 0 0 1" />
+	<xacro:property name="forque_color" value="0.4 0.4 0.4 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
 
 	<xacro:macro name="forque_assembly_link" params="link_name link_mesh">
@@ -63,6 +63,12 @@
 
 	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle"/>
 	  	<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E"/>
+	  	<xacro:forque_assembly_joint joint_name="forque_to_forkHandle" parent="forkHandle" child="forque" joint_origin_xyz="-0.00634 -0.222553 -0.004286" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0"/>
+
+	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine"/>
+	  	<xacro:forque_assembly_joint joint_name="forkTine_to_forque" parent="forque" child="forkTine" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}"/>
 
 
 	</xacro:macro>

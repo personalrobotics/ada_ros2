@@ -16,7 +16,7 @@
 
 	<xacro:include filename="$(find ada_description)/urdf/camera/d415urdf.xacro"/>
 
-	<xacro:property name="camColor" value="1 0 0 1" />
+	<xacro:property name="camColor" value="0.4 0.4 0.4 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
 
 	<xacro:macro name="camera_assembly_link" params="link_name link_mesh">
