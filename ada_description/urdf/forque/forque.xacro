@@ -32,7 +32,8 @@
 			<collision>
                 <geometry>
                     <mesh
-                        filename="package://ada_description/meshes/forque/${link_mesh}.stl"/>
+						filename="package://ada_description/meshes/forque/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
                 </geometry>
             </collision>
 		</link>
