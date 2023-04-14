@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+
+<root xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+    xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+	xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+	xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+    xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+    xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+	xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+	xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+	xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+    xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+    xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:include filename="$(find ada_description)/urdf/camera/d415urdf.xacro"/>
+
+	<xacro:property name="camColor" value="0.4 0.4 0.4 1" />
+	<xacro:property name="J_PI" value="3.1415926535897931" />
+
+	<xacro:macro name="camera_assembly_link" params="link_name link_mesh">
+		<link name="${link_name}">
+			<visual>
+				<geometry>
+					<mesh
+						filename="package://ada_description/meshes/camera/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
+				</geometry>
+				<material name="abs">
+					<color rgba="${camColor}" />
+				</material>
+			</visual>
+			<collision>
+                <geometry>
+                    <mesh
+						filename="package://ada_description/meshes/camera/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="camera_assembly_joint" params="joint_name parent child joint_origin_xyz joint_origin_rpy">
+		<joint name="${joint_name}" type="fixed">
+			<parent link="${parent}"/>
+			<child link="${child}"/>
+			<axis xyz="0 0 1"/>
+			<origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
+		</joint>
+	</xacro:macro>
+
+
+
+	<xacro:property name="default_origin" value="0 0 0"/>
+
+	<xacro:macro name="camera_assembly" params="base_parent base_xyz:=${default_origin} base_rpy:=${default_origin}">
+
+		<xacro:camera_assembly_link link_name="nanoMount" link_mesh="2023_03_09_nanoArmMount"/>
+	  	<xacro:camera_assembly_joint joint_name="nanoMount_to_world" parent="${base_parent}" child="nanoMount" joint_origin_xyz="${base_xyz}" joint_origin_rpy="${base_rpy}"/>
+
+		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom"/>
+		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
+		
+		<xacro:camera_assembly_link link_name="nano" link_mesh="2023_03_21_jetsonNano"/>
+		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0.0105 0.014 -0.0015" joint_origin_rpy="0 0 0"/>
+		
+		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop"/>
+		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+		
+		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
+		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
+
+		<xacro:sensor_d415 parent="stabilizer" use_mesh="true">
+			<origin xyz="0.0165 0 0.0005" rpy="0 0 0" />
+		</xacro:sensor_d415>
+
+
+	</xacro:macro>
+
+
+</root>
