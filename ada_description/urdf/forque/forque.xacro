@@ -71,6 +71,12 @@
 	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine"/>
 	  	<xacro:forque_assembly_joint joint_name="forkTine_to_forque" parent="forque" child="forkTine" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}"/>
 
+	  	<link name="forkTip" />
+	  	<joint name="forkTip_to_forkTine" type="fixed">
+		    <child link="forkTip"/>
+		    <parent link="forkTine"/>
+		    <origin rpy="${J_PI} 0 0" xyz="0.0135 0.007 0"/>
+		</joint>
 
 	</xacro:macro>
 
