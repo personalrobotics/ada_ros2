@@ -7,23 +7,9 @@
 
   <xacro:arg name="use_mock_hardware" default="false" />
 
-  <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
+  <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
+
   <xacro:include filename="$(find ada_hardware)/urdf/ada_hardware.ros2_control.xacro"/>
-
-  <link name="root"/>
-
-  <!-- for gazebo -->
-  <link name="world"/>
-  
-  <joint name="connect_root_and_world" type="fixed">
-    <child link="root" />
-    <parent link="world" />
-    <origin xyz="0 0 0" rpy="0 0 0" />    
-  </joint> 
-
-  <xacro:property name="robot_root" value="root" />
-
-  <xacro:j2n6s200  base_parent="${robot_root}"/>
 
   <xacro:ada_hardware_interface
     name="Jaco2"

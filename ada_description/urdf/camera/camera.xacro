@@ -71,7 +71,7 @@
 		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
 		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
 
-		<xacro:sensor_d415 parent="stabilizer" use_mesh="true">
+		<xacro:sensor_d415 parent="stabilizer" use_mesh="true" name="uncalibrated_camera">
 			<origin xyz="0.0165 0 0.0005" rpy="0 0 0" />
 		</xacro:sensor_d415>
 

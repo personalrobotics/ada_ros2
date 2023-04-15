@@ -18,7 +18,7 @@
   <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
   <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
 
-  <xacro:arg name="use_forque" default="false"/>
+  <xacro:arg name="use_forque" default="true"/>
 
   <link name="root"/>
 
@@ -38,11 +38,33 @@
 
   <xacro:camera_assembly base_parent="j2n6s200_link_6" base_xyz="0.0165 0 0.0011" base_rpy="${3*J_PI/2} 0 ${3*J_PI/2}"/>
 
+  <!-- Extrinsics -->
+  <link name="camera_link" />
+  <joint name="extrinsics" type="fixed">
+    <origin xyz="0.023 0.055 0.005" rpy="-0.039 0.100 -0.007" />
+    <parent link="stabilizer" />
+    <child link="camera_link" />
+  </joint>
+  <!-- Copy Realsense in case of simulation -->
+  <link name="camera_color_optical_frame" />
+  <joint name="optical_republish" type="fixed">
+    <origin xyz="0.000 -0.015 0.000" rpy="-1.564 0.000 -1.573" />
+    <parent link="camera_link" />
+    <child link="camera_color_optical_frame" />
+  </joint>
+
   <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2023_03_09_FTArmMount"/>
   <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" parent="j2n6s200_link_6" child="FTArmMount" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
 
   <xacro:if value="$(arg use_forque)">
     <xacro:forque_assembly base_parent="FTArmMount"/>
+
+    <link name="FTSensor" />
+      <joint name="EE_to_FTSensor" type="fixed">
+        <child link="FTSensor"/>
+        <parent link="j2n6s200_end_effector"/>
+        <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
+    </joint>
   </xacro:if>
 
 </robot>
