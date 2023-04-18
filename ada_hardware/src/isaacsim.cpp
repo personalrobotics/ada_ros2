@@ -155,6 +155,43 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
   const std::vector<std::string> & start_interfaces,
   const std::vector<std::string> & stop_interfaces)
 {
+  // Prepare stopping command modes
+  std::vector<integration_level_t> old_modes = {};
+  for (std::string key : stop_interfaces) {
+    for (std::size_t i = 0; i < info_.joints.size(); i++) {
+      if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION) {
+        old_modes.push_back(integration_level_t::kPOSITION);
+      }
+      if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_VELOCITY) {
+        old_modes.push_back(integration_level_t::kVELOCITY);
+      }
+      if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_EFFORT) {
+        old_modes.push_back(integration_level_t::kEFFORT);
+      }
+    }
+  }
+
+  // Handle Stop
+  if (old_modes.size() > 0) {
+    // Criterion: All hand or all arm or all joints must be stopped at the same time
+    if (
+      old_modes.size() != num_dofs_.first && old_modes.size() != num_dofs_.second &&
+      old_modes.size() != info_.joints.size()) {
+      return hardware_interface::return_type::ERROR;
+    }
+
+    // If arm or whole-bot, remove control_level
+    if (old_modes.size() != num_dofs_.second) {
+      // Criterion: All joints must have the same (existing) command mode
+      if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
+            return mode == control_level_;
+          })) {
+        return hardware_interface::return_type::ERROR;
+      }
+      control_level_ = integration_level_t::kUNDEFINED;
+    }
+  }
+
   // Prepare for new command modes
   std::vector<integration_level_t> new_modes = {};
   for (std::string key : start_interfaces) {
@@ -170,39 +207,37 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
       }
     }
   }
-  // Criterion: All hand or all arm or all joints must be given new command mode at the same time
-  if (
-    new_modes.size() != num_dofs_.first && new_modes.size() != num_dofs_.second &&
-    new_modes.size() != info_.joints.size()) {
-    return hardware_interface::return_type::ERROR;
-  }
 
-  // Criterion: if finger joints only, must be the same mode as what's already here
-  if (new_modes.size() == num_dofs_.second) {
-    if (control_level_ != integration_level_t::kUNDEFINED && new_modes[0] != control_level_) {
+  // Handle Start
+  if (new_modes.size() > 0) {
+    // Criterion: All hand or all arm or all joints must be given new command mode at the same time
+    if (
+      new_modes.size() != num_dofs_.first && new_modes.size() != num_dofs_.second &&
+      new_modes.size() != info_.joints.size()) {
       return hardware_interface::return_type::ERROR;
     }
-  }
 
-  // Criterion: All joints must have the same command mode
-  if (!std::all_of(new_modes.begin() + 1, new_modes.end(), [&](integration_level_t mode) {
-        return mode == new_modes[0];
-      })) {
-    return hardware_interface::return_type::ERROR;
-  }
+    // Criterion: All joints must have the same command mode
+    if (!std::all_of(new_modes.begin() + 1, new_modes.end(), [&](integration_level_t mode) {
+          return mode == new_modes[0];
+        })) {
+      return hardware_interface::return_type::ERROR;
+    }
 
-  // Clear joint commands
-  for (std::string key : stop_interfaces) {
-    for (std::size_t i = 0; i < info_.joints.size(); i++) {
-      if (key.find(info_.joints[i].name) != std::string::npos) {
-        hw_commands_velocities_[i] = 0;
-        hw_commands_efforts_[i] = 0;
+    // Criterion: if finger joints only, must be the same mode as what's already here
+    if (new_modes.size() == num_dofs_.second) {
+      if (new_modes[0] != control_level_) {
+        return hardware_interface::return_type::ERROR;
       }
     }
-  }
+    // Criterion: Only one mode active at a time
+    else if (control_level_ != integration_level_t::kUNDEFINED) {
+      return hardware_interface::return_type::ERROR;
+    }
 
-  // Set the new command mode
-  control_level_ = new_modes[0];
+    // Set the new command mode
+    control_level_ = new_modes[0];
+  }
 
   return hardware_interface::return_type::OK;
 }
