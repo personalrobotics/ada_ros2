@@ -188,6 +188,9 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
           })) {
         return hardware_interface::return_type::ERROR;
       }
+      for (size_t i = 0; i < hw_commands_positions_.size(); i++) {
+        hw_commands_positions_[i] = hw_states_positions_[i];
+      }
       control_level_ = integration_level_t::kUNDEFINED;
     }
   }
@@ -415,8 +418,8 @@ hardware_interface::return_type JacoIsaac::write(
       ret = sendEffortCommand(hw_commands_efforts_);
       break;
     default:
-      // Stop Bot
-      ret = sendVelocityCommand(zero);
+      // Stop Bot (Position is best for)
+      ret = sendPositionCommand(hw_commands_positions_);
   }
 
   return ret ? hardware_interface::return_type::OK : hardware_interface::return_type::ERROR;
