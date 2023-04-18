@@ -13,15 +13,17 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(hardware_interface REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_library(ada_hardware SHARED
-  src/jaco2.cpp)
+  src/jaco2.cpp
+  src/isaacsim.cpp)
 
 target_include_directories(ada_hardware PUBLIC include)
 
 target_link_libraries(ada_hardware -l:Kinova.API.CommLayerUbuntu.so -l:Kinova.API.USBCommandLayerUbuntu.so)
 
-ament_target_dependencies(ada_hardware rclcpp rclcpp_lifecycle pluginlib hardware_interface)
+ament_target_dependencies(ada_hardware rclcpp rclcpp_lifecycle pluginlib hardware_interface sensor_msgs)
 
 pluginlib_export_plugin_description_file(hardware_interface ada_hardware.xml)
 
@@ -59,6 +61,16 @@ if(BUILD_TESTING)
     rclcpp
     rclcpp_lifecycle
     hardware_interface
+  )
+
+  ament_add_gmock(test_isaacsim test/test_isaacsim.cpp)
+  ament_target_dependencies(test_isaacsim
+    pluginlib
+    ros2_control_test_assets
+    rclcpp
+    rclcpp_lifecycle
+    hardware_interface
+    sensor_msgs
   )
 endif()
 

@@ -5,7 +5,7 @@
 <robot xmlns:xi="http://www.w3.org/2001/XInclude"
 	xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada_hardware">
 
-  <xacro:arg name="use_mock_hardware" default="false" />
+  <xacro:arg name="use_mock_hardware" default="none" />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
@@ -13,6 +13,6 @@
 
   <xacro:ada_hardware_interface
     name="Jaco2"
-    use_mock_hardware="$(arg use_mock_hardware)" />
+    sim="$(arg sim)" />
 
 </robot>

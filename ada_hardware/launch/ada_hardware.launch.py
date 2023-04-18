@@ -73,16 +73,16 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "use_mock_hardware",
-            default_value="false",
-            description="Start robot with mock hardware mirroring command to its states.",
+            "sim",
+            default_value="isaac",
+            description="Which sim to use: 'mock', 'isaac', or 'none'",
         )
     )
 
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_controller",
-            default_value="forward_velocity_controller",
+            default_value="forward_position_controller",
             description="Robot controller to start.",
         )
     )
@@ -99,9 +99,13 @@ def generate_launch_description():
     controllers_file = LaunchConfiguration("controllers_file")
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
-    use_mock_hardware = LaunchConfiguration("use_mock_hardware")
+    sim = LaunchConfiguration("sim")
     robot_controller = LaunchConfiguration("robot_controller")
     start_rviz = LaunchConfiguration("start_rviz")
+
+    use_sim_time = True
+    if sim == 'none':
+        use_sim_time = False
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -112,8 +116,8 @@ def generate_launch_description():
                 [FindPackageShare(description_package), "urdf", description_file]
             ),
             " ",
-            "use_mock_hardware:=",
-            use_mock_hardware,
+            "sim:=",
+            sim,
         ]
     )
     robot_description = {"robot_description": ParameterValue(robot_description_content, value_type=str)}
@@ -132,7 +136,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
+        parameters=[robot_description, robot_controllers, {'use_sim_time': use_sim_time}],
         output="both",
         on_exit=Shutdown(),
     )
@@ -140,7 +144,7 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+        parameters=[robot_description, {'use_sim_time': use_sim_time}],
     )
     rviz_node = Node(
         package="rviz2",
@@ -149,6 +153,7 @@ def generate_launch_description():
         output="log",
         arguments=["-d", rviz_config_file],
         condition=IfCondition(start_rviz),
+        parameters=[{'use_sim_time': use_sim_time}]
     )
 
     joint_state_broadcaster_spawner = Node(

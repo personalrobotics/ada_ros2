@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 // Author: Ethan K. Gordon
 
-#ifndef ADA_HARDWARE_JACO2_H_
-#define ADA_HARDWARE_JACO2_H_
+#ifndef ADA_HARDWARE_ISAACSIM_H_
+#define ADA_HARDWARE_ISAACSIM_H_
 
 #include <cmath>
 #include <memory>
@@ -37,16 +37,18 @@
 // ROS
 #include "hardware_interface/system_interface.hpp"
 #include "rclcpp/macros.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 
 namespace ada_hardware
 {
 
-class Jaco2 : public hardware_interface::SystemInterface
+class JacoIsaac : public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(Jaco2)
+  RCLCPP_SHARED_PTR_DEFINITIONS(JacoIsaac)
 
-  virtual ~Jaco2();
+  virtual ~JacoIsaac();
 
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
@@ -113,11 +115,22 @@ private:
   bool sendVelocityCommand(const std::vector<double> & command);
   bool sendPositionCommand(const std::vector<double> & command);
   bool sendEffortCommand(const std::vector<double> & command);
-  bool setTorqueMode(bool torqueMode);
 
   bool initializeOffsets();
+  void joint_callback(const sensor_msgs::msg::JointState & msg);
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_;
+  std::vector<double> callback_states_positions_;
+  std::vector<double> callback_states_velocities_;
+  std::vector<double> callback_states_efforts_;
 
-};  // End class Jaco2
+  /// ROS Items ////
+  rclcpp::executors::StaticSingleThreadedExecutor exec_;
+  std::shared_ptr<rclcpp::Node> node_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pos_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr vel_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr eff_pub_;
+
+};  // End class JacoIsaac
 
 };  // End namespace ada_hardware
 

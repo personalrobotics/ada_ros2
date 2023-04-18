@@ -3,7 +3,15 @@
          type="ada_hardware::Jaco2"
          base_class_type="hardware_interface::SystemInterface">
     <description>
-      Interface for controller 6DOF and 7DOF Kinova JACO2 arms over USB, with support for 2 or 3 fingers.
+      Interface for controlling 6DOF and 7DOF Kinova JACO2 arms over USB, with support for 2 or 3 fingers.
+    </description>
+  </class>
+
+  <class name="ada_hardware/JacoIsaac"
+         type="ada_hardware::JacoIsaac"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Interface for controlling a 6DOF arm (+ 2 fingers) in IsaacSim.
     </description>
   </class>
 </library>

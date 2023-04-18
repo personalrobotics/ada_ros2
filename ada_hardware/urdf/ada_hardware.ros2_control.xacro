@@ -1,19 +1,23 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="ada_hardware_interface" params="name prefix:=j2n6s200 use_mock_hardware:=^|true">
+  <xacro:macro name="ada_hardware_interface" params="name prefix:=j2n6s200 sim">
 
     <ros2_control name="${name}" type="system">
 
       <hardware>
-        <xacro:if value="${use_mock_hardware}">
+        <xacro:if value="${sim == 'mock'}">
           <plugin>mock_components/GenericSystem</plugin>
           <param name="mock_sensor_commands">false</param>
           <param name="state_following_offset">0.0</param>
         </xacro:if>
-        <xacro:unless value="${use_mock_hardware}">
+        <xacro:if value="${sim == 'isaac'}">
+          <plugin>ada_hardware/JacoIsaac</plugin>
+          <param name="namespace">/simulation</param>
+        </xacro:if>
+        <xacro:if value="${sim == 'none'}">
           <plugin>ada_hardware/Jaco2</plugin>
-        </xacro:unless>
+        </xacro:if>
       </hardware>
 
       <!-- Arm DOFs -->
