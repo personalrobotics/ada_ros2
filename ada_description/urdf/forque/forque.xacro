@@ -16,8 +16,13 @@
 
 	<xacro:property name="forque_color" value="0.4 0.4 0.4 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
+	<xacro:property name="default_origin" value="0 0 0"/>
+	<xacro:property name="default_inertial">
+		<inertia ixx="0.001" iyy="0.001" iyz="0.001" izz="0.001" ixy="0.001" ixz="0.001"/>
+	</xacro:property>
 
-	<xacro:macro name="forque_assembly_link" params="link_name link_mesh">
+
+	<xacro:macro name="forque_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
 		<link name="${link_name}">
 			<visual>
 				<geometry>
@@ -36,6 +41,11 @@
 						scale="0.001 0.001 0.001"/>
                 </geometry>
             </collision>
+            <inertial>
+            	<origin xyz="${cog}" rpy="0 0 0"/>
+            	<mass value="${mass}"/>
+            	<xacro:insert_block name="inertia"/>
+            </inertial>
 		</link>
 	</xacro:macro>
 
@@ -53,22 +63,34 @@
 
 	<xacro:macro name="forque_assembly" params="base_parent">
 
-		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2023_03_09_FTMount"/>
+		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2023_03_09_FTMount" mass="0.022" cog="0.0111797 -0.110193 -0.0384312">
+			<inertia ixx="0.00000047293" iyy="7871700" iyz="0.001" izz="0.001" ixy="0.001" ixz="0.001"/>
+        </xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" parent="${base_parent}" child="FTMount" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 
-	  	<xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT"/>
+	  	<xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT" mass="0.278">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="FT_to_FTMount" parent="FTMount" child="FT" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 
-	  	<xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna"/>
+	  	<xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" parent="FT" child="FTAntenna" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 
-	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle"/>
+	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 
-	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E"/>
+	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="forque_to_forkHandle" parent="forkHandle" child="forque" joint_origin_xyz="-0.00634 -0.222553 -0.004286" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0"/>
 
-	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine"/>
+	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="forkTine_to_forque" parent="forque" child="forkTine" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}"/>
 
 	  	<link name="forkTip" />
