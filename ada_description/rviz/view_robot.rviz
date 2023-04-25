@@ -66,7 +66,63 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
+        FT:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        FTArmMount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        FTMount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        FTSensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         Link Tree Style: Links in Alphabetic Order
+        camera_color_optical_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        enclosureBottom:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        enclosureTop:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        forkHandle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        forkTine:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        forkTip:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        forque:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         j2n6s200_end_effector:
           Alpha: 1
           Show Axes: false
@@ -126,14 +182,34 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        nano:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        nanoMount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         root:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        world:
+        stabilizer:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+          Value: true
+        uncalibrated_camera_bottom_screw_frame:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        uncalibrated_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -145,7 +221,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Fixed Frame: root
     Frame Rate: 30
   Name: root
   Tools:
@@ -188,7 +264,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.1562225818634033
+      Distance: 3.467581033706665
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -203,10 +279,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8153982758522034
+      Pitch: 0.8303985595703125
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.620412588119507
+      Yaw: 3.6054158210754395
     Saved: ~
 Window Geometry:
   Displays:
