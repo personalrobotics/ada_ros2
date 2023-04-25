@@ -30,7 +30,7 @@ aluminum peripherial evaluation case.
   </material>
 
 
-  <xacro:macro name="sensor_d415" params="parent *origin  name:=camera  use_nominal_extrinsics:=true add_plug:=false use_mesh:=true">
+  <xacro:macro name="sensor_d415" params="parent *origin  name:=camera  use_nominal_extrinsics:=false add_plug:=false use_mesh:=true">
     <xacro:property name="M_PI" value="3.1415926535897931" />
 
     <!-- The following values are approximate, and the camera node

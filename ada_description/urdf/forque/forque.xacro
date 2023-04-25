@@ -60,7 +60,7 @@
 
 
 
-	<xacro:macro name="forque_assembly" params="base_parent">
+	<xacro:macro name="forque_assembly" params="base_parent use_antenna:=false">
 
 		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2023_03_09_FTMount" mass="0.022" cog="0.0111797 -0.110193 -0.0384312">
 			<xacro:insert_block name="default_inertial"/>
@@ -72,10 +72,13 @@
 	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="FT_to_FTMount" parent="FTMount" child="FT" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 
-	  	<xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna" mass="0.018" cog="-0.0162965 0.0666626 -0.0545096">
-	  		<xacro:insert_block name="default_inertial"/>
-	  	</xacro:forque_assembly_link>
-	  	<xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" parent="FT" child="FTAntenna" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+
+	  	<xacro:if value="${use_antenna}">
+		  	<xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna" mass="0.018" cog="-0.0162965 0.0666626 -0.0545096">
+	  		  <xacro:insert_block name="default_inertial"/>
+	  	  </xacro:forque_assembly_link>
+	  	  <xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" parent="FT" child="FTAntenna" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+		  </xacro:if>
 
 	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
 	  		<xacro:insert_block name="default_inertial"/>

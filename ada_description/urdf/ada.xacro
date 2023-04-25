@@ -12,7 +12,7 @@
   xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
     xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
-  xmlns:xacro="http://www.ros.org/wiki/xacro" name="camera">
+  xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada">
 
   <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
   <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
@@ -21,15 +21,6 @@
   <xacro:arg name="use_forque" default="true"/>
 
   <link name="root"/>
-
-  <!-- for gazebo -->
-  <link name="world"/>
-  
-  <joint name="connect_root_and_world" type="fixed">
-    <child link="root" />
-    <parent link="world" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </joint> 
 
   <xacro:property name="robot_root" value="root" />
 
