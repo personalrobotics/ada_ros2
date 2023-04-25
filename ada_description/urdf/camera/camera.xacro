@@ -18,8 +18,13 @@
 
 	<xacro:property name="camColor" value="0.4 0.4 0.4 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
+	
+	<xacro:property name="default_inertial">
+		<inertia ixx="0.001" iyy="0.001" iyz="0.001" izz="0.001" ixy="0.001" ixz="0.001"/>
+	</xacro:property>
 
-	<xacro:macro name="camera_assembly_link" params="link_name link_mesh">
+
+	<xacro:macro name="camera_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
 		<link name="${link_name}">
 			<visual>
 				<geometry>
@@ -38,6 +43,11 @@
 						scale="0.001 0.001 0.001"/>
                 </geometry>
             </collision>
+            <inertial>
+            	<origin xyz="${cog}" rpy="0 0 0"/>
+            	<mass value="${mass}"/>
+            	<xacro:insert_block name="inertia"/>
+            </inertial>
 		</link>
 	</xacro:macro>
 
@@ -56,19 +66,29 @@
 
 	<xacro:macro name="camera_assembly" params="base_parent base_xyz:=${default_origin} base_rpy:=${default_origin}">
 
-		<xacro:camera_assembly_link link_name="nanoMount" link_mesh="2023_03_09_nanoArmMount"/>
+		<xacro:camera_assembly_link link_name="nanoMount" link_mesh="2023_03_09_nanoArmMount" mass="0.008" cog="-0.002400 0.0046958 0.0115245">
+			<xacro:insert_block name="default_inertial"/>
+        </xacro:camera_assembly_link>
 	  	<xacro:camera_assembly_joint joint_name="nanoMount_to_world" parent="${base_parent}" child="nanoMount" joint_origin_xyz="${base_xyz}" joint_origin_rpy="${base_rpy}"/>
 
-		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom"/>
+		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_03_16_nanoEnclosureBottom" mass="0.040" cog="0.0546451 0.0472161 0.00043655">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
 		
-		<xacro:camera_assembly_link link_name="nano" link_mesh="2023_03_21_jetsonNano"/>
+		<xacro:camera_assembly_link link_name="nano" link_mesh="2023_03_21_jetsonNano" mass="0.142" cog="0.0435615 0.02502709 0.0091247">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0.0105 0.014 -0.0015" joint_origin_rpy="0 0 0"/>
 		
-		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop"/>
+		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop" mass="0.046" cog="0.04817211 0.03496864 0.02671124">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 		
-		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer"/>
+		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer" mass="0.004" cog="0.00272454 0.00000231884 0.00514249">
+	  		<xacro:insert_block name="default_inertial"/>
+	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
 
 		<xacro:sensor_d415 parent="stabilizer" use_mesh="true" name="uncalibrated_camera">
