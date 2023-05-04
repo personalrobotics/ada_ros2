@@ -175,6 +175,8 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
     if (
       old_modes.size() != num_dofs_.first && old_modes.size() != num_dofs_.second &&
       old_modes.size() != info_.joints.size()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("Jaco2"), "Must stop all hand, arm, or robot joints simultaneously.");
       return hardware_interface::return_type::ERROR;
     }
 
@@ -184,6 +186,7 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
       if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
             return mode == control_level_;
           })) {
+        RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "All stopped joints must be in the same mode.");
         return hardware_interface::return_type::ERROR;
       }
       // Stop motion
@@ -222,6 +225,8 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
     if (
       new_modes.size() != num_dofs_.first && new_modes.size() != num_dofs_.second &&
       new_modes.size() != info_.joints.size()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("Jaco2"), "Must request all hand, arm, or robot joints simultaneously.");
       return hardware_interface::return_type::ERROR;
     }
 
@@ -229,17 +234,21 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
     if (!std::all_of(new_modes.begin() + 1, new_modes.end(), [&](integration_level_t mode) {
           return mode == new_modes[0];
         })) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "All joints must be the same command mode.");
       return hardware_interface::return_type::ERROR;
     }
 
     // Criterion: if finger joints only, must be the same mode as what's already here
     if (new_modes.size() == num_dofs_.second) {
-      if (new_modes[0] != control_level_) {
+      if (control_level_ != integration_level_t::kUNDEFINED && new_modes[0] != control_level_) {
+        RCLCPP_ERROR(
+          rclcpp::get_logger("Jaco2"), "Hand controller can't override arm control mode.");
         return hardware_interface::return_type::ERROR;
       }
     }
     // Criterion: Only one mode active at a time
     else if (control_level_ != integration_level_t::kUNDEFINED) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Joints already in use.");
       return hardware_interface::return_type::ERROR;
     }
 

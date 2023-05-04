@@ -7,7 +7,7 @@ moveit_setup_assistant_config:
   package_settings:
     author_name: Ethan K. Gordon
     author_email: ekgordon@cs.uw.edu
-    generated_timestamp: 1681944713
+    generated_timestamp: 1683235974
   control_xacro:
     command:
       - position

@@ -8,7 +8,7 @@ controller_manager:
 
 
     hand_controller:
-      type: position_controllers/GripperActionController
+      type: joint_trajectory_controller/JointTrajectoryController
 
 
     joint_state_broadcaster:
@@ -24,15 +24,53 @@ jaco_arm_controller:
       - j2n6s200_joint_5
       - j2n6s200_joint_6
     command_interfaces:
-      - position
+      - velocity
     state_interfaces:
       - position
       - velocity
-    open_loop_control: true
     allow_partial_joints_goal: false
+    open_loop_control: false
+    stopped_velocity_tolerance: 0.01
+    gains: # Required because we're controlling a velocity interface
+      j2n6s200_joint_1: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_2: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_3: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_4: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_5: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_6: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+    j2n6s200_joint_1:
+      goal: 0.02
+      trajectory: 0.05
+    j2n6s200_joint_2:
+      goal: 0.02
+      trajectory: 0.05
+    j2n6s200_joint_3:
+      goal: 0.02
+      trajectory: 0.05
+    j2n6s200_joint_4:
+      goal: 0.02
+      trajectory: 0.05
+    j2n6s200_joint_5:
+      goal: 0.02
+      trajectory: 0.05
+    j2n6s200_joint_6:
+      goal: 0.02
+      trajectory: 0.05
 
 hand_controller:
   ros__parameters:
     joints:
       - j2n6s200_joint_finger_1
       - j2n6s200_joint_finger_2
+    command_interfaces:
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+    allow_partial_joints_goal: false
+    open_loop_control: false
+    constraints:
+      stopped_velocity_tolerance: 0.01
+    gains: # Required because we're controlling a velocity interface
+      j2n6s200_joint_finger_1: {p: 1.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_finger_2: {p: 1.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
