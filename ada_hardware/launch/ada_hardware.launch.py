@@ -74,8 +74,8 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "sim",
-            default_value="none",
-            description="Which sim to use: 'mock', 'isaac', or 'none'",
+            default_value="real",
+            description="Which sim to use: 'mock', 'isaac', or 'real'",
         )
     )
 
