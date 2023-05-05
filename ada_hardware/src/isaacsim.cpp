@@ -62,6 +62,7 @@ hardware_interface::CallbackReturn JacoIsaac::on_init(const hardware_interface::
   callback_states_velocities_.resize(info_.joints.size(), 0.0);
   callback_states_efforts_.resize(info_.joints.size(), 0.0);
   control_level_ = integration_level_t::kUNDEFINED;
+  control_connected_ = {false, false};
 
   position_offsets_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -177,20 +178,29 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
     if (
       old_modes.size() != num_dofs_.first && old_modes.size() != num_dofs_.second &&
       old_modes.size() != info_.joints.size()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("JacoIsaac"),
+        "Must stop all hand, arm, or robot joints simultaneously.");
       return hardware_interface::return_type::ERROR;
     }
 
-    // If arm or whole-bot, remove control_level
-    if (old_modes.size() != num_dofs_.second) {
-      // Criterion: All joints must have the same (existing) command mode
-      if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
-            return mode == control_level_;
-          })) {
-        return hardware_interface::return_type::ERROR;
-      }
-      for (size_t i = 0; i < hw_commands_positions_.size(); i++) {
-        hw_commands_positions_[i] = hw_states_positions_[i];
-      }
+    // Criterion: All joints must have the same (existing) command mode
+    if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
+          return mode == control_level_;
+        })) {
+      RCLCPP_ERROR(rclcpp::get_logger("JacoIsaac"), "All stopped joints must be in the same mode.");
+      return hardware_interface::return_type::ERROR;
+    }
+
+    // Record removal of connected control
+    if (old_modes.size() == num_dofs_.second) {
+      control_connected_.second = false;
+    } else if (old_modes.size() == num_dofs_.first) {
+      control_connected_.first = false;
+    } else {
+      control_connected_.first = control_connected_.second = false;
+    }
+    if (!control_connected_.first && !control_connected_.second) {
       control_level_ = integration_level_t::kUNDEFINED;
     }
   }
@@ -217,6 +227,9 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
     if (
       new_modes.size() != num_dofs_.first && new_modes.size() != num_dofs_.second &&
       new_modes.size() != info_.joints.size()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("JacoIsaac"),
+        "Must request all hand, arm, or robot joints simultaneously.");
       return hardware_interface::return_type::ERROR;
     }
 
@@ -224,22 +237,40 @@ hardware_interface::return_type JacoIsaac::prepare_command_mode_switch(
     if (!std::all_of(new_modes.begin() + 1, new_modes.end(), [&](integration_level_t mode) {
           return mode == new_modes[0];
         })) {
+      RCLCPP_ERROR(rclcpp::get_logger("JacoIsaac"), "All joints must be the same command mode.");
+      return hardware_interface::return_type::ERROR;
+    }
+
+    // Criterion: Joints must not be in use.
+    bool inUse = (new_modes.size() == num_dofs_.second && control_connected_.second) ||
+                 (new_modes.size() == num_dofs_.first && control_connected_.first) ||
+                 (control_connected_.first && control_connected_.second);
+    if (inUse) {
+      RCLCPP_ERROR(rclcpp::get_logger("JacoIsaac"), "Joints already in use.");
       return hardware_interface::return_type::ERROR;
     }
 
     // Criterion: if finger joints only, must be the same mode as what's already here
     if (new_modes.size() == num_dofs_.second) {
-      if (new_modes[0] != control_level_) {
+      if (control_level_ != integration_level_t::kUNDEFINED && new_modes[0] != control_level_) {
+        RCLCPP_ERROR(
+          rclcpp::get_logger("JacoIsaac"), "Hand controller can't override arm control mode.");
         return hardware_interface::return_type::ERROR;
       }
     }
-    // Criterion: Only one mode active at a time
-    else if (control_level_ != integration_level_t::kUNDEFINED) {
-      return hardware_interface::return_type::ERROR;
-    }
 
     // Set the new command mode
-    control_level_ = new_modes[0];
+    // Record addition of connected control
+    if (new_modes.size() == num_dofs_.second) {
+      control_connected_.second = true;
+    } else if (new_modes.size() == num_dofs_.first) {
+      control_connected_.first = true;
+    } else {
+      control_connected_.first = control_connected_.second = true;
+    }
+    if (control_connected_.first || control_connected_.second) {
+      control_level_ = new_modes[0];
+    }
   }
 
   return hardware_interface::return_type::OK;

@@ -108,6 +108,7 @@ private:
   };
 
   integration_level_t control_level_;
+  std::pair<bool, bool> control_connected_;
 
   //// Private Functions /////
   bool sendVelocityCommand(const std::vector<double> & command);

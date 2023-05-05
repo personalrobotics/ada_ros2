@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada">
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+    <xacro:arg name="sim" default="none" />
 
     <!-- Import ada urdf file -->
     <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
@@ -9,6 +10,8 @@
     <xacro:include filename="ada.ros2_control.xacro" />
 
 
-    <xacro:ada_ros2_control name="ADAHardware" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:ada_ros2_control name="ADAHardware" 
+        initial_positions_file="$(arg initial_positions_file)"
+        sim="$(arg sim)" />
 
 </robot>

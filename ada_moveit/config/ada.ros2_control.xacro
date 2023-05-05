@@ -1,13 +1,23 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="ada_ros2_control" params="name initial_positions_file">
+    <xacro:macro name="ada_ros2_control" params="name initial_positions_file sim">
         <xacro:property name="initial_positions" value="${load_yaml(initial_positions_file)['initial_positions']}"/>
 
         <ros2_control name="${name}" type="system">
             <hardware>
-                <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <plugin>ada_hardware/Jaco2</plugin>
-            </hardware>
+                <xacro:if value="${sim == 'mock'}">
+                  <plugin>mock_components/GenericSystem</plugin>
+                  <param name="mock_sensor_commands">false</param>
+                  <param name="state_following_offset">0.0</param>
+                </xacro:if>
+                <xacro:if value="${sim == 'isaac'}">
+                  <plugin>ada_hardware/JacoIsaac</plugin>
+                  <param name="namespace">/simulation</param>
+                </xacro:if>
+                <xacro:if value="${sim == 'none'}">
+                  <plugin>ada_hardware/Jaco2</plugin>
+                </xacro:if>
+              </hardware>
             <joint name="j2n6s200_joint_1">
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>

@@ -71,6 +71,7 @@ hardware_interface::CallbackReturn Jaco2::on_init(const hardware_interface::Hard
   hw_commands_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_efforts_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   control_level_ = integration_level_t::kUNDEFINED;
+  control_connected_ = {false, false};
 
   position_offsets_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
@@ -180,15 +181,23 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
       return hardware_interface::return_type::ERROR;
     }
 
-    // If arm or whole-bot, remove control_level
-    if (old_modes.size() != num_dofs_.second) {
-      // Criterion: All joints must have the same (existing) command mode
-      if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
-            return mode == control_level_;
-          })) {
-        RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "All stopped joints must be in the same mode.");
-        return hardware_interface::return_type::ERROR;
-      }
+    // Criterion: All joints must have the same (existing) command mode
+    if (!std::all_of(old_modes.begin() + 1, old_modes.end(), [&](integration_level_t mode) {
+          return mode == control_level_;
+        })) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "All stopped joints must be in the same mode.");
+      return hardware_interface::return_type::ERROR;
+    }
+
+    // Record removal of connected control
+    if (old_modes.size() == num_dofs_.second) {
+      control_connected_.second = false;
+    } else if (old_modes.size() == num_dofs_.first) {
+      control_connected_.first = false;
+    } else {
+      control_connected_.first = control_connected_.second = false;
+    }
+    if (!control_connected_.first && !control_connected_.second) {
       // Stop motion
       {
         const std::lock_guard<std::mutex> lock(mMutex);
@@ -238,6 +247,15 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
       return hardware_interface::return_type::ERROR;
     }
 
+    // Criterion: Joints must not be in use.
+    bool inUse = (new_modes.size() == num_dofs_.second && control_connected_.second) ||
+                 (new_modes.size() == num_dofs_.first && control_connected_.first) ||
+                 (control_connected_.first && control_connected_.second);
+    if (inUse) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Joints already in use.");
+      return hardware_interface::return_type::ERROR;
+    }
+
     // Criterion: if finger joints only, must be the same mode as what's already here
     if (new_modes.size() == num_dofs_.second) {
       if (control_level_ != integration_level_t::kUNDEFINED && new_modes[0] != control_level_) {
@@ -246,24 +264,29 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
         return hardware_interface::return_type::ERROR;
       }
     }
-    // Criterion: Only one mode active at a time
-    else if (control_level_ != integration_level_t::kUNDEFINED) {
-      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Joints already in use.");
-      return hardware_interface::return_type::ERROR;
-    }
 
     // Set the new command mode
-    // Stop motion
-    {
-      const std::lock_guard<std::mutex> lock(mMutex);
-      int r = NO_ERROR_KINOVA;
-      r = EraseAllTrajectories();
-      if (r != NO_ERROR_KINOVA) {
-        RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not stop robot : Error code %d", r);
-        return hardware_interface::return_type::ERROR;
-      }
+    // Record addition of connected control
+    if (new_modes.size() == num_dofs_.second) {
+      control_connected_.second = true;
+    } else if (new_modes.size() == num_dofs_.first) {
+      control_connected_.first = true;
+    } else {
+      control_connected_.first = control_connected_.second = true;
     }
-    control_level_ = new_modes[0];
+    if (control_connected_.first || control_connected_.second) {
+      // Stop motion
+      {
+        const std::lock_guard<std::mutex> lock(mMutex);
+        int r = NO_ERROR_KINOVA;
+        r = EraseAllTrajectories();
+        if (r != NO_ERROR_KINOVA) {
+          RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not stop robot : Error code %d", r);
+          return hardware_interface::return_type::ERROR;
+        }
+      }
+      control_level_ = new_modes[0];
+    }
   }
 
   return hardware_interface::return_type::OK;
