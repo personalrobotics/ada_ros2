@@ -24,4 +24,4 @@ moveit_simple_controller_manager:
     default: true
     joints:
       - j2n6s200_joint_finger_1
-      - j2n6s200_joint_finger_2\
+      - j2n6s200_joint_finger_2
