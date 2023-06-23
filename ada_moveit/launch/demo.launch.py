@@ -25,6 +25,14 @@ def generate_launch_description():
     # MoveIt Config
     moveit_config = MoveItConfigsBuilder("ada", package_name="ada_moveit").to_moveit_configs()
 
+    # Calibration Launch Argument
+    calib_da = DeclareLaunchArgument(
+            "calib",
+            default_value="default",
+            description="Which calibration folder to use with calib_camera_pose.launch.py"
+            )
+    calib = LaunchConfiguration("calib")
+
     # Sim Launch Argument
     sim_da = DeclareLaunchArgument(
             "sim",
@@ -44,6 +52,22 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(sim_da)
     ld.add_action(ctrl_da)
+    ld.add_action(calib_da)
+
+    # Camera Calibration File
+    ld.add_action(
+         IncludeLaunchDescription(
+             PythonLaunchDescriptionSource([
+                PathJoinSubstitution([
+                    str(moveit_config.package_path),
+                    'calib',
+                    calib,
+                    'calib_camera_pose.launch.py'
+                ])
+                ]),
+         )
+     )
+
     ld.add_action(
      DeclareBooleanLaunchArg(
          "db",

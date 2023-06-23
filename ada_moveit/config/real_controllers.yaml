@@ -32,12 +32,12 @@ jaco_arm_controller:
     open_loop_control: false
     stopped_velocity_tolerance: 0.01
     gains: # Required because we're controlling a velocity interface
-      j2n6s200_joint_1: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
-      j2n6s200_joint_2: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
-      j2n6s200_joint_3: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
-      j2n6s200_joint_4: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
-      j2n6s200_joint_5: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
-      j2n6s200_joint_6: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0}
+      j2n6s200_joint_1: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
+      j2n6s200_joint_2: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
+      j2n6s200_joint_3: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
+      j2n6s200_joint_4: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
+      j2n6s200_joint_5: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
+      j2n6s200_joint_6: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
     j2n6s200_joint_1:
       goal: 0.02
       trajectory: 0.05
