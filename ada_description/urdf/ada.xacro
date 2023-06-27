@@ -33,7 +33,7 @@
   <link name="camera_link" />
   <joint name="extrinsics" type="fixed">
     <origin xyz="0.023 0.055 0.005" rpy="-0.039 0.100 -0.007" />
-    <parent link="stabilizer" />
+    <parent link="cameraMount" />
     <child link="camera_link" />
   </joint>
   <!-- Copy Realsense in case of simulation -->
