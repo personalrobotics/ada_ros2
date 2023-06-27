@@ -81,18 +81,18 @@
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="nano_to_enclosureBottom" parent="enclosureBottom" child="nano" joint_origin_xyz="0.0105 0.014 -0.0015" joint_origin_rpy="0 0 0"/>
 		
-		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_03_09_nanoEnclosureTop" mass="0.046" cog="0.04817211 0.03496864 0.02671124">
+		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_06_06_nanoEnclosureTopCameraBack" mass="0.046" cog="0.04817211 0.03496864 0.02671124">
 	  		<xacro:insert_block name="default_inertial"/>
 	  	</xacro:camera_assembly_link>
-		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0.009925 0.04099 0.05442" joint_origin_rpy="0 ${165.4 * J_PI / 180} ${J_PI}"/>
 		
-		<xacro:camera_assembly_link link_name="stabilizer" link_mesh="2023_03_09_cameraStabilizer" mass="0.004" cog="0.00272454 0.00000231884 0.00514249">
+		<xacro:camera_assembly_link link_name="cameraMount" link_mesh="2023_06_06_cameraBackMount" mass="0.004" cog="0.00272454 0.00000231884 0.00514249">
 	  		<xacro:insert_block name="default_inertial"/>
 	  	</xacro:camera_assembly_link>
-		<xacro:camera_assembly_joint joint_name="stabilizer_to_enclosureTop" parent="enclosureTop" child="stabilizer" joint_origin_xyz="0.0842 0.041 0.0343" joint_origin_rpy="0 ${14.621 * J_PI / 180} 0"/>
+		<xacro:camera_assembly_joint joint_name="cameraMount_to_enclosureTop" parent="enclosureTop" child="cameraMount" joint_origin_xyz="-0.0132 0 -0.022" joint_origin_rpy="0 ${J_PI / 2} 0"/>
 
-		<xacro:sensor_d415 parent="stabilizer" use_mesh="true" name="uncalibrated_camera">
-			<origin xyz="0.0165 0 0.0005" rpy="0 0 0" />
+		<xacro:sensor_d415 parent="cameraMount" use_mesh="true" name="uncalibrated_camera">
+			<origin xyz="0.006 0 0.013" rpy="0 ${-J_PI / 2} ${J_PI}" />
 		</xacro:sensor_d415>
 
 
