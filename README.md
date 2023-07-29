@@ -6,7 +6,7 @@ ROS2 Hardware Interface and Description for the ADA Robot
 2. Install required ROS binaries. Note that some or all of these may already be installed. `sudo apt install ros-humble-ros2-control ros-humble-kinematics-interface-kdl ros-humble-ament-cmake-clang-format ros-humble-rviz2 ros-humble-moveit ros-humble-ackermann-msgs ros-humble-control-toolbox ros-humble-generate-parameter-library`
 3. Install required python packages: `python3 -m pip install trimesh`
 4. Configure and build your workspace:
-    1. Git clone [this repo (ada_ros2)](https://github.com/personalrobotics/ada_ros2), the [PRL fork of pymoveit (branch: `amaln/set_planner_id`)](https://github.com/personalrobotics/pymoveit2), and the [PRL fork of `ros2_controllers` (branch: `egordon/force_gate_controllers`)](https://github.com/personalrobotics/ros2_controllers/tree/egordon/force_gate_controllers) into your ROS2 workspace's `src` folder.
+    1. Git clone [this repo (ada_ros2)](https://github.com/personalrobotics/ada_ros2) and the [PRL fork of `ros2_controllers` (branch: `egordon/force_gate_controllers`)](https://github.com/personalrobotics/ros2_controllers/tree/egordon/force_gate_controllers) into your ROS2 workspace's `src` folder.
     2. Build the workspace: `colcon build`. Note that if the Kinova SDK can't be installed on your device (e.g., you are on an ARM system and only need to run sim), you can skip `ada_hardware` with this command: `colcon build --packages-skip ada_hardware`
 
 ## Running ADA MoveIt
