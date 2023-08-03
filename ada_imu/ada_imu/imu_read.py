@@ -1,42 +1,52 @@
-from __future__ import print_function
-import qwiic_icm20948
+import serial
 import time
-import sys
+import numpy as np
 
-def runExample():
+ser = serial.Serial('/dev/ttyUSB0')
+ser.baudrate = 115200
 
-	print("\nSparkFun 9DoF ICM-20948 Sensor  Example 1\n")
-	IMU = qwiic_icm20948.QwiicIcm20948()
+print("connected to: " + ser.portstr)
 
-	if IMU.connected == False:
-		print("The Qwiic ICM20948 device isn't connected to the system. Please check your connection", \
-			file=sys.stderr)
-		return
+# number of seconds to average the IMU data for
+seconds = 3
+timeout = time.time() + seconds
 
-	IMU.begin()
+# store the accelerometer data
+accelX = []
+accelY = []
+accelZ = []
 
-	while True:
-		if IMU.dataReady():
-			IMU.getAgmt() # read all axis and temp from sensor, note this also updates all instance variables
-			print(\
-			 '{: 06d}'.format(IMU.axRaw)\
-			, '\t', '{: 06d}'.format(IMU.ayRaw)\
-			, '\t', '{: 06d}'.format(IMU.azRaw)\
-			, '\t', '{: 06d}'.format(IMU.gxRaw)\
-			, '\t', '{: 06d}'.format(IMU.gyRaw)\
-			, '\t', '{: 06d}'.format(IMU.gzRaw)\
-			, '\t', '{: 06d}'.format(IMU.mxRaw)\
-			, '\t', '{: 06d}'.format(IMU.myRaw)\
-			, '\t', '{: 06d}'.format(IMU.mzRaw)\
-			)
-			time.sleep(0.03)
-		else:
-			print("Waiting for data")
-			time.sleep(0.5)
+# tracker variable to know when data is being recorded 
+# (ignore the header information)
+logging = False
 
-if __name__ == '__main__':
-	try:
-		runExample()
-	except (KeyboardInterrupt, SystemExit) as exErr:
-		print("\nEnding Example 1")
-		sys.exit(0)
+while time.time() < timeout:
+	line = str(ser.readline())#read in a line from the IMU
+
+	if logging:
+		#convert csv line to array
+		data = list(map(str.strip, line.split(','))) 
+
+		# store accelerometer data
+		accelX.append(float(data[2]))
+		accelY.append(float(data[3]))
+		accelZ.append(float(data[4]))
+
+	
+	# look for the empty line signifying the header is over
+	# and the data stream is starting
+	if line == "b'\\r\\n'":
+		logging = True
+
+
+# get averages
+avgX = np.average(accelX)
+avgY = np.average(accelY)
+avgZ = np.average(accelZ)
+
+print("average X acceleration: ", avgX)
+print("average Y acceleration: ", avgY)
+print("average Z acceleration: ", avgZ)
+
+
+ser.close()
