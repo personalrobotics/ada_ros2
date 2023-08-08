@@ -1,31 +1,11 @@
 moveit_setup_assistant_config:
-  urdf:
+  URDF:
     package: ada_description
     relative_path: urdf/ada.xacro
-  srdf:
+    xacro_args: ""
+  SRDF:
     relative_path: config/ada.srdf
-  package_settings:
+  CONFIG:
     author_name: Ethan K. Gordon
-    author_email: ekgordon@cs.uw.edu
-    generated_timestamp: 1683235974
-  control_xacro:
-    command:
-      - position
-      - velocity
-      - effort
-    state:
-      - position
-      - velocity
-      - effort
-  modified_urdf:
-    xacros:
-      - control_xacro
-  control_xacro:
-    command:
-      - position
-      - velocity
-      - effort
-    state:
-      - position
-      - velocity
-      - effort
+    author_email: ekgordon@cs.washington.edu
+    generated_timestamp: 1691513548

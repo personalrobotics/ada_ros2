@@ -1,12 +1,10 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.1.3)
 project(ada_moveit)
 
-find_package(ament_cmake REQUIRED)
+find_package(catkin REQUIRED)
 
-ament_package()
+catkin_package()
 
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   PATTERN "setup_assistant.launch" EXCLUDE)
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
-install(DIRECTORY calib DESTINATION share/${PROJECT_NAME})
-install(FILES .setup_assistant DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
