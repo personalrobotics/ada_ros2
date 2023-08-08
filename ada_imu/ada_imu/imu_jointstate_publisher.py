@@ -4,6 +4,17 @@ from sensor_msgs.msg import JointState
 
 import numpy as np
 
+
+
+
+import matplotlib.pyplot as plt
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+
+
+
+
 # calibration values (level)
 cX = -1003.4183333333335
 cY = -24.198333333333334
@@ -19,7 +30,23 @@ tilt_calib_vector = np.array([tX, tY, tZ])
 
 #calculate the direction vector at the beginning
 #vector for determining in which direction the IMU is being rotated
-direction_vector = double_cross
+direction_vector = np.cross(np.cross(main_calib_vector, tilt_calib_vector), main_calib_vector)
+
+
+ax.quiver(0, 0, 0, main_calib_vector[0], main_calib_vector[1], main_calib_vector[2], color='r', arrow_length_ratio=0.1)
+ax.quiver(0, 0, 0, tilt_calib_vector[0], tilt_calib_vector[1], tilt_calib_vector[2], color='b', arrow_length_ratio=0.1)
+ax.quiver(0, 0, 0, direction_vector[0], direction_vector[1], direction_vector[2], color='g', arrow_length_ratio=0.1)
+
+ax.set_xlim([-3, 3])
+ax.set_ylim([-3, 3])
+ax.set_zlim([-3, 3])
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+plt.title('3D Vector Plot')
+
+plt.show()
 
 
 class IMUJointstatePublisher(Node):
@@ -77,4 +104,3 @@ def angle_between(v1, v2):
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
-def angle_direction
