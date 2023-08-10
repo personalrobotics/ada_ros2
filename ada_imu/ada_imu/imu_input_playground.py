@@ -15,9 +15,9 @@ accelX = []
 accelY = []
 accelZ = []
 
-# ignore header information - wait for the empty line signifying header is over
+# ignore header information
 while True:
-	line = str(ser.readline()) #read in a line from the IMU
+	line = str(ser.readline())#read in a line from the IMU
 	if line == "b'\\r\\n'":
 		break
 
@@ -25,16 +25,14 @@ while True:
 timeout = time.time() + seconds
 
 while time.time() < timeout:
-	ser.flushInput() #flush the input stream to get most recent data
-	ser.readline() #get rid of any leftover partial line from the flush
-	line = str(ser.readline()) #read in a line from the IMU
-	data = list(map(str.strip, line.split(','))) #convert csv line to array
+	line = str(ser.readline())#read in a line from the IMU
+	#convert csv line to array
+	data = list(map(str.strip, line.split(','))) 
 
 	# store accelerometer data
 	accelX.append(float(data[2]))
 	accelY.append(float(data[3]))
 	accelZ.append(float(data[4]))
-
 
 
 # get averages
