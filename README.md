@@ -16,3 +16,7 @@ ROS2 Hardware Interface and Description for the ADA Robot
 
 ### Real
 1. Run `ros2 launch ada_moveit demo.launch.py` command from your ROS2 workspace.
+
+## Camera Calibration
+
+See the [README for the `default` calibration](./ada_moveit/calib/default/README.md) for details about our extrinsics calibration methdology.
