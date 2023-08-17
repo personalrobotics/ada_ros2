@@ -15,7 +15,7 @@ def generate_launch_description():
     node=Node(
         package = 'ada_imu',
         name = 'imu_jointstate_publisher',
-        executable = 'test_yaml_params',
+        executable = 'imu_jointstate_publisher',
         parameters = [config]
     )
 

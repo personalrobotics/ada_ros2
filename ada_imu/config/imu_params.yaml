@@ -1,10 +1,15 @@
 ---
-main_calib_vector: # [X, Y, Z]
-  - -1003.4183333333335 
-  - -24.198333333333334
-  - 38.275000000000006
+imu_jointstate_publisher:
+  ros__parameters:
+    main_calib_vector: # [X, Y, Z]
+      - -1003.4183333333335 
+      - -24.198333333333334
+      - 38.275000000000006
 
-tilt_calib_vector: # [X, Y, Z]
-  - -978.8416666666667
-  - -232.50333333333336
-  - 40.96
+    tilt_calib_vector: # [X, Y, Z]
+      - -978.8416666666667
+      - -232.50333333333336
+      - 40.96
+
+    velocity_thresh: 0.05 # radians per second
+    serial_port: '/dev/ttyUSB0'

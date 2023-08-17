@@ -7,15 +7,6 @@ import numpy as np
 import serial
 
 
-# default calibration values (level)
-default_cX = -1003.4183333333335
-default_cY = -24.198333333333334
-default_cZ = 38.275000000000006
-
-# default calibration values (tilt)
-default_tX = -978.8416666666667
-default_tY = -232.50333333333336
-default_tZ = 40.96
 
 class IMUJointstatePublisher(Node):
 
@@ -23,9 +14,9 @@ class IMUJointstatePublisher(Node):
         super().__init__('IMU_jointstate_publisher')
         self.publisher_ = self.create_publisher(JointState, 'topic', 10)
 
-        self.declare_parameter('main_calib_vector', [default_cX, default_cY, default_cZ])
-        self.declare_parameter('tilt_calib_vector', [default_tX, default_tY, default_tZ])
-        self.declare_parameter('velocity_thresh', 0.05) # radians per second
+        self.declare_parameter('main_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
+        self.declare_parameter('tilt_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
+        self.declare_parameter('velocity_thresh', rclpy.Parameter.Type.DOUBLE) # radians per second
         self.declare_parameter('serial_port', '/dev/ttyUSB0')
 
         self.init_serial()
@@ -38,7 +29,7 @@ class IMUJointstatePublisher(Node):
 
         self.prev_smoothed_position = self.prev_angle  = self.get_IMU_angle()
         self.prev_smoothed_velocity = 0.0
-        self.velocity_thresh = self.get_parameter('velocity_thresh').get_parameter_value().integer_value
+        self.velocity_thresh = self.get_parameter('velocity_thresh').get_parameter_value().double_value
 
         self.timer_period = 0.5 # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
@@ -80,7 +71,7 @@ class IMUJointstatePublisher(Node):
 
         imu_velocity = (imu_angle - self.prev_angle) / self.timer_period
         smoothed_velocity = threshed_velocity = exponential_smoothing(self.velocity_smoothing_factor, imu_velocity, self.prev_smoothed_velocity)
-        # apply threshhold
+        # apply threshold
         if np.abs(smoothed_velocity) < self.velocity_thresh:
             threshed_velocity = 0
 
