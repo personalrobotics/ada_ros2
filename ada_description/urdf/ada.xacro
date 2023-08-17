@@ -32,7 +32,7 @@
   <!-- Hard-coded Extrinsics -->
   <link name="camera_link" />
   <joint name="extrinsics" type="fixed">
-    <origin xyz="0.023 0.055 0.005" rpy="-0.039 0.100 -0.007" />
+    <origin xyz="0.0194 -0.01606 0.029014" rpy="0.17234 -1.56127 2.96967" />
     <parent link="cameraMount" />
     <child link="camera_link" />
   </joint>
