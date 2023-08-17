@@ -12,37 +12,32 @@ class IMUJointstatePublisher(Node):
 
     def __init__(self):
         super().__init__('IMU_jointstate_publisher')
-        self.publisher_ = self.create_publisher(JointState, 'topic', 10)
+        self.publisher_ = self.create_publisher(JointState, '/joint_states', 10)
 
+        self.declare_parameter('joint_name', rclpy.Parameter.Type.STRING)
         self.declare_parameter('main_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
         self.declare_parameter('tilt_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
-        self.declare_parameter('velocity_thresh', rclpy.Parameter.Type.DOUBLE) # radians per second
         self.declare_parameter('serial_port', '/dev/ttyUSB0')
+        self.declare_parameter('velocity_thresh', rclpy.Parameter.Type.DOUBLE) # radians per second
+        self.declare_parameter('position_smoothing_factor', rclpy.Parameter.Type.DOUBLE)
+        self.declare_parameter('velocity_smoothing_factor', rclpy.Parameter.Type.DOUBLE)
 
         self.init_serial()
         self.init_vectors()
+        self.init_smoothing()
+        self.joint_name = self.get_parameter('joint_name').get_parameter_value().string_value
 
-
-        # weights used in exponential rolling averages, between 0 and 1
-        self.position_smoothing_factor = 0.9 
-        self.velocity_smoothing_factor = 0.9
-
-        self.prev_smoothed_position = self.prev_angle  = self.get_IMU_angle()
-        self.prev_smoothed_velocity = 0.0
-        self.velocity_thresh = self.get_parameter('velocity_thresh').get_parameter_value().double_value
-
-        self.timer_period = 0.5 # seconds
+        self.timer_period = 0.1 # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
 
 
-
+    # initialize the calibration vectors and calculate other necessary direction vectors
     def init_vectors(self):
         self.main_calib_vector = self.get_parameter('main_calib_vector').get_parameter_value().double_array_value
         self.tilt_calib_vector = self.get_parameter('tilt_calib_vector').get_parameter_value().double_array_value
 
         # calculate the vector for determining in which direction the IMU is being rotated
         self.direction_vector = np.cross(np.cross(self.main_calib_vector, self.tilt_calib_vector), self.main_calib_vector)
-
 
     # initialize serial port for IMU readings
     def init_serial(self):
@@ -55,6 +50,16 @@ class IMUJointstatePublisher(Node):
             line = str(self.ser.readline()) #read in a line from the IMU
             if line == "b'\\r\\n'":
                 break
+
+    # initialize all variables used in the exponential smoothing calculations
+    def init_smoothing(self):
+        # weights used in exponential rolling averages
+        self.position_smoothing_factor = self.get_parameter('position_smoothing_factor').get_parameter_value().double_value
+        self.velocity_smoothing_factor = self.get_parameter('velocity_smoothing_factor').get_parameter_value().double_value
+
+        self.prev_smoothed_position = self.prev_angle  = self.get_IMU_angle()
+        self.prev_smoothed_velocity = 0.0
+        self.velocity_thresh = self.get_parameter('velocity_thresh').get_parameter_value().double_value
 
 
 
@@ -80,12 +85,12 @@ class IMUJointstatePublisher(Node):
         self.prev_smoothed_velocity = smoothed_velocity
 
 
-        msg.name.append('IMU Joint')
+        msg.name.append(self.joint_name)
         msg.position.append(smoothed_position)
         msg.velocity.append(threshed_velocity)
 
         msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = 'root'
+        msg.header.frame_id = ''
 
 
         self.publisher_.publish(msg)
