@@ -16,12 +16,12 @@ We used two visual tests to test the calibration:
 
 **Test 1**: Turning the robot to point at itself so part of its chassis is visible from the depth camera. In RVIZ, the depth cloud that the camera sees should align with the robot model. (See the below image, which includes the joint states required to re-create this configuration).
 
-TODO: add screenshot.
+![Screenshot from 2023-08-16 17-26-50](https://github.com/personalrobotics/ada_ros2/assets/8277986/9064820f-0350-4d13-a1c9-4ce79c49155c)
+(Note: my index finger was touching the actual bottom of the fork in the real-world.)
 
 **Test 2**: Touching the fork to the plate on the table. In RVIZ, the tip of the fork should touch the bottom of the plate as detected by the depth cloud.(See the below image, which includes the joint states required to re-create this configuration). Note that errors in this test could either be due to camera miscalibration or because the actual fork does not align wiht the URDF (e.g., it got bent).
 
-TODO: add screenshot.
-(Note: my index finger was touching the actual bottom of the fork in the real-world.)
+![Screenshot from 2023-08-16 17-29-47](https://github.com/personalrobotics/ada_ros2/assets/8277986/94f89a37-11f1-48ac-b886-b49b0694597d)
 
 **Results**: The results of the above test revealed that **Calib1** detected obstacles as being slightly closer to it than they actually were, and **Calib2** detected obstacles slightly farther from it than they actually were. Visually, the distance for each looked to be 0.5-1.0cm. Therefore, **_we decided to average the transforms_**.
 
