@@ -15,7 +15,7 @@ ROS2 Hardware Interface and Description for the ADA Robot
 2. See here for a [brief guide to using RVIZ to interact with MoveIt](https://moveit.picknik.ai/humble/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html).
 
 ### Real
-1. Run `ros2 launch ada_moveit demo.launch.py` command from your ROS2 workspace.
+1. Run `ros2 launch ada_moveit demo.launch.py` command from your ROS2 workspace. If running for feeding specifically (i.e., where the watchdog dying kills the controllers) run `ros2 launch ada_moveit demo_feeding.launch.py`. Make sure the watchdog is running before you launch this node.
 
 ## Camera Calibration
 
