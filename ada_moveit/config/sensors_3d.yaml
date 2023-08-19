@@ -1,3 +1,5 @@
+octomap_frame: camera_color_optical_frame
+octomap_resolution: 0.02
 sensors:
   - default_sensor
 default_sensor:
@@ -11,3 +13,4 @@ default_sensor:
   padding_offset: 0.03
   max_update_rate: 1.0
   filtered_cloud_topic: filtered_cloud
+  
