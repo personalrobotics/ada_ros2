@@ -16,5 +16,5 @@ imu_jointstate_publisher:
     velocity_thresh: 0.05 # radians per second
 
     # weights used in exponential rolling averages, between 0 and 1
-    position_smoothing_factor: 0.9
-    velocity_smoothing_factor: 0.9
+    position_smoothing_factor: 0.1
+    velocity_smoothing_factor: 0.1

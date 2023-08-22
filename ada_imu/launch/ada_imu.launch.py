@@ -12,12 +12,12 @@ def generate_launch_description():
         'imu_params.yaml'
         )
         
-    node=Node(
+    imu_jointstate_publisher=Node(
         package = 'ada_imu',
         name = 'imu_jointstate_publisher',
         executable = 'imu_jointstate_publisher',
         parameters = [config]
     )
 
-    ld.add_action(node)
+    ld.add_action(imu_jointstate_publisher)
     return ld

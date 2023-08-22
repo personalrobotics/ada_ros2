@@ -6,7 +6,8 @@ from rcl_interfaces.msg import ParameterDescriptor
 import numpy as np
 import serial
 
-
+positions = []
+counter = 0
 
 class IMUJointstatePublisher(Node):
 
@@ -14,13 +15,14 @@ class IMUJointstatePublisher(Node):
         super().__init__('IMU_jointstate_publisher')
         self.publisher_ = self.create_publisher(JointState, '/joint_states', 10)
 
-        self.declare_parameter('joint_name', rclpy.Parameter.Type.STRING)
-        self.declare_parameter('main_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
-        self.declare_parameter('tilt_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY)
-        self.declare_parameter('serial_port', '/dev/ttyUSB0')
-        self.declare_parameter('velocity_thresh', rclpy.Parameter.Type.DOUBLE) # radians per second
-        self.declare_parameter('position_smoothing_factor', rclpy.Parameter.Type.DOUBLE)
-        self.declare_parameter('velocity_smoothing_factor', rclpy.Parameter.Type.DOUBLE)
+        read_only = ParameterDescriptor(read_only = True)
+        self.declare_parameter('joint_name', rclpy.Parameter.Type.STRING, read_only)
+        self.declare_parameter('main_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY, read_only)
+        self.declare_parameter('tilt_calib_vector', rclpy.Parameter.Type.DOUBLE_ARRAY, read_only)
+        self.declare_parameter('serial_port', '/dev/ttyUSB0', read_only)
+        self.declare_parameter('velocity_thresh', rclpy.Parameter.Type.DOUBLE, read_only) # radians per second
+        self.declare_parameter('position_smoothing_factor', rclpy.Parameter.Type.DOUBLE, read_only)
+        self.declare_parameter('velocity_smoothing_factor', rclpy.Parameter.Type.DOUBLE, read_only)
 
         self.init_serial()
         self.init_vectors()
@@ -64,6 +66,7 @@ class IMUJointstatePublisher(Node):
 
 
     def timer_callback(self):
+        global counter
         msg = JointState()
         msg.name = []
         msg.position = []
@@ -73,6 +76,8 @@ class IMUJointstatePublisher(Node):
 
         imu_angle = self.get_IMU_angle()
         smoothed_position = exponential_smoothing(self.position_smoothing_factor, imu_angle, self.prev_smoothed_position)
+        # round the smoothed position to the nearest hundreth radian
+        rounded_position = round(smoothed_position, 2)
 
         imu_velocity = (imu_angle - self.prev_angle) / self.timer_period
         smoothed_velocity = threshed_velocity = exponential_smoothing(self.velocity_smoothing_factor, imu_velocity, self.prev_smoothed_velocity)
@@ -86,7 +91,7 @@ class IMUJointstatePublisher(Node):
 
 
         msg.name.append(self.joint_name)
-        msg.position.append(smoothed_position)
+        msg.position.append(rounded_position)
         msg.velocity.append(threshed_velocity)
 
         msg.header.stamp = self.get_clock().now().to_msg()
