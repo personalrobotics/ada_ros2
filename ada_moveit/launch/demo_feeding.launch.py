@@ -31,13 +31,15 @@ def generate_launch_description():
     # Add the watchdog listener node
     watchdog_timeout = {"watchdog_timeout": ParameterValue(0.1, value_type=float)}
     watchdog_check_hz = {"watchdog_check_hz": ParameterValue(60.0, value_type=float)}
+    initial_wait_time_sec = {"initial_wait_time_sec": ParameterValue(2.0, value_type=float)}
     ld.add_action(
      Node(
-         package="ada_feeding",
-         executable="ada_watchdog_listener_node.py",
+         package="ada_watchdog_listener",
+         executable="ada_watchdog_listener_node",
          parameters=[
              watchdog_timeout,
-             watchdog_check_hz
+             watchdog_check_hz,
+             initial_wait_time_sec,
          ],
          remappings=[
              ("~/watchdog", "/ada_watchdog/watchdog")
