@@ -129,6 +129,7 @@ class ADAWatchdogListener:
         watchdog_failed = False
         for status in msg.status:
             if status.level != DiagnosticStatus.OK:
+                self._node.get_logger().error(f"Watchdog failed: {status.message}", throttle_duration_sec=1)
                 watchdog_failed = True
                 break
         self.watchdog_failed = watchdog_failed
@@ -144,7 +145,6 @@ class ADAWatchdogListener:
         True if the watchdog is OK and has not timed out, else False.
         """
         if self.watchdog_failed:
-            self._node.get_logger().error("Watchdog failed!", throttle_duration_sec=1)
             return False
         if (
             self._node.get_clock().now() - self.last_watchdog_msg_time
