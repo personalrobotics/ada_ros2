@@ -18,3 +18,4 @@ imu_jointstate_publisher:
     # weights used in exponential rolling averages, between 0 and 1
     position_smoothing_factor: 0.1
     velocity_smoothing_factor: 0.1
+
