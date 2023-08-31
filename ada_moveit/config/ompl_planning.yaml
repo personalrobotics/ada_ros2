@@ -6,9 +6,6 @@ request_adapters: >-
     default_planner_request_adapters/AddTimeOptimalParameterization
     default_planner_request_adapters/ResolveConstraintFrames
     default_planner_request_adapters/FixWorkspaceBounds
-    default_planner_request_adapters/FixStartStateBounds
-    default_planner_request_adapters/FixStartStateCollision
-    default_planner_request_adapters/FixStartStatePathConstraints
 # Based on Kinova's parameters: https://github.com/Kinovarobotics/kinova-ros/blob/noetic-devel/kinova_moveit/robot_configs/j2n6s300_moveit_config/config/ompl_planning.yaml
 planner_configs:
   SBLkConfigDefault:
