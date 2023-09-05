@@ -4,7 +4,7 @@ controller_manager:
     update_rate: 100  # Hz
 
     jaco_arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: force_gate_controller/ForceGateController
 
 
     hand_controller:
@@ -31,6 +31,9 @@ jaco_arm_controller:
     allow_partial_joints_goal: false
     open_loop_control: false
     stopped_velocity_tolerance: 0.01
+    wrench_threshold:
+      topic: /wireless_ft/ftSensor1
+      fMag: 4.0
     gains: # Required because we're controlling a velocity interface
       j2n6s200_joint_1: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}
       j2n6s200_joint_2: {p: 4.0,  d: 0.0, i: 0.0, i_clamp: 1.0, normalize_error: true}

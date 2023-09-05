@@ -4,7 +4,7 @@ controller_manager:
     update_rate: 100  # Hz
 
     jaco_arm_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: force_gate_controller/ForceGateController
 
 
     hand_controller:
