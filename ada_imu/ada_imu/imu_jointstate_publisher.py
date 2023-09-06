@@ -239,7 +239,7 @@ class IMUJointstatePublisher(Node):
         msg.header.frame_id = ""
 
         self.publisher_.publish(msg)
-        self.get_logger().info(f"Publishing: {msg} \n")
+        self.get_logger().debug(f"Publishing: {msg}")
 
     def get_imu_angle(self):
         """
