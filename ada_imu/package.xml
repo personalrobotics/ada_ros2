@@ -4,8 +4,9 @@
   <name>ada_imu</name>
   <version>0.0.0</version>
   <description>IMU jointstate publisher</description>
-  <maintainer email="hayabean@gmail.com">hayabean</maintainer>
-  <license>TODO: License declaration</license>
+  <author>Haya Bolotski</author>
+  <maintainer email="ekgordon@cs.washington.edu">Ethan K. Gordon</maintainer>
+  <license>BSD-3-Clause</license>
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
@@ -14,7 +15,6 @@
   <exec_depend>rcl_interfaces</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
-  <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 

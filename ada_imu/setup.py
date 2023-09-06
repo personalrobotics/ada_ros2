@@ -17,10 +17,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='hayabean',
-    maintainer_email='hayabean@gmail.com',
+    maintainer='Ethan K. Gordon',
+    maintainer_email='ekgordon@cs.washington.edu',
     description='IMU jointstate publisher',
-    license='TODO: License declaration',
+    license='BSD-3-Clause',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
