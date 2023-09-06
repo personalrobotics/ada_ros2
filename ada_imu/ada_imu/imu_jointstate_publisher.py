@@ -109,8 +109,25 @@ class IMUJointstatePublisher(Node):
                 read_only=True,
             ),
         )
+        self.declare_parameter(
+            "sim",
+            "real",
+            ParameterDescriptor(
+                name="sim",
+                type=ParameterType.PARAMETER_STRING,
+                description=(
+                    "Whether to run the node in sim or real mode (default: real). "
+                    "This node only subscribes to the serial port on 'real'."
+                ),
+                read_only=True,
+            ),
+        )
+        self.use_sim = (
+            self.get_parameter("sim").get_parameter_value().string_value != "real"
+        )
 
-        self.init_serial()
+        if not self.use_sim:
+            self.init_serial()
         self.init_vectors()
         # declare changing variables
         self.prev_smoothed_position = 0.0
@@ -228,6 +245,9 @@ class IMUJointstatePublisher(Node):
         """
         Calculates and returns the signed angle of the wheelchair tilt in radians.
         """
+        if self.use_sim:
+            return 0.0
+
         imu_vector = self.get_imu_vector()
         imu_angle = self.angle(imu_vector, self.main_calib_vector)
 
