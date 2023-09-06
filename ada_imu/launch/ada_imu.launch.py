@@ -11,7 +11,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    """ Creates launch description to run imu_jointstate_publisher """
+    """Creates launch description to run imu_jointstate_publisher"""
     launch_description = LaunchDescription()
 
     config = os.path.join(
