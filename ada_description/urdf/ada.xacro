@@ -21,9 +21,20 @@
   <xacro:arg name="use_forque" default="true"/>
 
   <link name="root"/>
+  
+  <link name="root_tilt"/>
+  <joint name="robot_tilt" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" /> 
+    <child link="root_tilt" />
+    <parent link="root" />
+    <axis xyz="0 1 0"/>
+    <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
+    lower and upper limits generously encompass the range of the wheelchair's tilt-->
+    <limit effort="80" velocity="0.15" lower="${-J_PI}" upper="${J_PI}"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint> 
 
-  <xacro:property name="robot_root" value="root" />
-
+  <xacro:property name="robot_root" value="root_tilt" />
 
   <xacro:j2n6s200 base_parent="${robot_root}"/>
 
@@ -55,7 +66,7 @@
     <xacro:forque_assembly base_parent="FTArmMount"/>
 
     <link name="FTSensor" />
-      <joint name="EE_to_FTSensor" type="fixed">
+    <joint name="EE_to_FTSensor" type="fixed">
         <child link="FTSensor"/>
         <parent link="j2n6s200_end_effector"/>
         <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
