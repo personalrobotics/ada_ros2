@@ -31,7 +31,12 @@
 import launch
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, Shutdown
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    Command,
+    FindExecutable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.descriptions import ParameterValue
@@ -60,8 +65,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "use_forque",
             default_value="false",
-            description="If the forque apparatus is being used.",            
-
+            description="If the forque apparatus is being used.",
         )
     )
 
@@ -75,13 +79,17 @@ def generate_launch_description():
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
+            PathJoinSubstitution(
+                [FindPackageShare(description_package), "urdf", description_file]
+            ),
             " ",
             "use_forque:=",
             use_forque,
         ]
     )
-    robot_description = {"robot_description": ParameterValue(robot_description_content, value_type=str)}
+    robot_description = {
+        "robot_description": ParameterValue(robot_description_content, value_type=str)
+    }
 
     joint_state_publisher_node = Node(
         package="joint_state_publisher_gui",
@@ -96,7 +104,6 @@ def generate_launch_description():
         on_exit=Shutdown(),
     )
 
-    
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare(description_package), "rviz", "view_robot.rviz"]
     )

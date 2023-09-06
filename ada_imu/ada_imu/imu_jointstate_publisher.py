@@ -22,6 +22,7 @@ class IMUJointstatePublisher(Node):
     velocity of the wheelchair's tilt, and publishes the values in a
     JointState message to /joint_states.
     """
+
     # pylint: disable=too-many-instance-attributes
     # Smoothing and calibration vectors require more variables than pylint allows
     def __init__(self):
@@ -49,7 +50,7 @@ class IMUJointstatePublisher(Node):
 
         self.init_serial()
         self.init_vectors()
-        #declare changing variables
+        # declare changing variables
         self.prev_smoothed_position = 0.0
         self.prev_angle = 0.0
         self.prev_smoothed_velocity = 0.0
@@ -221,7 +222,7 @@ class IMUJointstatePublisher(Node):
 
         Parameters
         ----------
-        smoothing_factor: floating point variable between 0 and 1, determines how much 
+        smoothing_factor: floating point variable between 0 and 1, determines how much
         smoothing is applied
         current_datapoint: the most recent datapoint that the average is being applied to
         previous_average: the output of the smoothing function on the previous datapoint
@@ -236,7 +237,7 @@ class IMUJointstatePublisher(Node):
 
 
 def main(args=None):
-    """ Spins imu jointstate publisher node """
+    """Spins imu jointstate publisher node"""
     rclpy.init(args=args)
 
     minimal_publisher = IMUJointstatePublisher()
