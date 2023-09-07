@@ -126,6 +126,7 @@ class ADAWatchdogListener:
         ----------
         msg: The watchdog message.
         """
+        # self._node.get_logger().info(f"Received watchdog message {msg.header.stamp}")
         watchdog_failed = False
         for status in msg.status:
             if status.level != DiagnosticStatus.OK:
