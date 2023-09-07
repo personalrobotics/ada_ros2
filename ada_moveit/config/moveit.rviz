@@ -36,7 +36,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.0
+      Distance: 5.0
       Focal Point:
         X: -0.1
         Y: 0.25
