@@ -127,7 +127,14 @@ class IMUJointstatePublisher(Node):
         )
 
         if not self.use_sim:
-            self.init_serial()
+            try:
+                self.init_serial()
+            except serial.serialutil.SerialException as exc:
+                self.get_logger().error(
+                    f"IMU serial port not found. Will publish a constant 0 as "
+                    f"the IMU angle. {type(exc)}: {exc}"
+                )
+                self.use_sim = True
         self.init_vectors()
         # declare changing variables
         self.prev_smoothed_position = 0.0
@@ -248,7 +255,15 @@ class IMUJointstatePublisher(Node):
         if self.use_sim:
             return 0.0
 
-        imu_vector = self.get_imu_vector()
+        try:
+            imu_vector = self.get_imu_vector()
+        except Exception as exc:
+            self.get_logger().error(
+                f"Failed to read in IMU vector. Will assume an IMU angle of 0. "
+                f"{type(exc)}: {exc}",
+                throttle_duration_sec=1.0,
+            )
+            return 0.0
         imu_angle = self.angle(imu_vector, self.main_calib_vector)
 
         # to figure out the sign of the angle, project the imu vector onto the direction line
