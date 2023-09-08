@@ -22,7 +22,7 @@ IMU jointstate node for determining and publishing wheelchair tilt
 1. Level the wheelchair and make sure the robot base is completely perpendicular to the floor
 2. cd into `ada_imu/scripts` and run `python3 imu_read.py`
 3. Copy the x, y, and z values into the `main_calib_vector` parameter in `config/imu_params.yaml`
-4. Tilt the wheelchair backwards around 20-30 degrees. The exact number of degrees doesn't matter because this is only used to determine the direction or rotation, not the magnitude.
+4. Tilt the wheelchair backwards around 20-30 degrees. The exact number of degrees doesn't matter because this is only used to determine the direction of rotation, not the magnitude.
 5. Run `python3 imu_read.py` again
 6. Copy the x, y, and z values into the `tilt_calib_vector` parameter in `config/imu_params.yaml`
 
