@@ -27,7 +27,7 @@
     <origin xyz="0 0 0" rpy="0 0 0" /> 
     <child link="root_tilt" />
     <parent link="root" />
-    <axis xyz="1 0 0"/>
+    <axis xyz="-1 0 0"/>
     <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
     lower and upper limits generously encompass the range of the wheelchair's tilt-->
     <limit effort="80" velocity="0.15" lower="${-J_PI}" upper="${J_PI}"/>
