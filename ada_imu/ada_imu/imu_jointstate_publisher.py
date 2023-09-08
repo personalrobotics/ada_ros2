@@ -10,7 +10,7 @@ currently tilted and publishes the angle and velocity to the
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-from rcl_interfaces.msg import ParameterDescriptor
+from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 
 import numpy as np
 import serial
@@ -29,26 +29,112 @@ class IMUJointstatePublisher(Node):
         super().__init__("IMU_jointstate_publisher")
         self.publisher_ = self.create_publisher(JointState, "/joint_states", 10)
 
-        read_only = ParameterDescriptor(read_only=True)
-        self.declare_parameter("joint_name", rclpy.Parameter.Type.STRING, read_only)
+        # Load the parameters
         self.declare_parameter(
-            "main_calib_vector", rclpy.Parameter.Type.DOUBLE_ARRAY, read_only
+            "joint_name",
+            "robot_tilt",
+            ParameterDescriptor(
+                name="joint_name",
+                type=ParameterType.PARAMETER_STRING,
+                description="The name of the joint to publish (default: 'robot_tilt').",
+                read_only=True,
+            ),
         )
         self.declare_parameter(
-            "tilt_calib_vector", rclpy.Parameter.Type.DOUBLE_ARRAY, read_only
+            "main_calib_vector",
+            None,
+            ParameterDescriptor(
+                name="main_calib_vector",
+                type=ParameterType.PARAMETER_DOUBLE_ARRAY,
+                description="The IMU reading when the robot is level (required).",
+                read_only=True,
+            ),
         )
-        self.declare_parameter("serial_port", "/dev/ttyUSB0", read_only)
         self.declare_parameter(
-            "velocity_thresh", rclpy.Parameter.Type.DOUBLE, read_only
+            "tilt_calib_vector",
+            None,
+            ParameterDescriptor(
+                name="tilt_calib_vector",
+                type=ParameterType.PARAMETER_DOUBLE_ARRAY,
+                description="The IMU reading when the robot is level (required).",
+                read_only=True,
+            ),
+        )
+        self.declare_parameter(
+            "serial_port",
+            "/dev/ttyUSB0",
+            ParameterDescriptor(
+                name="serial_port",
+                type=ParameterType.PARAMETER_STRING,
+                description="The serial port the IMU outputs to (default: /dev/ttyUSB0).",
+                read_only=True,
+            ),
+        )
+        self.declare_parameter(
+            "velocity_thresh",
+            None,
+            ParameterDescriptor(
+                name="velocity_thresh",
+                type=ParameterType.PARAMETER_DOUBLE,
+                description=(
+                    "Threshold to eliminate velocity noise (rad/s). If the calculated velocity "
+                    "is less than the threshold, velocity is published as 0. (required)."
+                ),
+                read_only=True,
+            ),
         )  # radians per second
         self.declare_parameter(
-            "position_smoothing_factor", rclpy.Parameter.Type.DOUBLE, read_only
+            "position_smoothing_factor",
+            0.1,
+            ParameterDescriptor(
+                name="position_smoothing_factor",
+                type=ParameterType.PARAMETER_DOUBLE,
+                description=(
+                    "Smoothing factor for the exponential rolling average of the position, in [0,1] "
+                    "(default: 0.1)."
+                ),
+                read_only=True,
+            ),
         )
         self.declare_parameter(
-            "velocity_smoothing_factor", rclpy.Parameter.Type.DOUBLE, read_only
+            "velocity_smoothing_factor",
+            0.1,
+            ParameterDescriptor(
+                name="velocity_smoothing_factor",
+                type=ParameterType.PARAMETER_DOUBLE,
+                description=(
+                    "Smoothing factor for the exponential rolling average of the velocity, in [0,1] "
+                    "(default: 0.1)."
+                ),
+                read_only=True,
+            ),
+        )
+        self.declare_parameter(
+            "sim",
+            "real",
+            ParameterDescriptor(
+                name="sim",
+                type=ParameterType.PARAMETER_STRING,
+                description=(
+                    "Whether to run the node in sim or real mode (default: real). "
+                    "This node only subscribes to the serial port on 'real'."
+                ),
+                read_only=True,
+            ),
+        )
+        self.use_sim = (
+            self.get_parameter("sim").get_parameter_value().string_value != "real"
         )
 
-        self.init_serial()
+        if not self.use_sim:
+            try:
+                self.init_serial()
+            except serial.serialutil.SerialException as exc:
+                self.get_logger().error(
+                    f"IMU serial port not found. Will publish a constant 0 as "
+                    f"the IMU angle. {type(exc)}: {exc}"
+                )
+                self.use_sim = True
         self.init_vectors()
         # declare changing variables
         self.prev_smoothed_position = 0.0
@@ -160,13 +246,24 @@ class IMUJointstatePublisher(Node):
         msg.header.frame_id = ""
 
         self.publisher_.publish(msg)
-        self.get_logger().info(f"Publishing: {msg} \n")
+        self.get_logger().debug(f"Publishing: {msg}")
 
     def get_imu_angle(self):
         """
         Calculates and returns the signed angle of the wheelchair tilt in radians.
         """
-        imu_vector = self.get_imu_vector()
+        if self.use_sim:
+            return 0.0
+
+        try:
+            imu_vector = self.get_imu_vector()
+        except Exception as exc:
+            self.get_logger().error(
+                f"Failed to read in IMU vector. Will assume an IMU angle of 0. "
+                f"{type(exc)}: {exc}",
+                throttle_duration_sec=1.0,
+            )
+            return 0.0
         imu_angle = self.angle(imu_vector, self.main_calib_vector)
 
         # to figure out the sign of the angle, project the imu vector onto the direction line

@@ -1,3 +1,5 @@
+import os
+from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.launches import generate_demo_launch
 from launch import LaunchDescription
@@ -74,6 +76,19 @@ def generate_launch_description():
                 ]
             ),
         )
+    )
+
+    # Launch the IMU joint state publisher
+    ada_imu_package_path = get_package_share_directory("ada_imu")
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(ada_imu_package_path, "launch/ada_imu.launch.py")
+            ),
+            launch_arguments={
+                "sim": sim,
+            }.items(),
+        ),
     )
 
     ld.add_action(
