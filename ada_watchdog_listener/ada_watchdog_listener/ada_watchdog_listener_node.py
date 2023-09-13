@@ -33,6 +33,10 @@ class ADAWatchdogListenerNode(Node):
         """
         super().__init__("ada_watchdog_listener")
 
+        # The watchdog timer and subscriber should be able to be called in
+        # parallel.
+        self._default_callback_group = rclpy.callback_groups.ReentrantCallbackGroup()
+
         # Create a service to toggle this node on-and-off
         self.toggle_service = self.create_service(
             SetBool,
