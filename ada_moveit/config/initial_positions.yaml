@@ -1,11 +1,22 @@
 # Default initial positions for ada's ros2_control fake system
 
 initial_positions:
-  j2n6s200_joint_1: 0
-  j2n6s200_joint_2: 3.1415926535
-  j2n6s200_joint_3: 3.1415926535
-  j2n6s200_joint_4: 0
-  j2n6s200_joint_5: 0
-  j2n6s200_joint_6: 0
+  # # Candle Position
+  # j2n6s200_joint_1: 0
+  # j2n6s200_joint_2: 3.1415926535
+  # j2n6s200_joint_3: 3.1415926535
+  # j2n6s200_joint_4: 0
+  # j2n6s200_joint_5: 0
+  # j2n6s200_joint_6: 0
+  # j2n6s200_joint_finger_1: 1.317
+  # j2n6s200_joint_finger_2: 1.317
+
+  # Home Position
+  j2n6s200_joint_1: -1.47568
+  j2n6s200_joint_2: 2.92779
+  j2n6s200_joint_3: 1.00845
+  j2n6s200_joint_4: -2.0847
+  j2n6s200_joint_5: 1.43588
+  j2n6s200_joint_6: 1.32575
   j2n6s200_joint_finger_1: 1.317
   j2n6s200_joint_finger_2: 1.317

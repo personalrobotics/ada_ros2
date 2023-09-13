@@ -3,6 +3,7 @@ planning_plugin: ompl_interface/OMPLPlanner
 start_state_max_bounds_error: 0.1
 jiggle_fraction: 0.05
 request_adapters: >-
+    default_planner_request_adapters/AddRuckigTrajectorySmoothing
     default_planner_request_adapters/AddTimeOptimalParameterization
     default_planner_request_adapters/ResolveConstraintFrames
     default_planner_request_adapters/FixWorkspaceBounds
@@ -42,7 +43,7 @@ planner_configs:
     range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
   RRTstarkConfigDefault:
     type: geometric::RRTstar
-    range: 0.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
+    range: 3.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup() (in practice, for ADA, this default is ~7)
     goal_bias: 0.05  # When close to goal select goal, with this probability? default: 0.05
     delay_collision_checking: 1  # Stop collision checking as soon as C-free parent found. default 1
   TRRTkConfigDefault:
