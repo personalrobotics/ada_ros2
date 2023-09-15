@@ -13,6 +13,7 @@ from typing import List
 
 # Third-party imports
 import rclpy
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from std_srvs.srv import SetBool
@@ -42,6 +43,7 @@ class ADAWatchdogListenerNode(Node):
             SetBool,
             "~/toggle_watchdog_listener",
             self.toggle_callback,
+            callback_group=MutuallyExclusiveCallbackGroup(),
         )
         self.is_on = True
         self.is_on_lock = threading.Lock()
@@ -104,7 +106,7 @@ def main(args: List = None) -> None:
     rclpy.init(args=args)
 
     ada_watchdog_listener_node = ADAWatchdogListenerNode()
-    executor = MultiThreadedExecutor()
+    executor = MultiThreadedExecutor(num_threads=3)
     rclpy.spin(ada_watchdog_listener_node, executor=executor)
 
 
