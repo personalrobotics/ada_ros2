@@ -6,11 +6,13 @@ topic and can be used in two ways:
 """
 
 # Standard imports
+import threading
 from typing import Callable, Optional
 
 # Third-party imports
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
+from rclpy.callback_groups import CallbackGroup, MutuallyExclusiveCallbackGroup
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.time import Time
@@ -30,7 +32,13 @@ class ADAWatchdogListener:
     # pylint: disable=too-many-instance-attributes
     # One extra is fine in this case.
 
-    def __init__(self, node: Node, callback_fn: Optional[Callable] = None) -> None:
+    def __init__(
+        self,
+        node: Node,
+        callback_fn: Optional[Callable] = None,
+        sub_callback_group: Optional[CallbackGroup] = None,
+        timer_callback_group: Optional[CallbackGroup] = None,
+    ) -> None:
         """
         Initialize the watchdog listener.
 
@@ -40,6 +48,10 @@ class ADAWatchdogListener:
         callback_fn: If not None, this function will be called when the watchdog
             status changes. The function should take in a single boolean argument
             that is True if the watchdog is ok, else False.
+        sub_callback_group: The callback group to use for the watchdog subscriber.
+            If None, a new MutuallyExclusiveCallbackGroup will be created.
+        timer_callback_group: The callback group to use for the watchdog timer.
+            If None, a new MutuallyExclusiveCallbackGroup will be created.
         """
         # Store the node
         self._node = node
@@ -93,7 +105,6 @@ class ADAWatchdogListener:
             ),
         )
 
-        # Subscribe to the watchdog topic
         # Initializing `watchdog_failed` to False lets the node wait up to `watchdog_timeout_sec`
         # sec to receive the first message
         self.watchdog_failed = False
@@ -102,19 +113,31 @@ class ADAWatchdogListener:
         self.last_watchdog_msg_time = self._node.get_clock().now() + Duration(
             seconds=initial_wait_time_sec.value
         )
+        self.watchdog_lock = threading.Lock()
+        # Initialize the subscriber callback group
+        if sub_callback_group is None:
+            sub_callback_group = MutuallyExclusiveCallbackGroup()
+        # Subscribe to the watchdog topic
         self.watchdog_sub = self._node.create_subscription(
             DiagnosticArray,
             "~/watchdog",
             self.__watchdog_callback,
             1,
+            callback_group=sub_callback_group,
         )
 
         # If a callback function is passed in, check the watchdog at the specified rate
         if callback_fn is not None:
             self.callback_fn = callback_fn
             self._prev_status = None
+            if timer_callback_group is None:
+                timer_callback_group = MutuallyExclusiveCallbackGroup()
             timer_period = 1.0 / watchdog_check_hz.value
-            self.timer = self._node.create_timer(timer_period, self.__timer_callback)
+            self.timer = self._node.create_timer(
+                timer_period,
+                self.__timer_callback,
+                callback_group=timer_callback_group,
+            )
 
     def __watchdog_callback(self, msg: DiagnosticArray) -> None:
         """
@@ -134,9 +157,10 @@ class ADAWatchdogListener:
                 )
                 watchdog_failed = True
                 break
-        self.watchdog_failed = watchdog_failed
 
-        self.last_watchdog_msg_time = Time.from_msg(msg.header.stamp)
+        with self.watchdog_lock:
+            self.watchdog_failed = watchdog_failed
+            self.last_watchdog_msg_time = Time.from_msg(msg.header.stamp)
 
     # pylint: disable=invalid-name
     # This matches the corresponding method name in rclpy.
@@ -146,14 +170,18 @@ class ADAWatchdogListener:
         -------
         True if the watchdog is OK and has not timed out, else False.
         """
-        if self.watchdog_failed:
+        with self.watchdog_lock:
+            watchdog_failed = self.watchdog_failed
+            last_watchdog_msg_time = self.last_watchdog_msg_time
+
+        if watchdog_failed:
             return False
-        if (
-            self._node.get_clock().now() - self.last_watchdog_msg_time
-        ) > self.watchdog_timeout_sec:
+        time_since_last_msg = self._node.get_clock().now() - last_watchdog_msg_time
+        if time_since_last_msg > self.watchdog_timeout_sec:
             self._node.get_logger().error(
                 "Did not receive a watchdog message for > "
-                f"{self.watchdog_timeout_sec.nanoseconds / 10.0**9} seconds!",
+                f"{self.watchdog_timeout_sec.nanoseconds / 10.0**9} seconds! "
+                f"Time since last message: {time_since_last_msg.nanoseconds / 10.0**9} seconds.",
                 throttle_duration_sec=1,
             )
             return False
