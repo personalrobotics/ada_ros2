@@ -4,7 +4,7 @@ sensors:
   - default_sensor
 default_sensor:
   sensor_plugin: occupancy_map_monitor/DepthImageOctomapUpdater
-  image_topic: /camera/aligned_depth_to_color/image_raw
+  image_topic: /local/camera/aligned_depth_to_color/image_raw
   queue_size: 1
   near_clipping_plane_distance: 0.02
   far_clipping_plane_distance: 5.0
