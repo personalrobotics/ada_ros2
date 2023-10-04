@@ -1,4 +1,5 @@
 import os
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.launches import generate_demo_launch
@@ -127,6 +128,7 @@ def generate_launch_description():
         )
     )
 
+    # Launch the Move Group
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -171,6 +173,23 @@ def generate_launch_description():
     robot_description = {
         "robot_description": ParameterValue(robot_description_content, value_type=str)
     }
+
+    # Launch MoveIt Servo
+    with open(str(moveit_config.package_path / "config/servo.yaml"), "r") as f:
+        servo_yaml = yaml.safe_load(f)
+    servo_params = {"moveit_servo": servo_yaml}
+    ld.add_action(Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        parameters=[
+            servo_params,
+            # robot_description,
+            moveit_config.robot_description,
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+        ],
+        output="screen",
+    ))
 
     robot_controllers = PathJoinSubstitution(
         [str(moveit_config.package_path), "config", controllers_file]
