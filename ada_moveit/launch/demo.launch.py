@@ -55,11 +55,19 @@ def generate_launch_description():
     )
     controllers_file = LaunchConfiguration("controllers_file")
 
+    servo_da = DeclareLaunchArgument(
+        "servo_file",
+        default_value=[sim, "_servo.yaml"],
+        description="MoveIt Servo YAML configuration in config folder",
+    )
+    servo_file = LaunchConfiguration("servo_file")
+
     # Copy from generate_demo_launch
     ld = LaunchDescription()
+    ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(ctrl_da)
-    ld.add_action(calib_da)
+    ld.add_action(servo_da)
 
     # Camera Calibration File
     ld.add_action(
@@ -175,14 +183,15 @@ def generate_launch_description():
     }
 
     # Launch MoveIt Servo
-    with open(str(moveit_config.package_path / "config/servo.yaml"), "r") as f:
-        servo_yaml = yaml.safe_load(f)
-    servo_params = {"moveit_servo": servo_yaml}
+    servo_config = PathJoinSubstitution(
+        [str(moveit_config.package_path), "config", servo_file]
+    )
     ld.add_action(Node(
         package="moveit_servo",
         executable="servo_node_main",
+        name="servo_node",
         parameters=[
-            servo_params,
+            servo_config,
             # robot_description,
             moveit_config.robot_description,
             moveit_config.robot_description_semantic,
