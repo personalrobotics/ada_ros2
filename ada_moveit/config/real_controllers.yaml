@@ -8,7 +8,7 @@ controller_manager:
 
 
     jaco_arm_servo_controller:
-      type: velocity_controllers/JointGroupVelocityController
+      type: force_gate_controller/ForceGateVelocityController
 
 
     hand_controller:
