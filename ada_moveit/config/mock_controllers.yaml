@@ -63,9 +63,6 @@ jaco_arm_servo_controller:
       - j2n6s200_joint_4
       - j2n6s200_joint_5
       - j2n6s200_joint_6
-    wrench_threshold:
-      topic: /wireless_ft/ftSensor1
-      fMag: 4.0
 
 hand_controller:
   ros__parameters:
