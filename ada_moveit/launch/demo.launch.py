@@ -192,10 +192,9 @@ def generate_launch_description():
         name="servo_node",
         parameters=[
             servo_config,
-            # robot_description,
-            moveit_config.robot_description,
+            robot_description,
             moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics,
+            # moveit_config.robot_description_kinematics, # If set, use IK instead of the inverse jacobian
         ],
         output="screen",
     ))
