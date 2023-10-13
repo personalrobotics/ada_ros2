@@ -1,4 +1,5 @@
 import os
+import yaml
 from ament_index_python.packages import get_package_share_directory
 from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.launches import generate_demo_launch
@@ -54,11 +55,19 @@ def generate_launch_description():
     )
     controllers_file = LaunchConfiguration("controllers_file")
 
+    servo_da = DeclareLaunchArgument(
+        "servo_file",
+        default_value=[sim, "_servo.yaml"],
+        description="MoveIt Servo YAML configuration in config folder",
+    )
+    servo_file = LaunchConfiguration("servo_file")
+
     # Copy from generate_demo_launch
     ld = LaunchDescription()
+    ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(ctrl_da)
-    ld.add_action(calib_da)
+    ld.add_action(servo_da)
 
     # Camera Calibration File
     ld.add_action(
@@ -127,6 +136,7 @@ def generate_launch_description():
         )
     )
 
+    # Launch the Move Group
     ld.add_action(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -171,6 +181,23 @@ def generate_launch_description():
     robot_description = {
         "robot_description": ParameterValue(robot_description_content, value_type=str)
     }
+
+    # Launch MoveIt Servo
+    servo_config = PathJoinSubstitution(
+        [str(moveit_config.package_path), "config", servo_file]
+    )
+    ld.add_action(Node(
+        package="moveit_servo",
+        executable="servo_node_main",
+        name="servo_node",
+        parameters=[
+            servo_config,
+            robot_description,
+            moveit_config.robot_description_semantic,
+            # moveit_config.robot_description_kinematics, # If set, use IK instead of the inverse jacobian
+        ],
+        output="screen",
+    ))
 
     robot_controllers = PathJoinSubstitution(
         [str(moveit_config.package_path), "config", controllers_file]

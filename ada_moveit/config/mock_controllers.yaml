@@ -7,6 +7,10 @@ controller_manager:
       type: force_gate_controller/ForceGateController
 
 
+    jaco_arm_servo_controller:
+      type: force_gate_controller/ForceGatePositionController
+
+
     hand_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
@@ -49,6 +53,16 @@ jaco_arm_controller:
     j2n6s200_joint_6:
       goal: 0.02
       trajectory: 0.05
+
+jaco_arm_servo_controller:
+  ros__parameters:
+    joints:
+      - j2n6s200_joint_1
+      - j2n6s200_joint_2
+      - j2n6s200_joint_3
+      - j2n6s200_joint_4
+      - j2n6s200_joint_5
+      - j2n6s200_joint_6
 
 hand_controller:
   ros__parameters:
