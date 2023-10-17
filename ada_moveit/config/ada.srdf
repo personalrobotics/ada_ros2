@@ -256,4 +256,7 @@
     <disable_collisions link1="cameraMount" link2="uncalibrated_camera_link" reason="Adjacent"/>
     <disable_collisions link1="frontStabilizer" link2="enclosureBottom" reason="Adjacent"/>
     <disable_collisions link1="j2n6s200_link_6" link2="frontStabilizer" reason="Adjacent"/>
+    <!-- The below links are close enough to each other that MoveIt Servo thinks a collision is always imminent -->
+    <disable_collisions link1="frontStabilizer" link2="enclosureTop" reason="Never"/>
+    <disable_collisions link1="nano" link2="frontStabilizer" reason="Never"/>
 </robot>
