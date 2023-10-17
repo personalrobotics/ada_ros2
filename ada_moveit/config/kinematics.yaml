@@ -1,3 +1,4 @@
+# Adapted from: https://github.com/PickNikRobotics/pick_ik/blob/main/doc/USAGE.md
 jaco_arm:
   kinematics_solver: pick_ik/PickIkPlugin
   kinematics_solver_timeout: 0.05
