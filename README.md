@@ -33,7 +33,7 @@ To use Servo with keyboard teleop:
     1. Switch Controllers: `ros2 service call /controller_manager/switch_controller controller_manager_msgs/srv/SwitchController "{activate_controllers: [\"jaco_arm_servo_controller\"], deactivate_controllers: [\"jaco_arm_controller\"], start_controllers: [], stop_controllers: [], strictness: 0, start_asap: false, activate_asap: false, timeout: {sec: 0, nanosec: 0}}"`
     2. Toggle Servo On: `ros2 service call /servo_node/start_servo std_srvs/srv/Trigger "{}"`
 5. Run the keyboard teleop script: `ros2 run ada_moveit ada_keyboard_teleop.py`
-6. Follow the on-screen instructions to teleoperate the robot.
+6. Follow the on-screen instructions to teleoperate the robot. Note that although cartesian control avoids obstacles in the planning scene, joint control does not.
 7. Toggle Servo Off: `ros2 service call /servo_node/stop_servo std_srvs/srv/Trigger "{}"`
 
 To create your own Servo client:

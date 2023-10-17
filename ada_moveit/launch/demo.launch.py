@@ -194,7 +194,7 @@ def generate_launch_description():
             servo_config,
             robot_description,
             moveit_config.robot_description_semantic,
-            # moveit_config.robot_description_kinematics, # If set, use IK instead of the inverse jacobian
+            moveit_config.robot_description_kinematics, # If set, use IK instead of the inverse jacobian
         ],
         output="screen",
     ))
