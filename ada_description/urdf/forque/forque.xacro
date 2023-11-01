@@ -83,7 +83,7 @@
 	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
 	  		<xacro:insert_block name="default_inertial"/>
 	  	</xacro:forque_assembly_link>
-	  	<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+	  	<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.0075 0 0"/>
 
 	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
 	  		<xacro:insert_block name="default_inertial"/>
