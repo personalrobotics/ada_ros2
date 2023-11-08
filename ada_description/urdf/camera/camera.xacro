@@ -96,9 +96,19 @@
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="cameraMount_to_enclosureTop" parent="enclosureTop" child="cameraMount" joint_origin_xyz="-0.0132 0 -0.022" joint_origin_rpy="0 ${J_PI / 2} 0"/>
 
-		<xacro:sensor_d415 parent="cameraMount" use_mesh="true" name="uncalibrated_camera">
-			<origin xyz="0.006 0 0.013" rpy="0 ${-J_PI / 2} ${J_PI}" />
-		</xacro:sensor_d415>
+		<xacro:camera_assembly_link link_name="screwHeadLeft" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0">
+     		<xacro:insert_block name="default_inertial"/>
+     	</xacro:camera_assembly_link>
+   	 	<xacro:camera_assembly_joint joint_name="screwHeadLeft_to_cameraMount" parent="cameraMount" child="screwHeadLeft" joint_origin_xyz="0.0165 -0.0225 0" joint_origin_rpy="${J_PI} 0 0"/>
+
+   	 	<xacro:camera_assembly_link link_name="screwHeadRight" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0">
+     		<xacro:insert_block name="default_inertial"/>
+     	</xacro:camera_assembly_link>
+   	 	<xacro:camera_assembly_joint joint_name="screwHeadRight_to_cameraMount" parent="cameraMount" child="screwHeadRight" joint_origin_xyz="0.0165 0.0225 0" joint_origin_rpy="${J_PI} 0 0"/>
+
+   	 	<xacro:sensor_d415 parent="cameraMount" use_mesh="true" name="uncalibrated_camera">
+   		 	<origin xyz="0.006 0 0.013" rpy="0 ${-J_PI / 2} ${J_PI}" />
+   	 	</xacro:sensor_d415>
 
 
 	</xacro:macro>
