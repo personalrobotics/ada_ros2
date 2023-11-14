@@ -259,5 +259,7 @@
     <disable_collisions link1="nano" link2="frontStabilizer" reason="Never"/>
     <disable_collisions link1="cameraMount" link2="screwHeadLeft" reason="Adjacent"/>
     <disable_collisions link1="cameraMount" link2="screwHeadRight" reason="Adjacent"/>
+    <disable_collisions link1="uncalibrated_camera_link" link2="screwHeadLeft" reason="Adjacent"/>
+    <disable_collisions link1="uncalibrated_camera_link" link2="screwHeadRight" reason="Adjacent"/>
 
 </robot>
