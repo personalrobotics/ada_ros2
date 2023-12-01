@@ -50,14 +50,14 @@ servo_node:
       robot_link_command_frame:  j2n6s200_link_base  # commands must be given in the frame of a robot link. Usually either the base or end effector
 
       ## Stopping behaviour
-      incoming_command_timeout:  0.1  # Stop servoing if X seconds elapse without a new command
+      incoming_command_timeout: 0.33  # Stop servoing if X seconds elapse without a new command
       # If 0, republish commands forever even if the robot is stationary. Otherwise, specify num. to publish.
       # Important because ROS may drop some messages and we need the robot to halt reliably.
       num_outgoing_halt_msgs_to_publish: 0
 
       ## Configure handling of singularities and joint limits
-      lower_singularity_threshold:  8.0  # Start decelerating when the condition number hits this (close to singularity)
-      hard_stop_singularity_threshold: 60.0 # Stop when the condition number hits this
+      lower_singularity_threshold:  30.0  # Start decelerating when the condition number hits this (close to singularity)
+      hard_stop_singularity_threshold: 90.0 # Stop when the condition number hits this
       joint_limit_margin: 0.2 # added as a buffer to joint limits [radians]. If moving quickly, make this larger.
       leaving_singularity_threshold_multiplier: 2.0 # Multiply the hard stop limit by this when leaving singularity (see https://github.com/ros-planning/moveit2/pull/620)
 
@@ -72,4 +72,4 @@ servo_node:
       check_collisions: true # Check collisions?
       collision_check_rate: 10.0 # [Hz] Collision-checking can easily bog down a CPU if done too often.
       self_collision_proximity_threshold: 0.01 # Start decelerating when a self-collision is this far [m]
-      scene_collision_proximity_threshold: 0.02 # Start decelerating when a scene collision is this far [m]
+      scene_collision_proximity_threshold: 0.0001 # Start decelerating when a scene collision is this far [m]
