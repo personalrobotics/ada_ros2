@@ -40,6 +40,7 @@ servo_node:
       # NOTE: If a different node in your system is responsible for the "primary" planning scene instance (e.g. the MoveGroup node),
       # then is_primary_planning_scene_monitor needs to be set to false.
       is_primary_planning_scene_monitor: false
+      monitored_planning_scene_topic: "monitored_planning_scene"
 
       ## MoveIt properties
       move_group_name:  jaco_arm  # Often 'manipulator' or 'arm'
@@ -72,4 +73,4 @@ servo_node:
       check_collisions: true # Check collisions?
       collision_check_rate: 10.0 # [Hz] Collision-checking can easily bog down a CPU if done too often.
       self_collision_proximity_threshold: 0.01 # Start decelerating when a self-collision is this far [m]
-      scene_collision_proximity_threshold: 0.0001 # Start decelerating when a scene collision is this far [m]
+      scene_collision_proximity_threshold: 0.01 # Start decelerating when a scene collision is this far [m]
