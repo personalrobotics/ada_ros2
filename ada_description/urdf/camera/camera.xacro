@@ -72,7 +72,7 @@
 	  	<xacro:camera_assembly_joint joint_name="nanoMount_to_world" parent="${base_parent}" child="nanoMount" joint_origin_xyz="${base_xyz}" joint_origin_rpy="${base_rpy}"/>
 
 		<xacro:camera_assembly_link link_name="enclosureBottom" link_mesh="2023_09_28_nanoEnclosureBottom" mass="0.040" cog="0.0546451 0.0472161 0.00043655">
-	  		<xacro:insert_block name="default_inertial"/>
+	  		<inertia ixx="0.000041028" iyy="0.000083168" iyz="0.0000026243" izz="0.000116424" ixy="-0.000000324" ixz="-0.00000045367"/>
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="enclosureBottom_to_nanoMount" parent="nanoMount" child="enclosureBottom" joint_origin_xyz="0.0412 -0.0218 0.026" joint_origin_rpy="0 0 ${J_PI/2}"/>
 		
