@@ -11,7 +11,6 @@ install(
 # Install Python executables
 install(PROGRAMS
   scripts/camera_calibration.py
-  scripts/quaternion.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
