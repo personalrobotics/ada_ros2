@@ -14,6 +14,34 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    jaco_arm_cartesian_controller:
+      type: cartesian_motion_controller/CartesianMotionController
+
+jaco_arm_cartesian_controller:
+    ros__parameters:
+      end_effector_link: "forkTip"
+      robot_base_link: "root"
+      joints:
+        - j2n6s200_joint_1
+        - j2n6s200_joint_2
+        - j2n6s200_joint_3
+        - j2n6s200_joint_4
+        - j2n6s200_joint_5
+        - j2n6s200_joint_6
+      command_interfaces:
+        - velocity
+      solver:
+        error_scale: 1.0
+        iterations: 10
+        publish_state_feedback: True
+      pd_gains:
+          trans_x: {p: 1.0}
+          trans_y: {p: 1.0}
+          trans_z: {p: 1.0}
+          rot_x: {p: 0.5}
+          rot_y: {p: 0.5}
+          rot_z: {p: 0.5}
+
 jaco_arm_controller:
   ros__parameters:
     joints:

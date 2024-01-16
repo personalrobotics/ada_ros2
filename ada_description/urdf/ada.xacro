@@ -23,7 +23,7 @@
   <link name="root"/>
   
   <link name="root_tilt"/>
-  <joint name="robot_tilt" type="revolute">
+  <joint name="robot_tilt" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0" /> 
     <child link="root_tilt" />
     <parent link="root" />
