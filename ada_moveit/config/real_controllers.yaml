@@ -24,7 +24,7 @@ controller_manager:
 jaco_arm_cartesian_controller:
     ros__parameters:
       end_effector_link: "forkTip"
-      robot_base_link: "root"
+      robot_base_link: "j2n6s200_link_base"
       ik_solver: "damped_least_squares"
       joints:
         - j2n6s200_joint_1
