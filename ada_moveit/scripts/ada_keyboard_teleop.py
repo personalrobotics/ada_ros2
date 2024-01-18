@@ -108,7 +108,9 @@ def main(args=None):
     # Initialize the ROS context
     rclpy.init(args=args)
     node = rclpy.create_node("ada_keyboard_teleop")
-    twist_pub = node.create_publisher(TwistStamped, "/servo_node/delta_twist_cmds", 1)
+    twist_pub = node.create_publisher(
+        TwistStamped, "/jaco_arm_cartesian_controller/twist_cmd", 1
+    )
     joint_pub = node.create_publisher(JointJog, "/servo_node/delta_joint_cmds", 1)
 
     # Initialize the tf2 buffer and listener

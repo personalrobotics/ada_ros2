@@ -186,18 +186,20 @@ def generate_launch_description():
     servo_config = PathJoinSubstitution(
         [str(moveit_config.package_path), "config", servo_file]
     )
-    ld.add_action(Node(
-        package="moveit_servo",
-        executable="servo_node_main",
-        name="servo_node",
-        parameters=[
-            servo_config,
-            robot_description,
-            moveit_config.robot_description_semantic,
-            moveit_config.robot_description_kinematics, # If set, use IK instead of the inverse jacobian
-        ],
-        output="screen",
-    ))
+    ld.add_action(
+        Node(
+            package="moveit_servo",
+            executable="servo_node_main",
+            name="servo_node",
+            parameters=[
+                servo_config,
+                robot_description,
+                moveit_config.robot_description_semantic,
+                moveit_config.robot_description_kinematics,  # If set, use IK instead of the inverse jacobian
+            ],
+            output="screen",
+        )
+    )
 
     robot_controllers = PathJoinSubstitution(
         [str(moveit_config.package_path), "config", controllers_file]
