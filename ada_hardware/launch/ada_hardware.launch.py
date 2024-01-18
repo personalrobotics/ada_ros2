@@ -31,12 +31,16 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
+<<<<<<< HEAD
 from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     RegisterEventHandler,
     Shutdown,
 )
+=======
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler, Shutdown
+>>>>>>> main
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -95,6 +99,7 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+<<<<<<< HEAD
             "use_forque",
             default_value="true",
             description="Whether to include F/T sensor.",
@@ -102,6 +107,8 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+=======
+>>>>>>> main
             "readonly",
             default_value="false",
             description="Launch HW interface in read-only mode.",
