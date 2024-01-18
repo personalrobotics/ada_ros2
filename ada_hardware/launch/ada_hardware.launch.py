@@ -31,7 +31,16 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
+<<<<<<< HEAD
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+    Shutdown,
+)
+=======
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler, Shutdown
+>>>>>>> main
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -90,6 +99,16 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+<<<<<<< HEAD
+            "use_forque",
+            default_value="true",
+            description="Whether to include F/T sensor.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+=======
+>>>>>>> main
             "readonly",
             default_value="false",
             description="Launch HW interface in read-only mode.",
@@ -125,6 +144,7 @@ def generate_launch_description():
     description_file = LaunchConfiguration("description_file")
     sim = LaunchConfiguration("sim")
     readonly = LaunchConfiguration("readonly")
+    use_forque = LaunchConfiguration("use_forque")
     robot_controller = LaunchConfiguration("robot_controller")
     start_controller = LaunchConfiguration("start_controller")
     start_rviz = LaunchConfiguration("start_rviz")
@@ -145,6 +165,9 @@ def generate_launch_description():
             " ",
             "readonly:=",
             readonly,
+            " ",
+            "use_forque:=",
+            use_forque,
         ]
     )
     robot_description = {
@@ -226,14 +249,15 @@ def generate_launch_description():
 
     # Launch the IMU joint state publisher
     launch_imu = IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        os.path.join(get_package_share_directory("ada_imu"), 
-                            "launch/ada_imu.launch.py")
-                    ),
-                    launch_arguments={
-                        "sim": sim,
-                    }.items(),
-                )
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("ada_imu"), "launch/ada_imu.launch.py"
+            )
+        ),
+        launch_arguments={
+            "sim": sim,
+        }.items(),
+    )
 
     nodes = [
         control_node,
