@@ -31,7 +31,12 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler, Shutdown
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+    Shutdown,
+)
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -237,14 +242,15 @@ def generate_launch_description():
 
     # Launch the IMU joint state publisher
     launch_imu = IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        os.path.join(get_package_share_directory("ada_imu"), 
-                            "launch/ada_imu.launch.py")
-                    ),
-                    launch_arguments={
-                        "sim": sim,
-                    }.items(),
-                )
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("ada_imu"), "launch/ada_imu.launch.py"
+            )
+        ),
+        launch_arguments={
+            "sim": sim,
+        }.items(),
+    )
 
     nodes = [
         control_node,

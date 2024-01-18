@@ -44,7 +44,7 @@ Joint control:
 
 CTRL-C to quit
 """
-BASE_FRAME = "root"
+BASE_FRAME = "j2n6s200_link_base"
 EE_FRAME = "forkTip"
 LINEAR_VEL_CMD = 0.1  # m/s
 ANGULAR_VEL_CMD = 0.3  # rad/s
