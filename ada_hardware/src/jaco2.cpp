@@ -78,40 +78,49 @@ hardware_interface::CallbackReturn Jaco2::on_init(const hardware_interface::Hard
   for (const hardware_interface::ComponentInfo & joint : info_.joints) {
     // JACO2 has exactly 3 state interfaces
     // and 3 command interfaces on each joint
-    if (joint.command_interfaces.size() != 3) {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("Jaco2"), "Joint '%s' has %zu command interfaces. 3 expected.",
-        joint.name.c_str(), joint.command_interfaces.size());
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
-    if (!(joint.command_interfaces[0].name == hardware_interface::HW_IF_POSITION ||
-          joint.command_interfaces[0].name == hardware_interface::HW_IF_VELOCITY ||
-          joint.command_interfaces[0].name == hardware_interface::HW_IF_EFFORT)) {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("Jaco2"), "Joint '%s' has %s command interface. Expected %s, %s, or %s.",
-        joint.name.c_str(), joint.command_interfaces[0].name.c_str(),
-        hardware_interface::HW_IF_POSITION, hardware_interface::HW_IF_VELOCITY,
-        hardware_interface::HW_IF_EFFORT);
-      return hardware_interface::CallbackReturn::ERROR;
-    }
-
     if (joint.state_interfaces.size() != 3) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("Jaco2"), "Joint '%s'has %zu state interfaces. 3 expected.",
+        rclcpp::get_logger("Jaco2"), "Joint '%s' has %zu state interfaces. 3 expected.",
+        joint.name.c_str(), joint.state_interfaces.size());
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    read_only_ = false;
+    if (joint.command_interfaces.size() == 0) {
+      read_only_ = true;
+    } else if (joint.command_interfaces.size() != 3) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("Jaco2"), "Joint '%s'has %zu command interfaces. 3 expected.",
         joint.name.c_str(), joint.command_interfaces.size());
       return hardware_interface::CallbackReturn::ERROR;
     }
 
-    if (!(joint.state_interfaces[0].name == hardware_interface::HW_IF_POSITION ||
-          joint.state_interfaces[0].name == hardware_interface::HW_IF_VELOCITY ||
-          joint.state_interfaces[0].name == hardware_interface::HW_IF_EFFORT)) {
-      RCLCPP_FATAL(
-        rclcpp::get_logger("Jaco2"), "Joint '%s' has %s state interface. Expected %s, %s, or %s.",
-        joint.name.c_str(), joint.state_interfaces[0].name.c_str(),
-        hardware_interface::HW_IF_POSITION, hardware_interface::HW_IF_VELOCITY,
-        hardware_interface::HW_IF_EFFORT);
-      return hardware_interface::CallbackReturn::ERROR;
+    if (!read_only_) {
+      for (const hardware_interface::InterfaceInfo & interface_info : joint.command_interfaces) {
+        if (!(interface_info.name == hardware_interface::HW_IF_POSITION ||
+              interface_info.name == hardware_interface::HW_IF_VELOCITY ||
+              interface_info.name == hardware_interface::HW_IF_EFFORT)) {
+          RCLCPP_FATAL(
+            rclcpp::get_logger("Jaco2"), "Joint '%s' has %s command interface. Expected %s, %s, or %s.",
+            joint.name.c_str(), interface_info.name.c_str(),
+            hardware_interface::HW_IF_POSITION, hardware_interface::HW_IF_VELOCITY,
+            hardware_interface::HW_IF_EFFORT);
+          return hardware_interface::CallbackReturn::ERROR;
+        }
+      }
+    }
+    
+    for (const hardware_interface::InterfaceInfo & interface_info : joint.state_interfaces) {
+      if (!(interface_info.name == hardware_interface::HW_IF_POSITION ||
+            interface_info.name == hardware_interface::HW_IF_VELOCITY ||
+            interface_info.name == hardware_interface::HW_IF_EFFORT)) {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("Jaco2"), "Joint '%s' has %s state interface. Expected %s, %s, or %s.",
+          joint.name.c_str(), interface_info.name.c_str(),
+          hardware_interface::HW_IF_POSITION, hardware_interface::HW_IF_VELOCITY,
+          hardware_interface::HW_IF_EFFORT);
+        return hardware_interface::CallbackReturn::ERROR;
+      }
     }
   }
 
@@ -154,6 +163,9 @@ hardware_interface::return_type Jaco2::prepare_command_mode_switch(
   const std::vector<std::string> & start_interfaces,
   const std::vector<std::string> & stop_interfaces)
 {
+  // Only command if commanding is possible
+  if(read_only_) return hardware_interface::return_type::ERROR;
+
   // Prepare stopping command modes
   std::vector<integration_level_t> old_modes = {};
   for (std::string key : stop_interfaces) {
@@ -316,16 +328,26 @@ hardware_interface::CallbackReturn Jaco2::on_configure(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  r = SetAngularControl();
-  if (r != NO_ERROR_KINOVA) {
-    RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set angular control: Error code %d", r);
-    return hardware_interface::CallbackReturn::ERROR;
-  }
+  if(!read_only_) {
 
-  r = SetTorqueSafetyFactor(1.0f);
-  if (r != NO_ERROR_KINOVA) {
-    RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not send : Error code %d", r);
-    return hardware_interface::CallbackReturn::ERROR;
+    r = SetAngularControl();
+    if (r != NO_ERROR_KINOVA) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set angular control: Error code %d", r);
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    r = SetTorqueSafetyFactor(1.0f);
+    if (r != NO_ERROR_KINOVA) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not send : Error code %d", r);
+      return hardware_interface::CallbackReturn::ERROR;
+    }
+
+  } else {
+    r = SetCartesianControl();
+    if (r != NO_ERROR_KINOVA) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set cartesian control: Error code %d", r);
+      return hardware_interface::CallbackReturn::ERROR;
+    }
   }
 
   KinovaDevice robot;
@@ -374,9 +396,11 @@ hardware_interface::CallbackReturn Jaco2::on_configure(
 
   position_offsets_.resize(num_dofs_.first, 0.0);
 
-  if (!setTorqueMode(false)) {
-    RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set torque mode on configure");
-    return hardware_interface::CallbackReturn::ERROR;
+  if(!read_only_) {
+    if (!setTorqueMode(false)) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set torque mode on configure");
+      return hardware_interface::CallbackReturn::ERROR;
+    }
   }
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -419,9 +443,11 @@ hardware_interface::CallbackReturn Jaco2::on_activate(
     control_level_ = integration_level_t::kUNDEFINED;
   }
 
-  if (!setTorqueMode(false)) {
-    RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set torque mode on configure");
-    return hardware_interface::CallbackReturn::ERROR;
+  if(!read_only_) {
+    if (!setTorqueMode(false)) {
+      RCLCPP_ERROR(rclcpp::get_logger("Jaco2"), "Could not set torque mode on configure");
+      return hardware_interface::CallbackReturn::ERROR;
+    }
   }
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -729,6 +755,8 @@ bool Jaco2::sendEffortCommand(const std::vector<double> & command)
 hardware_interface::return_type Jaco2::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
+  if(read_only_) return hardware_interface::return_type::OK;
+
   const std::lock_guard<std::mutex> lock(mMutex);
   std::vector<double> zero(num_dofs_.first + num_dofs_.second, 0.0);
   bool ret = true;
