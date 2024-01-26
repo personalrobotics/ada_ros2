@@ -57,7 +57,7 @@
   </joint>
   -->
 
-  <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.0025" cog="0.011184837 -0.024537498 -0.035437509">
+  <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.03783" cog="0.011184837 -0.024537498 -0.035437509">
     <xacro:insert_block name="default_inertial"/>
   </xacro:forque_assembly_link>
   <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" parent="j2n6s200_link_6" child="FTArmMount" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
