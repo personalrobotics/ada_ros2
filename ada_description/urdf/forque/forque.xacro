@@ -65,7 +65,7 @@
 		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.022" cog="0.0111797 -0.110193 -0.0384312">
 			<xacro:insert_block name="default_inertial"/>
         </xacro:forque_assembly_link>
-	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" parent="${base_parent}" child="FTMount" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" parent="${base_parent}" child="FTMount" joint_origin_xyz="0 0 -0.001" joint_origin_rpy="0 0 0"/>
 
 	  	<xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT" mass="0.280" cog="0.0111446 -0.0882070 -0.0544936">
 	  		<xacro:insert_block name="default_inertial"/>
@@ -84,7 +84,7 @@
 	  		<xacro:insert_block name="default_inertial"/>
 	  	</xacro:forque_assembly_link>
 		<!-- The slight rotation was manually added due to empirical deformations in the robot gripped, such that the fingers and fork handle were slightly pitched up relative to the wrist. -->
-		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.025 0 0"/>
+		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0.001" joint_origin_rpy="-0.025 0 0"/>
 
 	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
 	  		<xacro:insert_block name="default_inertial"/>
