@@ -62,7 +62,7 @@
 
 	<xacro:macro name="forque_assembly" params="base_parent use_antenna:=false">
 
-		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.103" cog="0.0111797 -0.110193 -0.0384312">
+		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.103" cog="0.010934 -0.138522 -0.05066">
 			<xacro:insert_block name="default_inertial"/>
         </xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" parent="${base_parent}" child="FTMount" joint_origin_xyz="0 0 -0.005" joint_origin_rpy="0 0 0"/>
