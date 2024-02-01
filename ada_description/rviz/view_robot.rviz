@@ -124,6 +124,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        frontStabilizer:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         j2n6s200_end_effector:
           Alpha: 1
           Show Axes: false
@@ -197,6 +202,20 @@ Visualization Manager:
           Alpha: 1
           Show Axes: false
           Show Trail: false
+        root_tilt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        screwHeadLeft:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        screwHeadRight:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         uncalibrated_camera_bottom_screw_frame:
           Alpha: 1
           Show Axes: false
@@ -260,25 +279,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.4544645845890045
+      Distance: 0.42677226662635803
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.10582566261291504
-        Y: 0.026301860809326172
-        Z: 1.0188652276992798
+        X: -0.01307898759841919
+        Y: 0.07053589820861816
+        Z: 1.1781460046768188
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.42884665727615356
+      Pitch: -0.14020369946956635
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.41493034362793
+      Yaw: 2.071047782897949
     Saved: ~
 Window Geometry:
   Displays:
