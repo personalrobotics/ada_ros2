@@ -8,6 +8,12 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# Install Python executables
+install(PROGRAMS
+  scripts/camera_calibration.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 if(BUILD_TESTING)
