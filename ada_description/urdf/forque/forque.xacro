@@ -17,7 +17,7 @@
 	<xacro:property name="forque_color" value="0.4 0.4 0.4 1" />
 	<xacro:property name="J_PI" value="3.1415926535897931" />
 	<xacro:property name="default_inertial">
-		<inertia ixx="0.001" iyy="0.001" iyz="0.001" izz="0.001" ixy="0.001" ixz="0.001"/>
+		<inertia ixx="0.000005" iyy="0.000005" iyz="0" izz="0.000005" ixy="0" ixz="0"/>
 	</xacro:property>
 
 
