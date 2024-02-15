@@ -3,7 +3,7 @@ ROS2 Hardware Interface and Description for the ADA Robot
 
 ## Setup
 
-See the [`ada_feeding` top-level README for setup instructions](https://github.com/personalrobotics/ada_feeding/blob/amaln/rosdeps/README.md).
+See the [`ada_feeding` top-level README for setup instructions](https://github.com/personalrobotics/ada_feeding/blob/ros2-devel/README.md).
 
 ## Running ADA MoveIt
 ### RVIZ
