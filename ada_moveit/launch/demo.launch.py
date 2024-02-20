@@ -142,6 +142,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/move_group.launch.py")
             ),
+            launch_arguments={
+                "sim": sim,
+            }.items(),
         )
     )
 
