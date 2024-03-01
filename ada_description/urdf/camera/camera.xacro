@@ -92,7 +92,7 @@
 		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0.009925 0.04099 0.05442" joint_origin_rpy="0 ${165.4 * J_PI / 180} ${J_PI}"/>
 		
 		<xacro:camera_assembly_link link_name="cameraMount" link_mesh="2023_06_06_cameraBackMount" mass="0.004" cog="-0.007986 0 0.010064">
-	  		<xacro:insert_block name="default_inertial"/>
+	  		<inertia ixx="0.000002782" iyy="00.0000005528" iyz="-0.00000000000178" izz="0.000002964" ixy="-0.00000000002321" ixz="0.000000074385"/>
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="cameraMount_to_enclosureTop" parent="enclosureTop" child="cameraMount" joint_origin_xyz="-0.0132 0 -0.022" joint_origin_rpy="0 ${J_PI / 2} 0"/>
 
