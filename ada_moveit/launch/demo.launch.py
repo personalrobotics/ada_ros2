@@ -62,12 +62,21 @@ def generate_launch_description():
     )
     servo_file = LaunchConfiguration("servo_file")
 
+    # Log Level
+    log_level_da = DeclareLaunchArgument(
+        "log_level",
+        default_value="info",
+        description="Logging level (debug, info, warn, error, fatal)",
+    )
+    log_level = LaunchConfiguration("log_level")
+
     # Copy from generate_demo_launch
     ld = LaunchDescription()
     ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
+    ld.add_action(log_level_da)
 
     # Camera Calibration File
     ld.add_action(
@@ -84,6 +93,9 @@ def generate_launch_description():
                     )
                 ]
             ),
+            launch_arguments={
+                "log_level": log_level,
+            }.items(),
         )
     )
 
@@ -96,6 +108,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 "sim": sim,
+                "log_level": log_level,
             }.items(),
         ),
     )
@@ -124,6 +137,9 @@ def generate_launch_description():
         ld.add_action(
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
+                launch_arguments={
+                    "log_level": log_level,
+                }.items(),
             )
         )
 
@@ -133,6 +149,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/rsp.launch.py")
             ),
+            launch_arguments={
+                "log_level": log_level,
+            }.items(),
         )
     )
 
@@ -144,6 +163,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 "sim": sim,
+                "log_level": log_level,
             }.items(),
         )
     )
@@ -154,6 +174,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/moveit_rviz.launch.py")
             ),
+            launch_arguments={
+                "log_level": log_level,
+            }.items(),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
     )
@@ -164,6 +187,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/warehouse_db.launch.py")
             ),
+            launch_arguments={
+                "log_level": log_level,
+            }.items(),
             condition=IfCondition(LaunchConfiguration("db")),
         )
     )
@@ -201,6 +227,7 @@ def generate_launch_description():
                 moveit_config.robot_description_kinematics,  # If set, use IK instead of the inverse jacobian
             ],
             output="screen",
+            arguments=['--ros-args', '--log-level', log_level],
         )
     )
 
@@ -214,6 +241,7 @@ def generate_launch_description():
             package="controller_manager",
             executable="ros2_control_node",
             parameters=[robot_description, robot_controllers],
+            arguments=['--ros-args', '--log-level', log_level],
         )
     )
 
@@ -222,6 +250,9 @@ def generate_launch_description():
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/spawn_controllers.launch.py")
             ),
+            launch_arguments={
+                "log_level": log_level,
+            }.items(),
         )
     )
 

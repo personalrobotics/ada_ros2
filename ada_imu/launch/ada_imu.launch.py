@@ -25,6 +25,13 @@ def generate_launch_description():
     )
     sim = LaunchConfiguration("sim")
     launch_description.add_action(sim_da)
+    log_level_da = DeclareLaunchArgument(
+        "log_level",
+        default_value="info",
+        description="Logging level (debug, info, warn, error, fatal)",
+    )
+    log_level = LaunchConfiguration("log_level")
+    launch_description.add_action(log_level_da)
 
     # Load the parameters
     config = os.path.join(
@@ -37,6 +44,7 @@ def generate_launch_description():
         name="imu_jointstate_publisher",
         executable="imu_jointstate_publisher",
         parameters=[config, sim_param],
+        arguments=['--ros-args', '--log-level', log_level],
     )
 
     launch_description.add_action(imu_jointstate_publisher)
