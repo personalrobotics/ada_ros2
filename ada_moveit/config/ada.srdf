@@ -50,9 +50,8 @@
         <joint name="j2n6s200_joint_finger_1" value="1.46977"/>
         <joint name="j2n6s200_joint_finger_2" value="1.46977"/>
     </group_state>
-    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <!--END EFFECTOR: Purpose: Delineate group(s) as end-effectors for other group(s).-->
     <end_effector name="hand" parent_link="j2n6s200_link_6" group="hand" parent_group="jaco_arm"/>
-    <end_effector name="forque" parent_link="forkTip" group="jaco_arm"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="world_to_root" type="fixed" parent_frame="world" child_link="root"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
