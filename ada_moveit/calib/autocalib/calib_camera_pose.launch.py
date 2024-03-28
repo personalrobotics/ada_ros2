@@ -14,7 +14,7 @@ def generate_launch_description() -> LaunchDescription:
         description="Logging level (debug, info, warn, error, fatal)",
     )
     log_level = LaunchConfiguration("log_level")
-    
+
     nodes = [
         Node(
             package="tf2_ros",
@@ -39,8 +39,8 @@ def generate_launch_description() -> LaunchDescription:
                 "-0.0876462",
                 "--qw",
                 "-0.0959528",
-                '--ros-args',
-                '--log-level',
+                "--ros-args",
+                "--log-level",
                 log_level,
             ],
         ),

@@ -7,6 +7,7 @@ from launch.substitutions import LaunchConfiguration
 from moveit_configs_utils import MoveItConfigsBuilder
 from moveit_configs_utils.launches import generate_move_group_launch
 
+
 def get_move_group_launch(context):
     """
     Gets the launch description for MoveGroup, after removing sensors_3d
@@ -30,8 +31,14 @@ def get_move_group_launch(context):
     log_level_cmd_line_args = ["--ros-args", "--log-level", log_level]
     for entity in entities:
         if isinstance(entity, Node):
-            entity.cmd.extend([normalize_to_list_of_substitutions(arg) for arg in log_level_cmd_line_args])
+            entity.cmd.extend(
+                [
+                    normalize_to_list_of_substitutions(arg)
+                    for arg in log_level_cmd_line_args
+                ]
+            )
     return entities
+
 
 def generate_launch_description():
     # Sim Launch Argument
@@ -50,7 +57,5 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(sim_da)
     ld.add_action(log_level_da)
-    ld.add_action(
-        OpaqueFunction(function=get_move_group_launch)
-    )
+    ld.add_action(OpaqueFunction(function=get_move_group_launch))
     return ld
