@@ -86,7 +86,7 @@
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="frontStabilizer_to_enclosureBottom" parent="enclosureBottom" child="frontStabilizer" joint_origin_xyz="0.1063 0.0493 -0.0363" joint_origin_rpy="0 0 ${J_PI/2}"/>
 		
-		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_06_06_nanoEnclosureTopCameraBack" mass="0.046" cog="0.04817211 0.03496864 0.02671124">
+		<xacro:camera_assembly_link link_name="enclosureTop" link_mesh="2023_06_06_nanoEnclosureTopCameraBack" mass="0.046" cog="0.041228 0.006275 0.016379">
 	  		<inertia ixx="0.00005942" iyy="0.000085611" iyz="0.0000012783" izz="0.000126390" ixy="-0.000000046193" ixz="0.0000091699"/>
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="enclosureTop_to_enclosureBottom" parent="enclosureBottom" child="enclosureTop" joint_origin_xyz="0.009925 0.04099 0.05442" joint_origin_rpy="0 ${165.4 * J_PI / 180} ${J_PI}"/>
@@ -96,13 +96,13 @@
 	  	</xacro:camera_assembly_link>
 		<xacro:camera_assembly_joint joint_name="cameraMount_to_enclosureTop" parent="enclosureTop" child="cameraMount" joint_origin_xyz="-0.0132 0 -0.022" joint_origin_rpy="0 ${J_PI / 2} 0"/>
 
-		<xacro:camera_assembly_link link_name="screwHeadLeft" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0">
-     		<xacro:insert_block name="default_inertial"/>
+		<xacro:camera_assembly_link link_name="screwHeadLeft" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0.0015">
+     		<inertia ixx="0.000000000342785" iyy="0.000000000342785" iyz="0" izz="0.000000000543538" ixy="0" ixz="0"/>
      	</xacro:camera_assembly_link>
    	 	<xacro:camera_assembly_joint joint_name="screwHeadLeft_to_cameraMount" parent="cameraMount" child="screwHeadLeft" joint_origin_xyz="0.0165 -0.0225 0" joint_origin_rpy="${J_PI} 0 0"/>
 
-   	 	<xacro:camera_assembly_link link_name="screwHeadRight" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0">
-     		<xacro:insert_block name="default_inertial"/>
+   	 	<xacro:camera_assembly_link link_name="screwHeadRight" link_mesh="2023_11_07_screwHead" mass="0.0001" cog="0 0 0.0015">
+     		<inertia ixx="0.000000000342785" iyy="0.000000000342785" iyz="0" izz="0.000000000543538" ixy="0" ixz="0"/>
      	</xacro:camera_assembly_link>
    	 	<xacro:camera_assembly_joint joint_name="screwHeadRight_to_cameraMount" parent="cameraMount" child="screwHeadRight" joint_origin_xyz="0.0165 0.0225 0" joint_origin_rpy="${J_PI} 0 0"/>
 
