@@ -58,10 +58,6 @@
 	</xacro:macro>
 
 
-	<!-- <inertia ixx="" iyy="" iyz="" izz="" ixy="" ixz=""/>
-
-	-->
-
 	<xacro:macro name="forque_assembly" params="base_parent use_antenna:=false">
 
 		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.103" cog="0.010934 -0.138522 -0.05066">
