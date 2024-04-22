@@ -91,10 +91,9 @@ aluminum peripherial evaluation case.
         </geometry>
       </collision>
       <inertial>
-        <mass value="0.072" />
-        <!-- The following are not reliable values, and should not be used for modeling -->
-        <origin xyz="0 0 0" />
-        <inertia ixx="0.003881243" ixy="0.0" ixz="0.0" iyy="0.000498940" iyz="0.0" izz="0.003879257" />
+        <mass value="0.0589" /> <!-- manufacturer's value: 0.072 -->
+        <origin xyz="0 -0.02 0" />
+        <inertia ixx="0.00005491" ixy="-0.0000000249492" ixz="0.00000004862028" iyy="0.00000521068" iyz="0.00000000857625" izz="0.0000554597" />
       </inertial>
     </link>
 
