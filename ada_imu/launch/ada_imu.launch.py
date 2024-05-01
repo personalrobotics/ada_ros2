@@ -44,7 +44,7 @@ def generate_launch_description():
         name="imu_jointstate_publisher",
         executable="imu_jointstate_publisher",
         parameters=[config, sim_param],
-        arguments=['--ros-args', '--log-level', log_level],
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     launch_description.add_action(imu_jointstate_publisher)
