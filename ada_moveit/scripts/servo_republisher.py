@@ -80,6 +80,10 @@ class ServoRepublisher(Node):
             "~/joint_controller_get_parameters",
             callback_group=MutuallyExclusiveCallbackGroup(),
         )
+        self.joint_controller_get_parameter_invoke_time = None
+        self.joint_controller_get_parameter_future = None
+        self.last_published_joint_positions = None
+        self.last_published_joint_positions_time = None
         self.joint_states_sub = None
         self.latest_joint_states_lock = Lock()
         self.latest_joint_states = {}
@@ -215,17 +219,54 @@ class ServoRepublisher(Node):
         ).value
 
     def get_joint_controller_interface_name(
-        self, parameter_name: str = "interface_name"
+        self, parameter_name: str = "interface_name", timeout: float = 1.0
     ) -> None:
         """
         Gets the interface name of the joint controller, either POSITION_INTERFACE_NAME or
         VELOCITY_INTERFACE_NAME, by getting that controller's parameter value.
         """
+        # If we already got the joint controller interface name, ignore this call
+        if self.joint_controller_interface_name is not None:
+            return
+
+        # Check if we are already waiting for a response
+        if (self.joint_controller_get_parameter_future is not None):
+            # If the future is done, wait for the callback to be called
+            if self.joint_controller_get_parameter_future.done():
+                return
+            # If the future is not done, then wait for it to finish
+            if (self.get_clock().now() - self.joint_controller_get_parameter_invoke_time) < Duration(seconds=timeout):
+                return
+            # If the future is not done and it has been too long, then cancel it
+            self.joint_controller_get_parameter.remove_pending_request(self.joint_controller_get_parameter_future)
+        
+        # Send the request
         request = GetParameters.Request(
             names=[parameter_name],
         )
-        # TODO: Should this be an async service call instead?
-        response = self.joint_controller_get_parameter.call(request)
+        self.joint_controller_get_parameter_future = self.joint_controller_get_parameter.call_async(request)
+        self.joint_controller_get_parameter_invoke_time = self.get_clock().now()
+        self.joint_controller_get_parameter_future.add_done_callback(self.get_joint_controller_interface_name_callback)
+        
+
+    def get_joint_controller_interface_name_callback(self, future: rclpy.task.Future) -> None:
+        """
+        Callback for the get_joint_controller_interface_name service call.
+        """
+        # If we already got the joint controller interface name, ignore this call
+        if self.joint_controller_interface_name is not None:
+            return
+
+        # If the future succeeded, get the response
+        try:
+            response = future.result()
+        except Exception as e: # pylint: disable=broad-except
+            self.get_logger().error(
+                f"Failed to get the joint controller interface name: {e}"
+            )
+            return
+
+        # Check if the response is valid
         if len(response.values) > 0 and response.values[0].type == 4:
             if response.values[0].string_value in [
                 POSITION_INTERFACE_NAME,
@@ -246,6 +287,9 @@ class ServoRepublisher(Node):
                     "This node only supports position or velocity joint controllers. "
                     "JointJog messages will be ignored."
                 )
+        
+        # Reset the future
+        self.joint_controller_get_parameter_future = None
 
     def joint_state_callback(self, msg: JointState) -> None:
         """
@@ -254,7 +298,7 @@ class ServoRepublisher(Node):
         joint_states = {}
         for i, name in enumerate(msg.name):
             position = msg.position[i]
-            joint_states[name] = position
+            joint_states[name] = (position, Time.from_msg(msg.header.stamp))
 
         with self.latest_joint_states_lock:
             self.latest_joint_states.update(joint_states)
@@ -299,9 +343,12 @@ class ServoRepublisher(Node):
         """
         # First, determine the interface type of the joint controller
         if self.joint_controller_interface_name is None:
+            self.get_logger().warn(
+                "Cannot process JointJog messages until the joint controller interface name is known.",
+                throttle_duration_sec=1.0,
+            )
             self.get_joint_controller_interface_name()
-            if self.joint_controller_interface_name is None:
-                return
+            return
 
         # Check the message
         if len(msg.joint_names) == 0:
@@ -325,14 +372,14 @@ class ServoRepublisher(Node):
         # Process the JointJog message
         curr_joint_velocities = []
         for i in range(len(JOINT_NAMES)):  # pylint: disable=consider-using-enumerate
-            j = msg.joint_names.find(JOINT_NAMES[i])
-            if j == -1:  # The joint's velocity was unspecified
-                curr_joint_velocities.append(0.0)
-            else:
+            try:
+                j = msg.joint_names.index(JOINT_NAMES[i])
                 if j < len(msg.velocities):
                     curr_joint_velocities.append(msg.velocities[j])
                 else:
                     curr_joint_velocities.append(0.0)
+            except ValueError:  # The joint's velocity was unspecified
+                curr_joint_velocities.append(0.0)
 
         # Apply the exponential moving average
         joint_velocities = []
@@ -340,8 +387,8 @@ class ServoRepublisher(Node):
             joint_velocities = curr_joint_velocities
         else:
             joint_velocities = [
-                curr_joint_velocities * self.exponential_moving_average_alpha
-                + self.prev_joint_velocities
+                curr_joint_velocities[i] * self.exponential_moving_average_alpha
+                + self.prev_joint_velocities[i]
                 * (1.0 - self.exponential_moving_average_alpha)
                 for i in range(
                     len(JOINT_NAMES)
@@ -368,10 +415,20 @@ class ServoRepublisher(Node):
             missing_joint_names = []
             curr_joint_positions = []
             with self.latest_joint_states_lock:
-                for joint_name in JOINT_NAMES:
+                for i, joint_name in enumerate(JOINT_NAMES):
                     if joint_name in self.latest_joint_states:
+                        # Get the joint position
+                        joint_position, joint_state_time = self.latest_joint_states[joint_name]
+                        if (
+                            self.last_published_joint_positions is not None
+                            and self.last_published_joint_positions_time is not None
+                            and joint_state_time < self.last_published_joint_positions_time
+                        ):
+                            # If the last published joint positions are newer than the joint state, use them
+                            joint_position = self.last_published_joint_positions[i]
+                        # Add the joint position to the list
                         curr_joint_positions.append(
-                            self.latest_joint_states[joint_name]
+                            joint_position
                         )
                     else:
                         missing_joint_names.append(joint_name)
@@ -388,6 +445,8 @@ class ServoRepublisher(Node):
                 self.joint_output_pub.publish(
                     Float64MultiArray(data=next_joint_positions)
                 )
+                self.last_published_joint_positions = next_joint_positions
+                self.last_published_joint_positions_time = self.get_clock().now()
 
     def stale_msg_check(self) -> None:
         """
@@ -425,13 +484,19 @@ class ServoRepublisher(Node):
                 self.output_twist.twist.linear = Vector3(x=0.0, y=0.0, z=0.0)
                 self.output_twist.twist.angular = Vector3(x=0.0, y=0.0, z=0.0)
                 self.cartesian_output_pub.publish(self.output_twist)
+                self.get_logger().warn(
+                    f"Stopping the robot's caresian control because of a stale message"
+                )
         elif isinstance(latest_msg, JointJog):
             if len(latest_msg.velocities) != len(JOINT_NAMES) or not np.all(
                 np.isclose(latest_msg.velocities, 0.0)
             ):
                 # Publish a zero-velocity message
-                self.publish_joint_velocity(JOINT_NAMES, [0.0 for _ in JOINT_NAMES])
+                self.publish_joint_velocity([0.0 for _ in JOINT_NAMES])
                 self.prev_joint_velocities = [0.0 for _ in JOINT_NAMES]
+                self.get_logger().warn(
+                    f"Stopping the robot's joint control because of a stale message"
+                )
 
         # Once the zero-message is send, reset the latest_msg
         with self.latest_msg_lock:
