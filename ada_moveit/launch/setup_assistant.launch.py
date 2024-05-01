@@ -8,7 +8,6 @@ from moveit_configs_utils.launches import generate_setup_assistant_launch
 
 
 def generate_launch_description():
-
     ld = LaunchDescription()
     # Log Level
     log_level_da = DeclareLaunchArgument(
@@ -26,7 +25,12 @@ def generate_launch_description():
     entities = generate_setup_assistant_launch(moveit_config).entities
     for entity in entities:
         if isinstance(entity, Node):
-            entity.cmd.extend([normalize_to_list_of_substitutions(arg) for arg in log_level_cmd_line_args])
+            entity.cmd.extend(
+                [
+                    normalize_to_list_of_substitutions(arg)
+                    for arg in log_level_cmd_line_args
+                ]
+            )
         ld.add_action(entity)
 
     return ld

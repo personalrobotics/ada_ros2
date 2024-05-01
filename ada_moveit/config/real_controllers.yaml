@@ -37,7 +37,7 @@ jaco_arm_cartesian_controller:
         - velocity
       solver:
         damped_least_squares:
-          alpha: 0.01
+          alpha: 0.001
       wrench_threshold:
         topic: /wireless_ft/ftSensor3
         fMag: 1.0

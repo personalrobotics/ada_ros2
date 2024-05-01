@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description() -> LaunchDescription:
-     # Log Level
+    # Log Level
     log_level_da = DeclareLaunchArgument(
         "log_level",
         default_value="info",
@@ -37,8 +37,8 @@ def generate_launch_description() -> LaunchDescription:
                 "-0.024086",
                 "--yaw",
                 "-3.1331081",
-                '--ros-args',
-                '--log-level',
+                "--ros-args",
+                "--log-level",
                 log_level,
             ],
         ),

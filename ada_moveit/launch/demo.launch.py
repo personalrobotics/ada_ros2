@@ -227,7 +227,7 @@ def generate_launch_description():
                 moveit_config.robot_description_kinematics,  # If set, use IK instead of the inverse jacobian
             ],
             output="screen",
-            arguments=['--ros-args', '--log-level', log_level],
+            arguments=["--ros-args", "--log-level", log_level],
         )
     )
 
@@ -241,7 +241,7 @@ def generate_launch_description():
             package="controller_manager",
             executable="ros2_control_node",
             parameters=[robot_description, robot_controllers],
-            arguments=['--ros-args', '--log-level', log_level],
+            arguments=["--ros-args", "--log-level", log_level],
         )
     )
 
