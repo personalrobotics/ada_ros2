@@ -84,6 +84,14 @@
 		<!-- The slight rotation was manually added due to empirical deformations in the robot gripped, such that the fingers and fork handle were slightly pitched up relative to the wrist. -->
 		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0.005" joint_origin_rpy="-0.025 0 0"/>
 
+		<!-- demo block to add the fork handle cover
+
+		<xacro:forque_assembly_link link_name="forkHandleCover" link_mesh="" mass="0" cog="0 0 0">
+			<xacro:insert_block name="default_inertial"/>
+		</xacro:forque_assembly_link>
+		<xacro:forque_assembly_joint joint_name="forkHandleCover_to_forkHandle" parent="forkHandle" child="forkHandleCover" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
+		-->
+
 	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
 	  		<inertia ixx="0.000005235822" iyy="0.000006264852" iyz="-0.00000004033694" izz="0.00000640797" ixy="-0.0000003129932" ixz="0.000000013798"/>
 	  	</xacro:forque_assembly_link>
@@ -100,6 +108,27 @@
 		    <parent link="forkTine"/>
 		    <origin rpy="${J_PI} 0 0" xyz="0.0135 0.007 0"/>
 		</joint>
+
+		<link name="apriltag_center" />
+	    <joint name="centerTag_to_handle" type="fixed">
+	        <child link="apriltag_center"/>
+	        <parent link="forkHandle"/>
+	        <origin rpy="${J_PI/6} ${J_PI} 0" xyz="0.01117 -0.196884 0.012848"/>
+	    </joint>
+
+	    <link name="apriltag_left" />
+	    <joint name="leftTag_to_handle" type="fixed">
+	        <child link="apriltag_left"/>
+	        <parent link="forkHandle"/>
+	        <origin rpy="0 ${J_PI} 0" xyz="0.022148 -0.170481 0.005781"/>
+	    </joint>
+
+	    <link name="apriltag_right" />
+	    <joint name="rightTag_to_handle" type="fixed">
+	        <child link="apriltag_right"/>
+	        <parent link="forkHandle"/>
+	        <origin rpy="0 ${J_PI} 0" xyz="0.000148 -0.170511 0.005781"/>
+	    </joint>
 
 	</xacro:macro>
 
