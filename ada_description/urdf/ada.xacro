@@ -68,8 +68,8 @@
     <link name="FTSensor" />
     <joint name="EE_to_FTSensor" type="fixed">
         <child link="FTSensor"/>
-        <parent link="j2n6s200_end_effector"/>
-        <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
+        <parent link="forque"/>
+        <origin rpy="${-4*J_PI/6} ${-J_PI/2} ${J_PI/2}" xyz="0.0125095 0.01291 0.02159"/>
     </joint>
   </xacro:if>
 

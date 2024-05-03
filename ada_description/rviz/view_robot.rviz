@@ -9,6 +9,10 @@ Panels:
         - /RobotModel1
         - /RobotModel1/Mass Properties1
         - /RobotModel1/Description Topic1
+        - /RobotModel1/Links1
+        - /RobotModel1/Links1/FTSensor1
+        - /RobotModel1/Links1/forkHandle1
+        - /RobotModel1/Links1/forque1
       Splitter Ratio: 0.5
     Tree Height: 467
   - Class: rviz_common/Selection
@@ -84,7 +88,7 @@ Visualization Manager:
           Value: true
         FTSensor:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
         Link Tree Style: Links in Alphabetic Order
         cameraMount:
@@ -108,7 +112,7 @@ Visualization Manager:
           Value: true
         forkHandle:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         forkTine:
@@ -122,7 +126,7 @@ Visualization Manager:
           Show Trail: false
         forque:
           Alpha: 1
-          Show Axes: false
+          Show Axes: true
           Show Trail: false
           Value: true
         frontStabilizer:
@@ -280,25 +284,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.288628578186035
+      Distance: 0.5718870759010315
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.018599599599838257
-        Y: 0.008215934038162231
-        Z: 0.03258311748504639
+        X: 0.014840841293334961
+        Y: 0.07741975784301758
+        Z: 1.143092393875122
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6639063954353333
+      Pitch: 0.6421793699264526
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.396623611450195
+      Yaw: 5.901208400726318
     Saved: ~
 Window Geometry:
   Displays:
@@ -316,5 +320,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 479
-  Y: 97
+  X: 402
+  Y: 62
