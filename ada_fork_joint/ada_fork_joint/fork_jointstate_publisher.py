@@ -25,8 +25,8 @@ class ForkJointstatePublisher(Node):
         self.publisher_ = self.create_publisher(JointState, "/joint_states", 10)
 
         # Load parameters
-        self.yaw_joint_name = "fork_yaw_joint"
-        self.pitch_joint_name = "fork_pitch_joint"
+        self.yaw_joint_name = "forkHandle_to_FTMount_yaw"
+        self.pitch_joint_name = "forkHandle_to_FTMount_pitch"
 
         self.timer_period = 0.1  # seconds
         self.timer = self.create_timer(self.timer_period, self.publish)
