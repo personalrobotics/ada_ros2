@@ -25,7 +25,7 @@ jaco_arm_cartesian_controller:
     ros__parameters:
       end_effector_link: "forkTip"
       robot_base_link: "j2n6s200_link_base"
-      ik_solver: "damped_least_squares"
+      ik_solver: "selectively_damped_least_squares"
       joints:
         - j2n6s200_joint_1
         - j2n6s200_joint_2
@@ -35,9 +35,6 @@ jaco_arm_cartesian_controller:
         - j2n6s200_joint_6
       command_interfaces:
         - velocity
-      solver:
-        damped_least_squares:
-          alpha: 0.001
       wrench_threshold:
         topic: /wireless_ft/ftSensor3
         fMag: 1.0
