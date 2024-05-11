@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 
 
 # NOTE: This was hand-tweaked, assimng 0 pitch and -3.14 yaw
-# (i.e., assuming the only unknown orientation was pitch)
+# (i.e., assuming the only unknown orientation was roll)
 # by having the camera observe the robot itself (point at
 # joint 1) and comparing the depthcloud to the robot's mesh
 # in RVIZ. The transform was then adjusted until the depthcloud
