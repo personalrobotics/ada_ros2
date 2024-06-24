@@ -78,7 +78,7 @@
 	  	  <xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" parent="FT" child="FTAntenna" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0"/>
 		  </xacro:if>
 
-	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
+	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2024_06_24_forkHandleHollow" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
 	  		<inertia ixx="0.0000418078" iyy="0.0000177249" iyz="-0.000000210639" izz="0.00005200336" ixy="-0.000000396292" ixz="0.00000002424697"/>
 	  	</xacro:forque_assembly_link>
 		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.025 0 0"/>
