@@ -22,7 +22,7 @@ def generate_launch_description() -> LaunchDescription:
             output="log",
             arguments=[
                 "--frame-id",
-                "j2n6s200_link_6",
+                "j2n6s200_end_effector",
                 "--child-frame-id",
                 "camera_color_optical_frame",
                 "--x",
