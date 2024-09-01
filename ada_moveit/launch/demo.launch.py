@@ -78,6 +78,9 @@ def generate_launch_description():
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
 
+    # Launch argument for whether to use moveit servo or not
+    ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
+
     # Camera Calibration File
     ld.add_action(
         IncludeLaunchDescription(
@@ -228,6 +231,7 @@ def generate_launch_description():
             ],
             output="screen",
             arguments=["--ros-args", "--log-level", log_level],
+            condition=IfCondition(LaunchConfiguration("use_servo")),
         )
     )
 
