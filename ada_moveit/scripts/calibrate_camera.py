@@ -9,7 +9,9 @@ import threading
 from controller_manager_msgs.srv import SwitchController
 import cv2
 from cv_bridge import CvBridge
+from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3
 from moveit_msgs.msg import MoveItErrorCodes
+import numpy as np
 from pymoveit2 import MoveIt2, MoveIt2State
 from pymoveit2.robots import kinova
 import rclpy
@@ -19,7 +21,10 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.timer import Rate
+import ros2_numpy
 from sensor_msgs.msg import CompressedImage, JointState
+import tf2_py as tf2
+import tf2_ros
 
 # Local imports
 
@@ -47,16 +52,26 @@ class CalibrateCameraNode(Node):
     relative to the charucoboard and repeat the process to improve the calibration.
     """
     
-    def __init__(self, end_effector_frame: str = "forkTip"):
+    def __init__(self):
         """
         Do the initialization steps that don't require rclpy to be spinning.
         """
         super().__init__("calibrate_camera")
 
         # Read the parameters
-        self.end_effector_frame = end_effector_frame
         self.active_controller = None
         self.read_params()
+
+        # Create the TF2 listener
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+
+        # Create the twist publisher
+        self.twist_pub = self.node.create_publisher(
+            TwistStamped,
+            "~/servo_twist_cmds",
+            qos_profile=QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT),
+        )
 
         # Create the MoveIt2 object
         callback_group = ReentrantCallbackGroup()
@@ -64,7 +79,7 @@ class CalibrateCameraNode(Node):
             node=node,
             joint_names=kinova.joint_names(),
             base_link_name=kinova.base_link_name(),
-            end_effector_name=self.end_effector_frame,
+            end_effector_name="forkTip",
             group_name="jaco_arm",
             callback_group=callback_group,
         )
@@ -331,16 +346,159 @@ class CalibrateCameraNode(Node):
             return cleanup(False)
         return cleanup(True)
 
+    def pose_to_twist(
+        self,
+        pose_stamped: PoseStamped,
+        max_linear_speed: float = 0.1, # m/s
+        max_angular_speed: float = 0.3, # rad/s
+        round_decimals: Optional[int] = 3,
+        rate_hz: float = 10.0,
+    ) -> TwistStamped:
+        """
+        Convert a PoseStamped message to a TwistStamped message. Essentially, it
+        returns the lienar and angular velocities to execute for 1/rate_hz sec to
+        move the pose's frame_id to the pose. Based on
+        ada_feeding/ada_feeding/behaviors/ros/msgs.py's PoseStampedToTwistStamped behavior.
+        """
+        # For the linear velocity, normalize the pose's position and multiply
+        # it by the linear_speed
+        linear_displacement = ros2_numpy.numpify(pose_stamped.pose.position)
+        linear_distance = np.linalg.norm(linear_displacement)
+        linear_speed = min(linear_distance * rate_hz, max_linear_speed)
+        linear_velocity = linear_displacement / linear_distance * linear_speed
+
+        # Round it
+        if round_decimals is not None:
+            linear_velocity = np.round(linear_velocity, round_decimals)
+
+        # Convert to a msg
+        linear_msg = ros2_numpy.msgify(Vector3, linear_velocity)
+
+        # For the angular velocity, convert the pose's orientation to a
+        # rotation vector, normalize it, and multiply it by the angular_speed
+        angular_displacement = R.from_quat(
+            ros2_numpy.numpify(pose_stamped.pose.orientation)
+        ).as_rotvec()
+        angular_distance = np.linalg.norm(angular_displacement)
+        angular_speed = min(angular_distance * rate_hz, max_angular_speed)
+        angular_velocity = angular_displacement / angular_distance * angular_speed
+
+        # Round it
+        if round_decimals is not None:
+            angular_velocity = np.round(angular_velocity, round_decimals)
+
+        # Convert to a msg
+        angular_msg = ros2_numpy.msgify(Vector3, angular_velocity)
+
+        # Create the twist stamped message
+        twist_stamped = TwistStamped()
+        twist_stamped.header = pose_stamped.header
+        twist_stamped.twist.linear = linear_msg
+        twist_stamped.twist.angular = angular_msg
+
+        return twist_stamped
+
+    def transform_pose_stamped(
+        self,
+        pose_stamped: PoseStamped,
+        target_frame: str,
+        timeout_secs: float = 10.0,
+    ) -> Optional[PoseStamped]:
+        """
+        Transform the pose stamped to the target frame.
+        """
+        try:
+            return self.tf_buffer.transform(
+                pose_stamped,
+                target_frame,
+                timeout=Duration(seconds=timeout_secs),
+            )
+        except (
+            tf2.ConnectivityException,
+            tf2.ExtrapolationException,
+            tf2.InvalidArgumentException,
+            tf2.LookupException,
+            tf2.TimeoutException,
+            tf2.TransformException,
+            tf2_ros.TypeException,
+        ) as e:
+            self.get_logger().error(f"Failed to transform the pose: {e}")
+            return None
+
     def move_end_effector_to_pose_cartesian(
         self,
-        pose: PoseStamped,
+        pose_stamped: PoseStamped,
         timeout_secs: float = 10.0,
         rate: Union[Rate, float] = 10.0,
+        linear_threshold: float = 0.005, # meters
+        angular_threshold: float = 0.01, # radians
     ):
         """
         Move the end-effector to the specified pose via Cartesian motion.
         """
-        pass
+        # Configuration for the timeout
+        start_time = self.get_clock().now()
+        timeout = Duration(seconds=timeout_secs)
+        created_rate = False
+        if isinstance(rate, float):
+            rate = self.create_rate(rate)
+            created_rate = True
+        def cleanup(retval: bool) -> bool:
+            self.twist_pub.publish(TwistStamped())  # Stop the motion
+            if created_rate: self.destroy_rate(rate)
+            return retval
+
+        # Activate the controller
+        if not self.activate_controller("jaco_arm_cartesian_controller", timeout_secs, rate):
+            return cleanup(False)
+
+        # Convert pose to base link frame if it isn't already
+        if pose_stamped.header.frame_id != self.moveit2.base_link_name:
+            pose_stamped_base = self.transform_pose_stamped(
+                pose_stamped,
+                self.moveit2.base_link_name,
+                get_remaining_time(start_time, timeout_secs),
+            )
+            if pose_stamped_base is None:
+                return cleanup(False)
+        else:
+            pose_stamped_base = pose_stamped
+
+        # Move towards the pose until it is reached or timeout
+        while self.get_clock().now() - start_time < timeout:
+            if not rclpy.ok():
+                return cleanup(False)
+
+            # Convert the target pose to the end-effector frame
+            pose_stamped_ee = self.transform_pose_stamped(
+                pose_stamped_base,
+                self.moveit2.end_effector_frame,
+                get_remaining_time(start_time, timeout_secs),
+            )
+            if pose_stamped_ee is None:
+                return cleanup(False)
+
+            # Check if the pose is reached
+            position_diff = np.linalg.norm(
+                ros2_numpy.numpify(pose_stamped_ee.pose.position)
+            )
+            angular_diff = np.linalg.norm(
+                R.from_quat(ros2_numpy.numpify(pose_stamped_ee.pose.orientation)).as_rotvec()
+            )
+            if position_diff < linear_threshold and angular_diff < angular_threshold:
+                return cleanup(True)
+            
+            # Compute the twist required to move the end effector to the target pose
+            twist_stamped = self.pose_to_twist(pose_stamped_ee, rate_hz=1.0e9 / rate._timer.timer_period_ns)
+
+            # Publish the twist
+            self.twist_pub.publish(twist_stamped)
+
+            rate.sleep()
+
+        self.get_logger().error("Timeout while moving the end-effector to the pose.")
+        return cleanup(False)
+
 
     def rgb_img_callback(self, msg: CompressedImage):
         """
@@ -391,7 +549,7 @@ class CalibrateCameraNode(Node):
             lateral_radius = 0.2  # meters
             lateral_intervals = 5
             target_pose = PoseStamped()
-            target_pose.header.frame = self.end_effector_frame
+            target_pose.header.frame_id = self.moveit2.end_effector_frame
             target_pose.pose.orientation.w = 1.0
             wait_before_capture = Duration(seconds=self.wait_before_capture_secs)
             for d_z in [0.0, -0.1, -0.2, -0.3, -0.4]:
@@ -411,10 +569,13 @@ class CalibrateCameraNode(Node):
                     # Wait for the joint states to update
                     wait_start_time = self.get_clock().now()
                     while self.get_clock().now() - wait_start_time < wait_before_capture:
+                        if not rclpy.ok():
+                            return
                         rate.sleep()
 
                     # Capture the sample
                     joint_state = self.moveit2.joint_state
+                    # TODO
 
             if created_rate:
                 self.destroy_rate(rate)
