@@ -47,13 +47,14 @@ class CalibrateCameraNode(Node):
     relative to the charucoboard and repeat the process to improve the calibration.
     """
     
-    def __init__(self):
+    def __init__(self, end_effector_frame: str = "forkTip"):
         """
         Do the initialization steps that don't require rclpy to be spinning.
         """
         super().__init__("calibrate_camera")
 
         # Read the parameters
+        self.end_effector_frame = end_effector_frame
         self.active_controller = None
         self.read_params()
 
@@ -63,7 +64,7 @@ class CalibrateCameraNode(Node):
             node=node,
             joint_names=kinova.joint_names(),
             base_link_name=kinova.base_link_name(),
-            end_effector_name="forkTip",
+            end_effector_name=self.end_effector_frame,
             group_name="jaco_arm",
             callback_group=callback_group,
         )
@@ -95,9 +96,7 @@ class CalibrateCameraNode(Node):
             "all_controllers",
             [
                 "jaco_arm_cartesian_controller",
-                "jaco_arm_cartesian_pose_controller",
                 "jaco_arm_controller",
-                "jaco_arm_servo_controller",
             ],
             ParameterDescriptor(
                 name="all_controllers",
@@ -154,7 +153,7 @@ class CalibrateCameraNode(Node):
     def initialize(
         self,
         timeout_secs: float = 10.0,
-        rate_hz: float = 10.0,
+        rate: Union[Rate, float] = 10.0,
     ) -> bool:
         """
         Do the initialization steps that require rclpy to be spinning.
@@ -162,9 +161,12 @@ class CalibrateCameraNode(Node):
         # Configuration for the timeout
         start_time = self.get_clock().now()
         timeout = Duration(seconds=timeout_secs)
-        rate = self.create_rate(rate_hz)
+        created_rate = False
+        if isinstance(rate, float):
+            rate = self.create_rate(rate)
+            created_rate = True
         def cleanup(retval: bool) -> bool:
-            self.destroy_rate(rate)
+            if created_rate: self.destroy_rate(rate)
             return retval
 
         # Wait for the joint states
@@ -212,9 +214,9 @@ class CalibrateCameraNode(Node):
 
     def activate_controller(
         self, 
-        controller_name: str = "jaco_arm_cartesian_pose_controller",
+        controller_name: str = "jaco_arm_cartesian_controller",
         timeout_secs: float = 10.0,
-        rate: Optional[Rate] = None,
+        rate: Union[Rate, float] = 10.0,
     ) -> bool:
         """
         Activate the specified controller and deactivate all others.
@@ -225,9 +227,10 @@ class CalibrateCameraNode(Node):
         # Configuration for the timeout
         start_time = self.get_clock().now()
         timeout = Duration(seconds=timeout_secs)
-        created_rate = rate is None
-        if created_rate:
-            rate = self.create_rate(rate_hz)
+        created_rate = False
+        if isinstance(rate, float):
+            rate = self.create_rate(rate)
+            created_rate = True
         def cleanup(retval: bool) -> bool:
             if created_rate: self.destroy_rate(rate)
             return retval
@@ -269,7 +272,7 @@ class CalibrateCameraNode(Node):
         self, 
         configuration: List[float],
         timeout_secs: float = 10.0,
-        rate_hz: float = 10.0,
+        rate: Union[Rate, float] = 10.0,
     ) -> bool:
         """
         Move the robot to the specified configuration.
@@ -277,9 +280,12 @@ class CalibrateCameraNode(Node):
         # Configuration for the timeout
         start_time = self.get_clock().now()
         timeout = Duration(seconds=timeout_secs)
-        rate = self.create_rate(rate_hz)
+        created_rate = False
+        if isinstance(rate, float):
+            rate = self.create_rate(rate)
+            created_rate = True
         def cleanup(retval: bool) -> bool:
-            self.destroy_rate(rate)
+            if created_rate: self.destroy_rate(rate)
             return retval
 
         # Plan the motion to the configuration
@@ -329,7 +335,7 @@ class CalibrateCameraNode(Node):
         self,
         pose: PoseStamped,
         timeout_secs: float = 10.0,
-        rate_hz: float = 10.0,
+        rate: Union[Rate, float] = 10.0,
     ):
         """
         Move the end-effector to the specified pose via Cartesian motion.
@@ -351,12 +357,16 @@ class CalibrateCameraNode(Node):
 
     def run(
         self,
-        rate_hz: float = 10.0,
+        rate: Union[Rate, float] = 10.0,
     ):
         """
         Run the node.
         """
         try:
+            created_rate = False
+            if isinstance(rate, float):
+                rate = self.create_rate(rate)
+                created_rate = True
             # Wait for the user to place the robot on its tripod mount
             _ = input(
                 "Place the robot on its tripod mount. Ensure there is at least 1m of empty space "
@@ -366,7 +376,7 @@ class CalibrateCameraNode(Node):
             # Move the robot to the starting configuration
             self.move_to_configuration(
                 configuration=self.starting_arm_configuration,
-                rate_hz = rate_hz,
+                rate = rate,
             )
 
             # Wait for the user to place the charucoboard in front of the robot
@@ -377,26 +387,26 @@ class CalibrateCameraNode(Node):
                 "the charucoboard is still fully visible in the camera. Press Enter when done."
             )
 
-            # Capture the poses and images. # TODO: Consider adding EE rotation here
+            # Capture the poses and images. TODO: Consider adding EE rotation here
             lateral_radius = 0.2  # meters
             lateral_intervals = 5
-            curr_ee_pose = None  # TODO: In base frame
-            target_pose = copy.deepcopy(curr_ee_pose)
+            target_pose = PoseStamped()
+            target_pose.header.frame = self.end_effector_frame
+            target_pose.pose.orientation.w = 1.0
             wait_before_capture = Duration(seconds=self.wait_before_capture_secs)
-            rate = self.create_rate(rate_hz)
             for d_z in [0.0, -0.1, -0.2, -0.3, -0.4]:
                 for lateral_i in range(lateral_intervals):
                     # Get the target pose
                     theta = 2 * np.pi * lateral_i / lateral_intervals
                     d_x = lateral_radius * np.cos(theta)
                     d_y = lateral_radius * np.sin(theta)
-                    target_pose.pose.position.x = curr_ee_pose.pose.position.x + d_x
-                    target_pose.pose.position.y = curr_ee_pose.pose.position.y + d_y
-                    target_pose.pose.position.z = curr_ee_pose.pose.position.z + d_z
+                    target_pose.pose.position.x = d_x
+                    target_pose.pose.position.y = d_y
+                    target_pose.pose.position.z = d_z
                     target_pose.header.stamp = self.get_clock().now().to_msg()
 
                     # Move to the target pose
-                    self.move_end_effector_to_pose_cartesian(target_pose)
+                    self.move_end_effector_to_pose_cartesian(target_pose, rate)
 
                     # Wait for the joint states to update
                     wait_start_time = self.get_clock().now()
@@ -406,6 +416,8 @@ class CalibrateCameraNode(Node):
                     # Capture the sample
                     joint_state = self.moveit2.joint_state
 
+            if created_rate:
+                self.destroy_rate(rate)
         except KeyboardInterrupt:
             return
 
