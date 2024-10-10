@@ -7,6 +7,7 @@ This module defines a node that calibrates the camera using a charucoboard.
 import copy
 from datetime import datetime
 import os
+from pathlib import Path
 import readline  # pylint: disable=unused-import
 import sys
 import threading
@@ -17,7 +18,7 @@ from action_msgs.msg import GoalStatus
 from controller_manager_msgs.srv import SwitchController
 import cv2
 from cv_bridge import CvBridge
-from geometry_msgs.msg import TwistStamped, Vector3
+from geometry_msgs.msg import Point, Pose, Quaternion, TwistStamped, Vector3
 from moveit_msgs.msg import MoveItErrorCodes
 import numpy as np
 from pymoveit2 import MoveIt2, MoveIt2State
@@ -34,6 +35,7 @@ from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 import ros2_numpy
 from scipy.spatial.transform import Rotation as R
 from sensor_msgs.msg import CameraInfo, CompressedImage
+from std_srvs.srv import SetBool
 from tf2_geometry_msgs import PoseStamped, Vector3Stamped
 import tf2_py as tf2
 import tf2_ros
@@ -59,14 +61,16 @@ def print_and_flush(message: str):
     sys.stdout.flush()
 
 
-def pose_to_rvec_tvec(pose: PoseStamped) -> Tuple[np.ndarray, np.ndarray]:
+def pose_to_rot_trans(pose: PoseStamped, rot_vec: bool = True) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Convert a PoseStamped message to a rotation vector and translation vector.
+    Disaggregates a into its rotation and translation components.
 
     Parameters
     ----------
     pose : PoseStamped
         The pose.
+    rot_vec : bool
+        Whether to return the rotation as a rotation vector or a matrix
 
     Returns
     -------
@@ -75,10 +79,56 @@ def pose_to_rvec_tvec(pose: PoseStamped) -> Tuple[np.ndarray, np.ndarray]:
     np.ndarray
         The translation vector.
     """
-    rvec = R.from_quat(ros2_numpy.numpify(pose.pose.orientation)).as_rotvec()
-    tvec = ros2_numpy.numpify(pose.pose.position)
-    return rvec, tvec
+    if rot_vec:
+        rot = R.from_quat(ros2_numpy.numpify(pose.pose.orientation)).as_rotvec()
+    else:
+        rot = R.from_quat(ros2_numpy.numpify(pose.pose.orientation)).as_matrix()
+    trans = ros2_numpy.numpify(pose.pose.position)
+    return rot, trans
 
+def pose_to_matrix(pose: Pose) -> np.ndarray:
+    """
+    Convert a Pose message to a homogenous transformation matrix.
+
+    Parameters
+    ----------
+    pose : Pose
+        The pose.
+
+    Returns
+    -------
+    np.ndarray
+        The homogenous transformation matrix.
+    """
+    M = np.eye(4)
+    M[:3, :3] = R.from_quat(ros2_numpy.numpify(pose.orientation)).as_matrix()
+    M[:3, 3] = ros2_numpy.numpify(pose.position)
+    return M
+
+def matrix_to_pose(M: np.ndarray) -> Pose:
+    """
+    Convert a homogenous transformation matrix to a Pose message.
+
+    Parameters
+    ----------
+    M : np.ndarray
+        The homogenous transformation matrix.
+
+    Returns
+    -------
+    Pose
+        The pose.
+    """
+    pose = Pose()
+    pose.position = ros2_numpy.msgify(
+        Point,
+        M[:3, 3],
+    )
+    pose.orientation = ros2_numpy.msgify(
+        Quaternion,
+        R.from_matrix(M[:3, :3]).as_quat(),
+    )
+    return pose
 
 class CharucoDetector:
     """
@@ -109,6 +159,8 @@ class CharucoDetector:
         predefined_dictionary : int
             The predefined dictionary to use, e.g., cv2.aruco.DICT_4X4_50.
         """
+        self.camera_matrix = None
+        self.dist_coeffs = None
         self.board = cv2.aruco.CharucoBoard_create(
             squaresX=n_cols,
             squaresY=n_rows,
@@ -116,12 +168,7 @@ class CharucoDetector:
             markerLength=marker_length_m,
             dictionary=cv2.aruco.getPredefinedDictionary(predefined_dictionary),
         )
-        self.charuco_params = cv2.aruco.CharucoParameters()
-        self.charuco_params.minMarkers = 2
-        self.charuco_params.tryRefineMarkers = True
-        self.detector_params = cv2.aruco.DetectorParameters()
-        self.refine_params = cv2.aruco.RefineParameters()
-        self.detector = None
+        self.detector_params = cv2.aruco.DetectorParameters_create()
 
     def set_camera_intrinsics(self, camera_matrix: np.ndarray, dist_coeffs: np.ndarray):
         """
@@ -134,15 +181,8 @@ class CharucoDetector:
         dist_coeffs : np.ndarray
             The distortion coefficients.
         """
-        if self.detector is None:
-            self.charuco_params.cameraMatrix = camera_matrix
-            self.charuco_params.distCoeffs = dist_coeffs
-            self.detector = cv2.aruco.CharucoDetector(
-                self.board,
-                self.charuco_params,
-                self.detector_params,
-                self.refine_params,
-            )
+        self.camera_matrix = camera_matrix
+        self.dist_coeffs = dist_coeffs
 
     def got_camera_intrinsics(self) -> bool:
         """
@@ -153,10 +193,10 @@ class CharucoDetector:
         bool
             Whether the camera intrinsics have been set.
         """
-        return self.detector is not None
+        return self.camera_matrix is not None
 
     def detect(
-        self, img: np.ndarray, viz: bool = False
+        self, img: np.ndarray, viz: bool = False, verbose: bool = False
     ) -> Tuple[bool, Optional[np.ndarray], Optional[np.ndarray], Optional[np.ndarray]]:
         """
         Detect the charucoboard in the image.
@@ -167,6 +207,8 @@ class CharucoDetector:
             The image.
         viz : bool
             Whether to visualize the detection.
+        verbose : bool
+            Whether to print verbose output.
 
         Returns
         -------
@@ -180,51 +222,61 @@ class CharucoDetector:
             if viz is True, the image with the charucoboard drawn on it.
 
         """
-        if self.detector is None:
+        if self.camera_matrix is None:
             print_and_flush("Camera intrinsics not set.")
             return False, None, None, None
 
-        (
-            charuco_corners,
-            charuco_ids,
-            marker_corners,
-            marker_ids,
-        ) = self.detector.detectBoard(img)
+        marker_corners, marker_ids, _ = cv2.aruco.detectMarkers(
+            img, 
+            self.board.dictionary, 
+            parameters=self.detector_params, 
+            cameraMatrix=self.camera_matrix, 
+            distCoeff=self.dist_coeffs,
+        )
+        if marker_ids is None or len(marker_ids) == 0:
+            if verbose: print_and_flush("Failed to detect the markers.")
+            return False, None, None, None
+        _, charuco_corners, charuco_ids = cv2.aruco.interpolateCornersCharuco(
+            marker_corners, marker_ids, img, self.board, cameraMatrix=self.camera_matrix, distCoeffs=self.dist_coeffs
+        )
+        if charuco_corners is None or len(charuco_corners) == 0:
+            if verbose: print_and_flush("Failed to interpolate the charucoboard corners.")
+            return False, None, None, None
         if viz:
             retval_img = copy.deepcopy(img)
-            if len(marker_ids) > 0:
-                retval_img = cv2.aruco.drawDetectedMarkers(
-                    retval_img, marker_corners, marker_ids, (0, 255, 0)
-                )
-            if len(charuco_ids) >= 0:
-                retval_img = cv2.aruco.drawDetectedCornersCharuco(
-                    retval_img, charuco_corners, charuco_ids, (255, 0, 0)
-                )
-        if len(charuco_ids) >= 4:
-            obj_points, img_points = self.board.matchImagePoints(
-                charuco_corners, charuco_ids
+            retval_img = cv2.aruco.drawDetectedMarkers(
+                retval_img, marker_corners, marker_ids, (0, 255, 0)
             )
-            succ, rvec, tvec = cv2.solvePnP(
-                obj_points,
-                img_points,
-                self.charuco_params.cameraMatrix,
-                self.charuco_params.distCoeffs,
+            retval_img = cv2.aruco.drawDetectedCornersCharuco(
+                retval_img, charuco_corners, charuco_ids, (255, 0, 0)
+            )
+        if len(charuco_ids) >= 4:
+            rvec = np.zeros((3, 1))
+            tvec = np.zeros((3, 1))
+            succ, rvec, tvec = cv2.aruco.estimatePoseCharucoBoard(
+                charuco_corners,
+                charuco_ids,
+                self.board,
+                self.camera_matrix,
+                self.dist_coeffs,
+                rvec,
+                tvec,
             )
             if not succ:
-                print_and_flush("Failed to solve PnP.")
+                if verbose: print_and_flush("Failed to get charucoboard pose.")
                 return False, None, None, retval_img
             if viz:
-                cv2.drawFrameAxis(
+                cv2.drawFrameAxes(
                     retval_img,
-                    self.charuco_params.cameraMatrix,
-                    self.charuco_params.distCoeffs,
+                    self.camera_matrix,
+                    self.dist_coeffs,
                     rvec,
                     tvec,
                     0.1,
                 )
                 return True, rvec, tvec, retval_img
             return True, rvec, tvec, None
-        print_and_flush("Failed to detect the charucoboard.")
+        if verbose: print_and_flush("Failed to detect the charucoboard.")
         return False, None, None, None
 
 
@@ -239,7 +291,7 @@ class CameraCalibration:
     def __init__(
         self,
         data_dir: Optional[str] = None,
-        method: int = cv2.calib3d.CALIB_HAND_EYE_TSAI,
+        method: int = cv2.CALIB_HAND_EYE_PARK,
     ):
         """
         Initialize the CameraCalibration.
@@ -256,6 +308,7 @@ class CameraCalibration:
         if data_dir is not None:
             folder_name = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             self.data_dir = os.path.join(data_dir, folder_name)
+            print_and_flush(f"Saving data to: {self.data_dir}")
             os.makedirs(self.data_dir, exist_ok=True)
             self.sample_i = 0
 
@@ -291,13 +344,17 @@ class CameraCalibration:
             Whether to save the data.
         """
         if isinstance(gripper2base, PoseStamped):
-            R_gripper2base, t_gripper2base = pose_to_rvec_tvec(gripper2base)
+            R_gripper2base, t_gripper2base = pose_to_rot_trans(gripper2base, rot_vec=False)
         else:
             R_gripper2base, t_gripper2base = gripper2base
+        if np.prod(R_gripper2base.shape) == 3: R_gripper2base = R_gripper2base.reshape((3,))
+        if np.prod(t_gripper2base.shape) == 3: t_gripper2base = t_gripper2base.reshape((3,))
         if isinstance(target2cam, PoseStamped):
-            R_target2cam, t_target2cam = pose_to_rvec_tvec(target2cam)
+            R_target2cam, t_target2cam = pose_to_rot_trans(target2cam, rot_vec=False)
         else:
             R_target2cam, t_target2cam = target2cam
+        if np.prod(R_target2cam.shape) == 3: R_target2cam = R_target2cam.reshape((3,))
+        if np.prod(t_target2cam.shape) == 3: t_target2cam = t_target2cam.reshape((3,))
         self.rgb_images.append(rgb_img)
         self.Rs_gripper2base.append(R_gripper2base)
         self.ts_gripper2base.append(t_gripper2base)
@@ -396,7 +453,7 @@ class CameraCalibration:
 
     def compute_calibration(
         self, save_data: bool
-    ) -> Tuple[np.ndarray, np.ndarray, float, float]:
+    ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[float], Optional[float]]:
         """
         Compute the camera calibration and return the rotation and translation
         errors. For the rotation and translation errors, we compute the pose of the
@@ -425,6 +482,15 @@ class CameraCalibration:
         float
             The translation error.
         """
+        print_and_flush(f"Rs_gripper2base: {self.Rs_gripper2base}")
+        print_and_flush(f"ts_gripper2base: {self.ts_gripper2base}")
+        print_and_flush(f"Rs_target2cam: {self.Rs_target2cam}")
+        print_and_flush(f"ts_target2cam: {self.ts_target2cam}")
+
+        if len(self.Rs_gripper2base) < 3:
+            print_and_flush("Need at least 3 samples to calibrate the camera.")
+            return None, None, None, None
+
         # Compute the camera extrinsics calibration
         R_cam2gripper, t_cam2gripper = cv2.calibrateHandEye(
             self.Rs_gripper2base,
@@ -437,7 +503,7 @@ class CameraCalibration:
         # Convert to a homogenous transform
         T_cam2gripper = np.eye(4)
         T_cam2gripper[:3, :3] = R_cam2gripper
-        T_cam2gripper[:3, 3] = t_cam2gripper
+        T_cam2gripper[:3, 3] = t_cam2gripper.reshape((3,))
 
         # Compute the transformation error
         Rs_target2base = []
@@ -447,12 +513,18 @@ class CameraCalibration:
         ):  # pylint: disable=consider-using-enumerate
             # Get the homogenous transform from the gripper to the base
             T_gripper2base = np.eye(4)
-            T_gripper2base[:3, :3] = R.from_rotvec(self.Rs_gripper2base[i]).as_matrix()
+            if self.Rs_gripper2base[i].shape == (3,):
+                T_gripper2base[:3, :3] = R.from_rotvec(self.Rs_gripper2base[i]).as_matrix()
+            else:
+                T_gripper2base[:3, :3] = self.Rs_gripper2base[i]
             T_gripper2base[:3, 3] = self.ts_gripper2base[i]
 
             # Get the homogenous transform from the target to the camera
             T_target2cam = np.eye(4)
-            T_target2cam[:3, :3] = R.from_rotvec(self.Rs_target2cam[i]).as_matrix()
+            if self.Rs_target2cam[i].shape == (3,):
+                T_target2cam[:3, :3] = R.from_rotvec(self.Rs_target2cam[i]).as_matrix()
+            else:
+                T_target2cam[:3, :3] = self.Rs_target2cam[i]
             T_target2cam[:3, 3] = self.ts_target2cam[i]
 
             # Compute the homogenous transform from the target to the base
@@ -484,6 +556,8 @@ class CameraCalibration:
                 os.path.join(self.data_dir, f"{self.sample_i}_calib.npz"),
                 R_cam2gripper=R_cam2gripper,
                 t_cam2gripper=t_cam2gripper,
+                translation_error=translation_error,
+                rotation_error=rotation_error,
             )
 
         return R_cam2gripper, t_cam2gripper, rotation_error, translation_error
@@ -575,6 +649,13 @@ class CalibrateCameraNode(Node):
             qos_profile=QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE),
         )
 
+        # Create the service to re-tare the F/T sensor
+        self.re_tare_ft_sensor_client = self.create_client(
+            SetBool,
+            "/wireless_ft/set_bias",
+            qos_profile=QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE),
+        )
+
     def read_params(self):
         """
         Read the parameters from the parameter server.
@@ -628,7 +709,7 @@ class CalibrateCameraNode(Node):
 
         self.wait_before_capture_secs = self.declare_parameter(
             "wait_before_capture_secs",
-            10.0,
+            2.0,
             ParameterDescriptor(
                 name="wait_before_capture_secs",
                 type=ParameterType.PARAMETER_DOUBLE,
@@ -640,7 +721,7 @@ class CalibrateCameraNode(Node):
         # Charuco board parameters
         self.charuco_n_rows = self.declare_parameter(
             "charuco_n_rows",
-            6,
+            5,
             ParameterDescriptor(
                 name="charuco_n_rows",
                 type=ParameterType.PARAMETER_INTEGER,
@@ -650,7 +731,7 @@ class CalibrateCameraNode(Node):
         ).value
         self.charuco_n_cols = self.declare_parameter(
             "charuco_n_cols",
-            8,
+            5,
             ParameterDescriptor(
                 name="charuco_n_cols",
                 type=ParameterType.PARAMETER_INTEGER,
@@ -660,7 +741,7 @@ class CalibrateCameraNode(Node):
         ).value
         self.charuco_sq_length_m = self.declare_parameter(
             "charuco_sq_length_m",
-            0.025,
+            0.0351,
             ParameterDescriptor(
                 name="charuco_sq_length_m",
                 type=ParameterType.PARAMETER_DOUBLE,
@@ -670,7 +751,7 @@ class CalibrateCameraNode(Node):
         ).value
         self.charuco_marker_length_m = self.declare_parameter(
             "charuco_marker_length_m",
-            0.015,
+            0.0257,
             ParameterDescriptor(
                 name="charuco_marker_length_m",
                 type=ParameterType.PARAMETER_DOUBLE,
@@ -680,7 +761,7 @@ class CalibrateCameraNode(Node):
         ).value
         self.charuco_predefined_dictionary = self.declare_parameter(
             "charuco_predefined_dictionary",
-            cv2.aruco.DICT_4X4_50,
+            cv2.aruco.DICT_5X5_50,
             ParameterDescriptor(
                 name="charuco_predefined_dictionary",
                 type=ParameterType.PARAMETER_INTEGER,
@@ -695,7 +776,7 @@ class CalibrateCameraNode(Node):
         # Hand-eye calibration method
         self.hand_eye_calibration_method = self.declare_parameter(
             "hand_eye_calibration_method",
-            cv2.calib3d.CALIB_HAND_EYE_TSAI,
+            cv2.CALIB_HAND_EYE_PARK,
             ParameterDescriptor(
                 name="hand_eye_calibration_method",
                 type=ParameterType.PARAMETER_INTEGER,
@@ -833,6 +914,49 @@ class CalibrateCameraNode(Node):
         self.active_controller = controller_name
         return cleanup(True)
 
+    def re_tare_ft_sensor(
+        self,
+        timeout_secs: float = 10.0,
+        rate: Union[Rate, float] = 10.0,
+    ) -> bool:
+        """
+        Re-tare the F/T sensor.
+        """
+        # Configuration for the timeout
+        start_time = self.get_clock().now()
+        timeout = Duration(seconds=timeout_secs)
+        created_rate = False
+        if isinstance(rate, float):
+            rate = self.create_rate(rate)
+            created_rate = True
+
+        def cleanup(retval: bool) -> bool:
+            if created_rate:
+                self.destroy_rate(rate)
+            return retval
+
+        # Re-tare the F/T sensor
+        request = SetBool.Request(data=True)
+        if not self.re_tare_ft_sensor_client.wait_for_service(
+            timeout_sec=self.get_remaining_time(start_time, timeout_secs),
+        ):
+            self.get_logger().error("Failed to connect to the re-tare service.")
+            return cleanup(False)
+        future = self.re_tare_ft_sensor_client.call_async(request)
+        while not future.done():
+            if not rclpy.ok():
+                self.get_logger().error("Interrupted while re-taring the F/T sensor.")
+                return cleanup(False)
+            if self.get_clock().now() - start_time > timeout:
+                self.get_logger().error("Timeout while re-taring the F/T sensor.")
+                return cleanup(False)
+            rate.sleep()
+        response = future.result()
+        if not response.success:
+            self.get_logger().error("Failed to re-tare the F/T sensor.")
+            return cleanup(False)
+        return cleanup(True)
+
     def move_to_configuration(
         self,
         configuration: List[float],
@@ -857,6 +981,10 @@ class CalibrateCameraNode(Node):
             if created_rate:
                 self.destroy_rate(rate)
             return retval
+
+        # Re-tare the F/T sensor
+        if not self.re_tare_ft_sensor(timeout_secs=timeout_secs, rate=rate):
+            return cleanup(False)
 
         # Plan the motion to the configuration
         future = self.moveit2.plan_async(
@@ -1022,13 +1150,34 @@ class CalibrateCameraNode(Node):
         pose_stamped: PoseStamped,
         timeout_secs: float = 10.0,
         rate: Union[Rate, float] = 10.0,
-        linear_threshold: float = 0.005,  # meters
+        linear_threshold: float = 0.01,  # meters
         angular_threshold: float = 0.01,  # radians
-        linear_override: Optional[Vector3] = None,
-        angular_override: Optional[Vector3] = None,
+        only_linear: bool = False,
+        only_angular: bool = False,
+        do_not_oscillate: bool = True,
     ):
         """
         Move the end-effector to the specified pose via Cartesian motion.
+
+        Parameters
+        ----------
+        pose_stamped : PoseStamped
+            The target pose.
+        timeout_secs : float
+            The timeout in seconds.
+        rate : Union[Rate, float]
+            The rate at which to run the loop.
+        linear_threshold : float
+            The linear threshold to consider the pose reached.
+        angular_threshold : float
+            The angular threshold to consider the pose reached.
+        only_linear : bool
+            If true, only move in the linear dimensions.
+        only_angular : bool
+            If true, only move in the angular dimensions.
+        do_not_oscillate : bool
+            If true, as soon as the sign of any of the velocities changes, zero out
+            that dimension of the velocity.
         """
         # pylint: disable=too-many-arguments
 
@@ -1047,6 +1196,10 @@ class CalibrateCameraNode(Node):
             if created_rate:
                 self.destroy_rate(rate)
             return retval
+
+        # Re-tare the F/T sensor
+        if not self.re_tare_ft_sensor(timeout_secs, rate):
+            return cleanup(False)
 
         # Activate the controller
         if not self.activate_controller(
@@ -1067,11 +1220,13 @@ class CalibrateCameraNode(Node):
             pose_stamped_base = pose_stamped
 
         # Move towards the pose until it is reached or timeout
+        signs = None
         while self.get_clock().now() - start_time < timeout:
             if not rclpy.ok():
                 return cleanup(False)
 
             # Convert the target pose to the end-effector frame
+            pose_stamped_base.header.stamp = self.get_clock().now().to_msg()
             pose_stamped_ee = self.transform_stamped_msg(
                 pose_stamped_base,
                 self.moveit2.end_effector_name,
@@ -1081,14 +1236,23 @@ class CalibrateCameraNode(Node):
                 return cleanup(False)
 
             # Check if the pose is reached
-            position_diff = np.linalg.norm(
-                ros2_numpy.numpify(pose_stamped_ee.pose.position)
-            )
-            angular_diff = np.linalg.norm(
-                R.from_quat(
-                    ros2_numpy.numpify(pose_stamped_ee.pose.orientation)
-                ).as_rotvec()
-            )
+            if only_angular:
+                position_diff = 0.0
+            else:
+                position_diff = np.linalg.norm(
+                    ros2_numpy.numpify(pose_stamped_ee.pose.position)
+                )
+            if only_linear:
+                angular_diff = 0.0
+            else:
+                angular_diff = np.linalg.norm(
+                    R.from_quat(
+                        ros2_numpy.numpify(pose_stamped_ee.pose.orientation)
+                    ).as_rotvec()
+                )
+            # print_and_flush(
+            #     f"Position diff: {position_diff}, Angular diff: {angular_diff}"
+            # )
             if position_diff < linear_threshold and angular_diff < angular_threshold:
                 return cleanup(True)
 
@@ -1098,10 +1262,33 @@ class CalibrateCameraNode(Node):
                 rate_hz=1.0e9
                 / rate._timer.timer_period_ns,  # pylint: disable=protected-access
             )
-            if linear_override is not None:
-                twist_stamped.twist.linear = linear_override
-            if angular_override is not None:
-                twist_stamped.twist.angular = angular_override
+            # print_and_flush(f"Twist: {twist_stamped}")
+            if only_angular:
+                twist_stamped.twist.linear = Vector3()
+            if only_linear:
+                twist_stamped.twist.angular = Vector3()
+            if do_not_oscillate and signs is not None:
+                if np.sign(twist_stamped.twist.linear.x) != signs[0]:
+                    twist_stamped.twist.linear.x = 0.0
+                if np.sign(twist_stamped.twist.linear.y) != signs[1]:
+                    twist_stamped.twist.linear.y = 0.0
+                if np.sign(twist_stamped.twist.linear.z) != signs[2]:
+                    twist_stamped.twist.linear.z = 0.0
+                if np.sign(twist_stamped.twist.angular.x) != signs[3]:
+                    twist_stamped.twist.angular.x = 0.0
+                if np.sign(twist_stamped.twist.angular.y) != signs[4]:
+                    twist_stamped.twist.angular.y = 0.0
+                if np.sign(twist_stamped.twist.angular.z) != signs[5]:
+                    twist_stamped.twist.angular.z = 0.0
+            if signs is None:
+                signs = np.sign(
+                    np.concatenate(
+                        [
+                            ros2_numpy.numpify(twist_stamped.twist.linear),
+                            ros2_numpy.numpify(twist_stamped.twist.angular),
+                        ]
+                    )
+                )
 
             # Transform to the base frame
             twist_stamped_base = self.transform_stamped_msg(
@@ -1115,6 +1302,15 @@ class CalibrateCameraNode(Node):
             # Publish the twist
             self.twist_pub.publish(twist_stamped_base)
 
+            # If the commanded twist is 0, succeed
+            if np.linalg.norm(
+                ros2_numpy.numpify(twist_stamped_base.twist.linear)
+            ) < 1.0e-6 and np.linalg.norm(
+                ros2_numpy.numpify(twist_stamped_base.twist.angular)
+            ) < 1.0e-6:
+                return cleanup(True)
+
+            # Sleep
             rate.sleep()
 
         self.get_logger().error("Timeout while moving the end-effector to the pose.")
@@ -1131,8 +1327,8 @@ class CalibrateCameraNode(Node):
         """
         if not self.charuco_detector.got_camera_intrinsics():
             self.charuco_detector.set_camera_intrinsics(
-                np.array(msg.K).reshape((3, 3)),
-                np.array(msg.D),
+                np.array(msg.k).reshape((3, 3)),
+                np.array(msg.d),
             )
             self.destroy_subscription(self.camera_info_sub)
 
@@ -1223,14 +1419,17 @@ class CalibrateCameraNode(Node):
             )
             if init_ee_pose is None:
                 return
-            print_and_flush(f"Initial end-effector pose: {init_ee_pose}")
+            init_ee_M = pose_to_matrix(init_ee_pose.pose)
+            print_and_flush(f"Initial end-effector transform: {init_ee_M}")
 
-            # Capture the poses and images. TODO: Consider adding EE rotation here
-            camera_calibration = CameraCalibration()  # TODO: add a data dir!
-            lateral_radius = 0.15  # meters
-            lateral_intervals = 4
+            # Capture the poses and images.
+            camera_calibration = CameraCalibration(
+                data_dir = "/home/amaln/Workspaces/ada_ws/src/ada_ros2/ada_moveit/calib_data", # TODO: change!
+            )
+            lateral_radius = 0.10  # meters
+            lateral_intervals = 5
             wait_before_capture = Duration(seconds=self.wait_before_capture_secs)
-            for d_z in [0.0, 0.1, 0.2, 0.3, 0.4]:
+            for d_z in [0.0, 0.1, -0.08]:
                 for lateral_i in range(-1, lateral_intervals):
                     # Get the target pose
                     if lateral_i == -1:
@@ -1240,74 +1439,85 @@ class CalibrateCameraNode(Node):
                         theta = 2 * np.pi * lateral_i / lateral_intervals
                         d_x = lateral_radius * np.cos(theta)
                         d_y = lateral_radius * np.sin(theta)
-                    target_pose = copy.deepcopy(init_ee_pose)
-                    target_pose.pose.position.x += d_x
-                    target_pose.pose.position.y += d_y
-                    target_pose.pose.position.z += d_z
-                    target_pose.header.stamp = self.get_clock().now().to_msg()
+                    has_rotated = False
+                    # TODO: consider adding EE pitch as well!
+                    for d_yaw in [0.0, np.pi / 2, np.pi, 3 * np.pi / 2, 0.0]:
+                        # Rotation is in EE frame, translation is in base frame
+                        target_M = np.eye(4)
+                        target_M[:3, :3] = init_ee_M[:3, :3] @ R.from_euler("ZYX", [d_yaw, 0.0, 0.0]).as_matrix()
+                        target_M[:3, 3] = init_ee_M[:3, 3] + [d_x, d_y, d_z]
 
-                    # Move to the target pose
-                    print_and_flush(f"Moving to the target pose: {target_pose}")
-                    self.move_end_effector_to_pose_cartesian(
-                        target_pose,
-                        rate=rate,
-                        angular_override=Vector3(),
-                    )
+                        target_pose = copy.deepcopy(init_ee_pose)
+                        target_pose.pose = matrix_to_pose(target_M)
+                        target_pose.header.stamp = self.get_clock().now().to_msg()
 
-                    # Wait for the joint states to update
-                    print_and_flush("Waiting...")
-                    wait_start_time = self.get_clock().now()
-                    while (
-                        self.get_clock().now() - wait_start_time < wait_before_capture
-                    ):
-                        if not rclpy.ok():
-                            return
-                        rate.sleep()
-
-                    # Capture the transform from the end effector to the base link
-                    ee_pose_in_base_frame = self.transform_stamped_msg(
-                        copy.deepcopy(zero_pose),
-                        self.moveit2.base_link_name,
-                    )
-                    if ee_pose_in_base_frame is None:
-                        self.get_logger().error(
-                            "Failed to capture the transform. Skipping."
+                        # Move to the target pose
+                        print_and_flush(f"Moving to the target pose: {target_pose}")
+                        self.move_end_effector_to_pose_cartesian(
+                            target_pose,
+                            rate=rate,
+                            only_linear=not has_rotated,
                         )
-                        continue
+                        has_rotated = True
 
-                    # Capture the transform from the camera to the charucoboard
-                    with self.latest_img_lock:
-                        latest_raw_img = self.latest_raw_img
-                        charuco_rvec = self.latest_charuco_rvec
-                        charuco_tvec = self.latest_charuco_tvec
-                    if charuco_rvec is None or charuco_tvec is None:
-                        self.get_logger().error(
-                            "Failed to capture the transform. Skipping."
+                        # Wait for the joint states to update
+                        print_and_flush("Waiting...")
+                        wait_start_time = self.get_clock().now()
+                        while (
+                            self.get_clock().now() - wait_start_time < wait_before_capture
+                        ):
+                            if not rclpy.ok():
+                                return
+                            rate.sleep()
+
+                        # Capture the transform from the end effector to the base link
+                        ee_pose_in_base_frame = self.transform_stamped_msg(
+                            copy.deepcopy(zero_pose),
+                            self.moveit2.base_link_name,
                         )
-                        continue
+                        if ee_pose_in_base_frame is None:
+                            self.get_logger().error(
+                                "Failed to capture the EE pose in base frame. Skipping this sample."
+                            )
+                            continue
 
-                    # Save the transforms
-                    camera_calibration.add_sample(
-                        latest_raw_img,
-                        ee_pose_in_base_frame,
-                        (charuco_rvec, charuco_tvec),
-                    )
+                        # Capture the transform from the camera to the charucoboard
+                        with self.latest_img_lock:
+                            latest_raw_img = self.latest_raw_img
+                            charuco_rvec = self.latest_charuco_rvec
+                            charuco_tvec = self.latest_charuco_tvec
+                        if charuco_rvec is None or charuco_tvec is None:
+                            self.get_logger().error(
+                                "Failed to detect the CharucoBoard. Skipping this sample."
+                            )
+                            continue
 
-                # Compute the camera extrinsics calibration
-                (
-                    R_cam2gripper,
-                    T_cam2gripper,
-                    rotation_error,
-                    translation_error,
-                ) = camera_calibration.compute_calibration(
-                    save_data=True,
-                )
-                print_and_flush(f"Rotation error: {rotation_error}")
-                print_and_flush(f"Translation error: {translation_error}")
-                print_and_flush(
-                    f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_quat()}"
-                )
-                print_and_flush(f"T_cam2gripper: {T_cam2gripper}")
+                        # Save the transforms
+                        camera_calibration.add_sample(
+                            latest_raw_img,
+                            ee_pose_in_base_frame,
+                            (charuco_rvec, charuco_tvec),
+                        )
+
+                        # Compute the camera extrinsics calibration
+                        (
+                            R_cam2gripper,
+                            T_cam2gripper,
+                            rotation_error,
+                            translation_error,
+                        ) = camera_calibration.compute_calibration(
+                            save_data=True,
+                        )
+                        if R_cam2gripper is not None:
+                            print_and_flush(f"Rotation error: {rotation_error}")
+                            print_and_flush(f"Translation error: {translation_error}")
+                            print_and_flush(
+                                f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_quat()}"
+                            )
+                            print_and_flush(
+                                f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_euler('ZYX')}"
+                            )
+                            print_and_flush(f"T_cam2gripper: {T_cam2gripper}")
 
             if created_rate:
                 self.destroy_rate(rate)
@@ -1330,11 +1540,11 @@ class CalibrateCameraNode(Node):
                     img = self.latest_annotated_img
                 if img is not None:
                     cv2.imshow("RGB Image", img)
-                    cv2.waitKey(1000 // rate_hz)
+                    cv2.waitKey(int(1000 // rate_hz))
                 rate.sleep()
-        except KeyboardInterrupt:
+            self.destroy_rate(rate)
+        except (KeyboardInterrupt, rclpy.exceptions.ROSInterruptException):
             pass
-        self.destroy_rate(rate)
 
 
 def spin(node: Node, executor: rclpy.executors.Executor):
@@ -1390,6 +1600,9 @@ def main():
         try:
             node.run()
         except KeyboardInterrupt:
+            zero_twist = TwistStamped()
+            zero_twist.header.frame_id = node.moveit2.base_link_name
+            node.twist_pub.publish(zero_twist)
             pass
 
     # Cleanly terminate the node
@@ -1399,7 +1612,6 @@ def main():
         rclpy.shutdown()
     except rclpy._rclpy_pybind11.RCLError:  # pylint: disable=protected-access
         pass
-    print_and_flush("")
     if show_img_thread:
         show_img_thread.join()
     spin_thread.join()

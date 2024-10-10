@@ -48,6 +48,15 @@ def generate_launch_description():
     )
     sim = LaunchConfiguration("sim")
 
+    # Use Octomap Launch Argument
+    use_octomap_da = DeclareLaunchArgument(
+        "use_octomap",
+        default_value="true",
+        description="Whether to use octomap for collision checking",
+    )
+    use_octomap = LaunchConfiguration("use_octomap")
+
+    # Controllers File
     ctrl_da = DeclareLaunchArgument(
         "controllers_file",
         default_value=[sim, "_controllers.yaml"],
@@ -55,6 +64,7 @@ def generate_launch_description():
     )
     controllers_file = LaunchConfiguration("controllers_file")
 
+    # Servo File
     servo_da = DeclareLaunchArgument(
         "servo_file",
         default_value=[sim, "_servo.yaml"],
@@ -74,6 +84,7 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(calib_da)
     ld.add_action(sim_da)
+    ld.add_action(use_octomap_da)
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
@@ -166,6 +177,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 "sim": sim,
+                "use_octomap": use_octomap,
                 "log_level": log_level,
             }.items(),
         )

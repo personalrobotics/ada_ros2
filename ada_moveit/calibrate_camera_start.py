@@ -136,16 +136,17 @@ async def main(args: argparse.Namespace, pwd: str) -> None:
 
     # Determine which screen sessions to start and what commands to run
     screen_sessions = {
+        "ft": [
+            "ros2 run forque_sensor_hardware forque_sensor_hardware --ros-args -p host:=ft-sensor-2",
+        ],
         "camera": [
             "ssh nano -t './start_nano.sh'",
         ],
-        "republisher": [
-            "ros2 run ada_feeding_perception republisher --ros-args --params-file "
-            "src/ada_feeding/ada_feeding_perception/config/republisher.yaml"
+        "receiver": [
+            "ros2 launch nano_bridge receiver.launch.xml",
         ],
         "moveit": [
-            f"ros2 launch ada_moveit demo.launch.py use_rviz:=true sim:={args.sim} "
-            f"{'controllers_file:=real_calibrate_camera_controllers.yaml' if args.sim == 'real' else ''}"
+            f"ros2 launch ada_moveit demo.launch.py use_rviz:=true sim:={args.sim} use_octomap:=false"
         ],
         "calibrate": [
             "ros2 run ada_moveit calibrate_camera.py"
