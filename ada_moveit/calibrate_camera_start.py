@@ -149,7 +149,8 @@ async def main(args: argparse.Namespace, pwd: str) -> None:
             f"ros2 launch ada_moveit demo.launch.py use_rviz:=true sim:={args.sim} use_octomap:=false"
         ],
         "calibrate": [
-            "ros2 run ada_moveit calibrate_camera.py"
+            "ros2 run ada_moveit calibrate_camera.py --ros-args "
+            f"--params-file {os.path.join(pwd, 'src/ada_ros2/ada_moveit/config/calibrate_camera.yaml')}"
         ],
     }
     close_commands = {}

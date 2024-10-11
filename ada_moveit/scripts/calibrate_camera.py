@@ -374,6 +374,46 @@ class CameraCalibration:
             )
             self.sample_i += 1
 
+    def add_samples_from_folder(
+        self,
+        data_dir: str,
+        exclude_samples: List[int] = [],
+    ):
+        """
+        Add samples from a folder.
+
+        Parameters
+        ----------
+        data_dir : str
+            The directory to load the data from.
+        exclude_samples : List[int]
+            The samples to exclude.
+        """
+        if not os.path.exists(data_dir):
+            print_and_flush(f"Data directory {data_dir} does not exist.")
+            return
+
+        # Load the samples
+        sample_i = -1
+        while True:
+            sample_i += 1
+            if sample_i in exclude_samples:
+                continue
+            if not os.path.exists(os.path.join(data_dir, f"{sample_i}_rgb_img.png")):
+                break
+            (
+                rgb_img,
+                R_gripper2base,
+                t_gripper2base,
+                R_target2cam,
+                t_target2cam,
+            ) = self.load_sample(data_dir, sample_i)
+            self.rgb_images.append(rgb_img)
+            self.Rs_gripper2base.append(R_gripper2base)
+            self.ts_gripper2base.append(t_gripper2base)
+            self.Rs_target2cam.append(R_target2cam)
+            self.ts_target2cam.append(t_target2cam)
+
     @staticmethod
     def save_sample(
         data_dir: str,
@@ -452,7 +492,7 @@ class CameraCalibration:
         )
 
     def compute_calibration(
-        self, save_data: bool
+        self, save_data: bool = False,
     ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray], Optional[float], Optional[float]]:
         """
         Compute the camera calibration and return the rotation and translation
@@ -528,7 +568,7 @@ class CameraCalibration:
             T_target2cam[:3, 3] = self.ts_target2cam[i]
 
             # Compute the homogenous transform from the target to the base
-            T_target2base = T_target2cam @ T_cam2gripper @ T_gripper2base
+            T_target2base = T_gripper2base @ T_cam2gripper @ T_target2cam
 
             # Extract the rotation and translation
             Rs_target2base.append(R.from_matrix(T_target2base[:3, :3]))
@@ -547,8 +587,8 @@ class CameraCalibration:
                 )
 
         # Average the errors
-        translation_error = np.mean(translation_errors)
-        rotation_error = np.mean(rotation_errors)
+        translation_error = np.percentile(translation_errors, 50)
+        rotation_error = np.percentile(rotation_errors, 50)
 
         # Save the calibration
         if save_data and self.data_dir is not None:
@@ -660,9 +700,45 @@ class CalibrateCameraNode(Node):
         """
         Read the parameters from the parameter server.
         """
+        # General parameters
+        self.run_online = self.declare_parameter(
+            "run_online",
+            True,
+            ParameterDescriptor(
+                name="run_online",
+                type=ParameterType.PARAMETER_BOOL,
+                description="Whether to run the calibration online.",
+                read_only=True,
+            ),
+        ).value
+        self.data_dir = self.declare_parameter(
+            "data_dir",
+            "~/Workspaces/ada_ws/src/ada_ros2/ada_moveit/calib_data",
+            ParameterDescriptor(
+                name="data_dir",
+                type=ParameterType.PARAMETER_STRING,
+                description="The directory to save the data.",
+                read_only=True,
+            ),
+        ).value
+        self.data_dir = os.path.expanduser(self.data_dir)
+        self.offline_data_dir = self.declare_parameter(
+            "offline_data_dir",
+            "2024_10_09_21_12_30",
+            ParameterDescriptor(
+                name="offline_data_dir",
+                type=ParameterType.PARAMETER_STRING,
+                description="The directory to load the offline data, relative to the data_dir.",
+                read_only=True,
+            ),
+        ).value
+        self.offline_data_dir = os.path.join(self.data_dir, self.offline_data_dir)
+
+        # Controller parameters
         self.all_controllers = self.declare_parameter(
             "all_controllers",
             [
+                "jaco_arm_servo_controller",
                 "jaco_arm_cartesian_controller",
                 "jaco_arm_controller",
             ],
@@ -689,6 +765,7 @@ class CalibrateCameraNode(Node):
             )
             sys.exit(1)
 
+        # Arm parameters
         self.starting_arm_configuration = self.declare_parameter(
             "starting_arm_configuration",
             [
@@ -809,30 +886,31 @@ class CalibrateCameraNode(Node):
                 self.destroy_rate(rate)
             return retval
 
-        # Wait for the joint states
-        while self.moveit2.joint_state is None:
-            if not rclpy.ok():
-                self.get_logger().error(
-                    "Interrupted while waiting for the joint states."
-                )
-                return cleanup(False)
-            if self.get_clock().now() - start_time > timeout:
-                self.get_logger().error("Timed out while gettine the joint states.")
-                return cleanup(False)
-            rate.sleep()
+        if self.run_online:
+            # Wait for the joint states
+            while self.moveit2.joint_state is None:
+                if not rclpy.ok():
+                    self.get_logger().error(
+                        "Interrupted while waiting for the joint states."
+                    )
+                    return cleanup(False)
+                if self.get_clock().now() - start_time > timeout:
+                    self.get_logger().error("Timed out while gettine the joint states.")
+                    return cleanup(False)
+                rate.sleep()
 
-        # Wait for the RGB image
-        latest_raw_img = None
-        while latest_raw_img is None:
-            with self.latest_img_lock:
-                latest_raw_img = self.latest_raw_img
-            if not rclpy.ok():
-                self.get_logger().error("Interrupted while waiting for the RGB image.")
-                return cleanup(False)
-            if self.get_clock().now() - start_time > timeout:
-                self.get_logger().error("Timed out while getting the RGB image.")
-                return cleanup(False)
-            rate.sleep()
+            # Wait for the RGB image
+            latest_raw_img = None
+            while latest_raw_img is None:
+                with self.latest_img_lock:
+                    latest_raw_img = self.latest_raw_img
+                if not rclpy.ok():
+                    self.get_logger().error("Interrupted while waiting for the RGB image.")
+                    return cleanup(False)
+                if self.get_clock().now() - start_time > timeout:
+                    self.get_logger().error("Timed out while getting the RGB image.")
+                    return cleanup(False)
+                rate.sleep()
 
         return cleanup(True)
 
@@ -1373,7 +1451,7 @@ class CalibrateCameraNode(Node):
         print_and_flush(prompt)
         return input()
 
-    def run(
+    def run_online(
         self,
         rate: Union[Rate, float] = 10.0,
     ):
@@ -1424,7 +1502,8 @@ class CalibrateCameraNode(Node):
 
             # Capture the poses and images.
             camera_calibration = CameraCalibration(
-                data_dir = "/home/amaln/Workspaces/ada_ws/src/ada_ros2/ada_moveit/calib_data", # TODO: change!
+                data_dir = self.data_dir,
+                method = self.hand_eye_calibration_method,
             )
             lateral_radius = 0.10  # meters
             lateral_intervals = 5
@@ -1526,6 +1605,37 @@ class CalibrateCameraNode(Node):
             zero_twist.header.frame_id = self.moveit2.base_link_name
             self.twist_pub.publish(zero_twist)
             return
+
+    def run_offline(
+        self,
+        rate: Union[Rate, float] = 10.0,
+    ):
+        """
+        Run the node offline.
+        """
+        camera_calibration = CameraCalibration(
+            method = self.hand_eye_calibration_method,
+        ) 
+        camera_calibration.add_samples_from_folder(self.offline_data_dir)
+        R_cam2gripper, T_cam2gripper, rotation_error, translation_error = camera_calibration.compute_calibration()
+        if R_cam2gripper is not None:
+            print_and_flush(f"Rotation error: {rotation_error}")
+            print_and_flush(f"Translation error: {translation_error}")
+            print_and_flush(f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_quat()}")
+            print_and_flush(f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_euler('ZYX')}")
+            print_and_flush(f"T_cam2gripper: {T_cam2gripper}")
+
+    def run(
+        self,
+        rate: Union[Rate, float] = 10.0,
+    ):
+        """
+        Run the node.
+        """
+        if self.run_online:
+            self.run_online(rate)
+        else:
+            self.run_offline(rate)
 
     def show_img(self, rate_hz: float = 10.0):
         """
