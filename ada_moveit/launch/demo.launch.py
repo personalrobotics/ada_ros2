@@ -35,7 +35,7 @@ def generate_launch_description():
     # Calibration Launch Argument
     calib_da = DeclareLaunchArgument(
         "calib",
-        default_value="manual",
+        default_value="autocalib",
         description="Which calibration folder to use with calib_camera_pose.launch.py",
     )
     calib = LaunchConfiguration("calib")
