@@ -1,0 +1,10 @@
+publish_camera_extrinsics:
+  ros__parameters:
+    frame_id: j2n6s200_end_effector
+    child_frame_id: camera_color_optical_frame
+    x:  0.032
+    y:  0.127
+    z: -0.159
+    roll: -0.2385
+    pitch: 0.00
+    yaw: -3.08

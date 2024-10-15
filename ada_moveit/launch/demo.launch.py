@@ -6,7 +6,7 @@ from moveit_configs_utils.launches import generate_demo_launch
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.launch_description_sources import PythonLaunchDescriptionSource, AnyLaunchDescriptionSource
 from launch.substitutions import (
     LaunchConfiguration,
     Command,
@@ -31,14 +31,6 @@ def generate_launch_description():
     moveit_config = MoveItConfigsBuilder(
         "ada", package_name="ada_moveit"
     ).to_moveit_configs()
-
-    # Calibration Launch Argument
-    calib_da = DeclareLaunchArgument(
-        "calib",
-        default_value="autocalib",
-        description="Which calibration folder to use with calib_camera_pose.launch.py",
-    )
-    calib = LaunchConfiguration("calib")
 
     # Sim Launch Argument
     sim_da = DeclareLaunchArgument(
@@ -82,7 +74,6 @@ def generate_launch_description():
 
     # Copy from generate_demo_launch
     ld = LaunchDescription()
-    ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(use_octomap_da)
     ld.add_action(ctrl_da)
@@ -92,25 +83,17 @@ def generate_launch_description():
     # Launch argument for whether to use moveit servo or not
     ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
 
-    # Camera Calibration File
+    # Camera Extrinsics Calibration
+    ada_calibrate_camera_package_path = get_package_share_directory("ada_calibrate_camera")
     ld.add_action(
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                [
-                    PathJoinSubstitution(
-                        [
-                            str(moveit_config.package_path),
-                            "calib",
-                            calib,
-                            "calib_camera_pose.launch.py",
-                        ]
-                    )
-                ]
+            AnyLaunchDescriptionSource(
+                os.path.join(ada_calibrate_camera_package_path, "launch/publish_camera_extrinsics_launch.xml")
             ),
             launch_arguments={
                 "log_level": log_level,
             }.items(),
-        )
+        ),
     )
 
     # Launch the IMU joint state publisher
