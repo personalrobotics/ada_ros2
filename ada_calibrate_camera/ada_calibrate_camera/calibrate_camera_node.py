@@ -6,6 +6,7 @@ This module defines a node that calibrates the camera using a charucoboard.
 # Standard imports
 import copy
 import os
+from pathlib import Path
 import readline  # pylint: disable=unused-import
 import sys
 import threading
@@ -13,7 +14,6 @@ from typing import List, Optional, Union
 
 # Third-party imports
 from action_msgs.msg import GoalStatus
-from ament_index_python.packages import get_package_share_directory
 from controller_manager_msgs.srv import SwitchController
 import cv2
 from cv_bridge import CvBridge
@@ -38,6 +38,7 @@ from std_srvs.srv import SetBool
 from tf2_geometry_msgs import PoseStamped, Vector3Stamped
 import tf2_py as tf2
 import tf2_ros
+import yaml
 
 # Local imports
 from ada_calibrate_camera.charuco_detector import CharucoDetector
@@ -55,6 +56,8 @@ from ada_calibrate_camera.helpers import (
 
 # pylint: disable=too-many-lines
 # It is only slightly over.
+
+PACKAGE_SRC_DIR = Path(__file__).parent.parent.absolute()
 
 
 class CalibrateCameraNode(Node):
@@ -171,13 +174,11 @@ class CalibrateCameraNode(Node):
             ParameterDescriptor(
                 name="data_dir",
                 type=ParameterType.PARAMETER_STRING,
-                description="The directory to save the data.",
+                description="The directory to save the data, relative to the package's source directory",
                 read_only=True,
             ),
         ).value
-        self.data_dir = os.path.join(
-            get_package_share_directory("ada_calibrate_camera"), relative_data_dir
-        )
+        self.data_dir = os.path.join(PACKAGE_SRC_DIR, relative_data_dir)
         self.offline_data_dir = self.declare_parameter(
             "offline_data_dir",
             "2024_10_09_21_12_30",
@@ -189,6 +190,27 @@ class CalibrateCameraNode(Node):
             ),
         ).value
         self.offline_data_dir = os.path.join(self.data_dir, self.offline_data_dir)
+        output_calib_name = self.declare_parameter(
+            "output_calib_name",
+            "config/calibs/auto.yaml",
+            ParameterDescriptor(
+                name="output_calib_name",
+                type=ParameterType.PARAMETER_STRING,
+                description="The name of the output calibration file, relative to the package's source directory",
+                read_only=True,
+            ),
+        ).value
+        self.output_calib_file = os.path.join(PACKAGE_SRC_DIR, output_calib_name)
+        self.child_frame_id = self.declare_parameter(
+            "child_frame_id",
+            "camera_color_optical_frame",
+            ParameterDescriptor(
+                name="child_frame_id",
+                type=ParameterType.PARAMETER_STRING,
+                description="The child frame ID (camera optical frame ID).",
+                read_only=True,
+            ),
+        ).value
 
         # Controller parameters
         self.all_controllers = self.declare_parameter(
@@ -307,19 +329,38 @@ class CalibrateCameraNode(Node):
         ).value
 
         # Hand-eye calibration method
-        self.hand_eye_calibration_method = self.declare_parameter(
+        hand_eye_calibration_method = self.declare_parameter(
             "hand_eye_calibration_method",
-            cv2.CALIB_HAND_EYE_PARK,
+            "andreff",
             ParameterDescriptor(
                 name="hand_eye_calibration_method",
-                type=ParameterType.PARAMETER_INTEGER,
+                type=ParameterType.PARAMETER_STRING,
                 description=(
-                    "The hand-eye calibration method to use. See cv::calib3d::HandEyeCalibrationMethod for the enum: "
+                    "The hand-eye calibration method to use. Valid values include: "
+                    "'all', 'tsai', 'park', 'horaud', 'andreff', 'daniilidis'. "
+                    "See cv::HandEyeCalibrationMethod for more "
                     "https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gad10a5ef12ee3499a0774c7904a801b99"
                 ),
                 read_only=True,
             ),
         ).value
+        self.hand_eye_calibration_methods = []
+        if hand_eye_calibration_method.lower().strip() in ["all", "tsai"]:
+            self.hand_eye_calibration_methods.append(cv2.CALIB_HAND_EYE_TSAI)
+        if hand_eye_calibration_method.lower().strip() in ["all", "park"]:
+            self.hand_eye_calibration_methods.append(cv2.CALIB_HAND_EYE_PARK)
+        if hand_eye_calibration_method.lower().strip() in ["all", "horaud"]:
+            self.hand_eye_calibration_methods.append(cv2.CALIB_HAND_EYE_HORAUD)
+        if hand_eye_calibration_method.lower().strip() in ["all", "andreff"]:
+            self.hand_eye_calibration_methods.append(cv2.CALIB_HAND_EYE_ANDREFF)
+        if hand_eye_calibration_method.lower().strip() in ["all", "daniilidis"]:
+            self.hand_eye_calibration_methods.append(cv2.CALIB_HAND_EYE_DANIILIDIS)
+        if len(self.hand_eye_calibration_methods) == 0:
+            self.get_logger().error(
+                f"Invalid hand-eye calibration method {hand_eye_calibration_method}. "
+                "Valid values include: 'all', 'tsai', 'park', 'horaud', 'andreff', 'daniilidis'."
+            )
+            sys.exit(1)
 
     def initialize(
         self,
@@ -889,8 +930,9 @@ class CalibrateCameraNode(Node):
                 created_rate = True
             # Wait for the user to place the robot on its tripod mount
             _ = self.get_input(
-                "Place the robot on its tripod mount. Ensure there is at least 1m of empty space "
-                "on all sides of the robot's base. Press Enter when done."
+                "Place the robot on a mount (e.g., wheelchair mount). Ensure "
+                "there is at least 30cm of empty space below and around the robot's "
+                "gripper in the home position. Press Enter when done."
             )
             print("Moving the robot...", flush=True)
 
@@ -904,7 +946,7 @@ class CalibrateCameraNode(Node):
             _ = self.get_input(
                 "Place the charucoboard on the hospital table. Roll the hospital table "
                 "under the robot's end-effector. Adjust the height of the tripod and hospital "
-                "table so the end-effector is as close as possible to the charuboard while "
+                "table so the end-effector is around 10cm above the charuboard while "
                 "the charucoboard is still fully visible in the camera. Press Enter when done."
             )
 
@@ -924,11 +966,13 @@ class CalibrateCameraNode(Node):
             # Capture the poses and images.
             camera_calibration = CameraCalibration(
                 data_dir=self.data_dir,
-                method=self.hand_eye_calibration_method,
+                methods=self.hand_eye_calibration_methods,
             )
             lateral_radius = 0.10  # meters
             lateral_intervals = 5
             wait_before_capture = Duration(seconds=self.wait_before_capture_secs)
+            pitches = [-np.pi / 4, np.pi / 4, 0.0]
+            prev_target_pose = None
             for d_z in [0.0, 0.1, -0.08]:
                 for lateral_i in range(-1, lateral_intervals):
                     # Get the target pose
@@ -940,95 +984,140 @@ class CalibrateCameraNode(Node):
                         theta = 2 * np.pi * lateral_i / lateral_intervals
                         d_x = lateral_radius * np.cos(theta)
                         d_y = lateral_radius * np.sin(theta)
-                        if (np.pi/4 <= theta <= 3*np.pi/4) or (5*np.pi/4 <= theta <= 7*np.pi/4):
-                            yaws = [np.pi/2, 3*np.pi/2]
+                        if (np.pi / 4 <= theta <= 3 * np.pi / 4) or (
+                            5 * np.pi / 4 <= theta <= 7 * np.pi / 4
+                        ):
+                            yaws = [np.pi / 2, 3 * np.pi / 2]
                         else:
                             yaws = [0.0, np.pi]
-                    has_rotated = False
-                    # TODO: consider adding EE pitch as well!
+                    pitches.reverse()
                     for d_yaw in yaws:
-                        # Rotation is in EE frame, translation is in base frame
-                        target_M = np.eye(4)
-                        target_M[:3, :3] = (
-                            init_ee_M[:3, :3]
-                            @ R.from_euler("ZYX", [d_yaw, 0.0, 0.0]).as_matrix()
-                        )
-                        target_M[:3, 3] = init_ee_M[:3, 3] + [d_x, d_y, d_z]
-
-                        target_pose = copy.deepcopy(init_ee_pose)
-                        target_pose.pose = matrix_to_pose(target_M)
-                        target_pose.header.stamp = self.get_clock().now().to_msg()
-
-                        # Move to the target pose
-                        print(f"Moving to the target pose: {target_pose}", flush=True)
-                        self.move_end_effector_to_pose_cartesian(
-                            target_pose,
-                            rate=rate,
-                            only_linear=not has_rotated,
-                        )
-                        has_rotated = True
-
-                        # Wait for the joint states to update
-                        print("Waiting...", flush=True)
-                        wait_start_time = self.get_clock().now()
-                        while (
-                            self.get_clock().now() - wait_start_time
-                            < wait_before_capture
-                        ):
-                            if not rclpy.ok():
-                                return
-                            rate.sleep()
-
-                        # Capture the transform from the end effector to the base link
-                        ee_pose_in_base_frame = self.transform_stamped_msg(
-                            copy.deepcopy(zero_pose),
-                            self.moveit2.base_link_name,
-                        )
-                        if ee_pose_in_base_frame is None:
-                            self.get_logger().error(
-                                "Failed to capture the EE pose in base frame. Skipping this sample."
+                        for d_pitch in pitches:
+                            # Rotation is in EE frame, translation is in base frame
+                            target_M = np.eye(4)
+                            target_M[:3, :3] = (
+                                init_ee_M[:3, :3]
+                                @ R.from_euler("ZYX", [d_yaw, d_pitch, 0.0]).as_matrix()
                             )
-                            continue
+                            target_M[:3, 3] = init_ee_M[:3, 3] + [d_x, d_y, d_z]
 
-                        # Capture the transform from the camera to the charucoboard
-                        with self.latest_img_lock:
-                            latest_raw_img = self.latest_raw_img
-                            charuco_rvec = self.latest_charuco_rvec
-                            charuco_tvec = self.latest_charuco_tvec
-                        if charuco_rvec is None or charuco_tvec is None:
-                            self.get_logger().error(
-                                "Failed to detect the CharucoBoard. Skipping this sample."
-                            )
-                            continue
+                            target_pose = copy.deepcopy(init_ee_pose)
+                            target_pose.pose = matrix_to_pose(target_M)
+                            target_pose.header.stamp = self.get_clock().now().to_msg()
 
-                        # Save the transforms
-                        camera_calibration.add_sample(
-                            latest_raw_img,
-                            ee_pose_in_base_frame,
-                            (charuco_rvec, charuco_tvec),
-                        )
-
-                        # Compute the camera extrinsics calibration
-                        (
-                            R_cam2gripper,
-                            T_cam2gripper,
-                            rotation_error,
-                            translation_error,
-                        ) = camera_calibration.compute_calibration(
-                            save_data=True,
-                        )
-                        if R_cam2gripper is not None:
-                            print(f"Rotation error: {rotation_error}", flush=True)
-                            print(f"Translation error: {translation_error}", flush=True)
+                            # Move to the target pose. First move linearly, then rotate.
                             print(
-                                f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_quat()}",
+                                f"Moving to the target pose: {target_pose}", flush=True
+                            )
+                            if (
+                                prev_target_pose is None
+                                or prev_target_pose.pose.position.x
+                                != target_pose.pose.position.x
+                                or prev_target_pose.pose.position.y
+                                != target_pose.pose.position.y
+                                or prev_target_pose.pose.position.z
+                                != target_pose.pose.position.z
+                            ):
+                                self.move_end_effector_to_pose_cartesian(
+                                    target_pose,
+                                    rate=rate,
+                                    only_linear=True,
+                                )
+                            if (
+                                prev_target_pose is None
+                                or prev_target_pose.pose.orientation.x
+                                != target_pose.pose.orientation.x
+                                or prev_target_pose.pose.orientation.y
+                                != target_pose.pose.orientation.y
+                                or prev_target_pose.pose.orientation.z
+                                != target_pose.pose.orientation.z
+                                or prev_target_pose.pose.orientation.w
+                                != target_pose.pose.orientation.w
+                            ):
+                                self.move_end_effector_to_pose_cartesian(
+                                    target_pose,
+                                    rate=rate,
+                                    only_angular=True,
+                                )
+                            prev_target_pose = target_pose
+
+                            # Wait for the joint states to update
+                            print(
+                                f"Waiting {self.wait_before_capture_secs} secs...",
                                 flush=True,
                             )
-                            print(
-                                f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_euler('ZYX')}",
-                                flush=True,
+                            wait_start_time = self.get_clock().now()
+                            while (
+                                self.get_clock().now() - wait_start_time
+                                < wait_before_capture
+                            ):
+                                if not rclpy.ok():
+                                    return
+                                rate.sleep()
+
+                            # Capture the transform from the end effector to the base link
+                            ee_pose_in_base_frame = self.transform_stamped_msg(
+                                copy.deepcopy(zero_pose),
+                                self.moveit2.base_link_name,
                             )
-                            print(f"T_cam2gripper: {T_cam2gripper}", flush=True)
+                            if ee_pose_in_base_frame is None:
+                                self.get_logger().error(
+                                    "Failed to capture the EE pose in base frame. Skipping this sample."
+                                )
+                                continue
+
+                            # Capture the transform from the camera to the charucoboard
+                            with self.latest_img_lock:
+                                latest_raw_img = self.latest_raw_img
+                                charuco_rvec = self.latest_charuco_rvec
+                                charuco_tvec = self.latest_charuco_tvec
+                            if charuco_rvec is None or charuco_tvec is None:
+                                self.get_logger().error(
+                                    "Failed to detect the CharucoBoard. Skipping this sample."
+                                )
+                                continue
+
+                            # Save the transforms
+                            camera_calibration.add_sample(
+                                latest_raw_img,
+                                ee_pose_in_base_frame,
+                                (charuco_rvec, charuco_tvec),
+                            )
+
+                            # Compute the camera extrinsics calibration
+                            (
+                                R_cam2gripper,
+                                T_cam2gripper,
+                                rotation_error,
+                                translation_error,
+                                method,
+                            ) = camera_calibration.compute_calibration(
+                                save_data=False,
+                            )
+                            if R_cam2gripper is not None:
+                                print(f"Rotation error: {rotation_error}", flush=True)
+                                print(
+                                    f"Translation error: {translation_error}",
+                                    flush=True,
+                                )
+                                print(
+                                    f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_quat()}",
+                                    flush=True,
+                                )
+                                print(
+                                    f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_euler('ZYX')}",
+                                    flush=True,
+                                )
+                                print(f"T_cam2gripper: {T_cam2gripper}", flush=True)
+
+            # Save the latest camera calibration to the yaml file
+            self.save_yaml(
+                R_cam2gripper,
+                T_cam2gripper,
+                rotation_error,
+                translation_error,
+                method,
+            )
 
             if created_rate:
                 self.destroy_rate(rate)
@@ -1046,11 +1135,18 @@ class CalibrateCameraNode(Node):
         Run the node offline.
         """
         camera_calibration = CameraCalibration(
-            method=self.hand_eye_calibration_method,
+            methods=self.hand_eye_calibration_methods,
         )
         camera_calibration.add_samples_from_folder(self.offline_data_dir)
-        R_cam2gripper, T_cam2gripper, rotation_error, translation_error = (
-            camera_calibration.compute_calibration()
+        (
+            R_cam2gripper,
+            T_cam2gripper,
+            rotation_error,
+            translation_error,
+            method,
+        ) = camera_calibration.compute_calibration(
+            save_data=False,
+            verbose=len(self.hand_eye_calibration_methods) > 1,
         )
         if R_cam2gripper is not None:
             print(f"Rotation error: {rotation_error}", flush=True)
@@ -1064,6 +1160,15 @@ class CalibrateCameraNode(Node):
             )
             print(f"T_cam2gripper: {T_cam2gripper}", flush=True)
 
+        # Save the camera calibration to the yaml file
+        self.save_yaml(
+            R_cam2gripper,
+            T_cam2gripper,
+            rotation_error,
+            translation_error,
+            method,
+        )
+
     def run(
         self,
         rate: Union[Rate, float] = 10.0,
@@ -1075,6 +1180,78 @@ class CalibrateCameraNode(Node):
             self.run_online(rate)
         else:
             self.run_offline(rate)
+
+    def save_yaml(
+        self,
+        R_cam2gripper: np.ndarray,
+        t_cam2gripper: np.ndarray,
+        rotation_error: float,
+        translation_error: float,
+        method: int,
+    ) -> None:
+        """
+        Save the camera calibration to a yaml file.
+
+        Parameters
+        ----------
+        R_cam2gripper : np.ndarray
+            The rotation matrix from the camera to the gripper.
+        t_cam2gripper : np.ndarray
+            The translation vector from the camera to the gripper.
+        rotation_error : float
+            The rotation error.
+        translation_error : float
+            The translation error.
+        method : int
+            The method used for the calibration.
+        """
+        # pylint: disable=too-many-arguments, too-many-locals
+        # Okay since this is a utility function.
+
+        # Generate the yaml data
+        x, y, z = t_cam2gripper
+        yaw, pitch, roll = R.from_matrix(R_cam2gripper).as_euler("ZYX")
+        yaml_data = {
+            "calibrate_camera": {
+                "ros__parameters": {
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "roll": roll,
+                    "pitch": pitch,
+                    "yaw": yaw,
+                    "child_frame_id": self.child_frame_id,
+                    "frame_id": self.moveit2.end_effector_name,
+                }
+            }
+        }
+
+        # Create the comment on top of the yaml file
+        method_str = ""
+        if method == cv2.CALIB_HAND_EYE_TSAI:
+            method_str = "tsai"
+        elif method == cv2.CALIB_HAND_EYE_PARK:
+            method_str = "park"
+        elif method == cv2.CALIB_HAND_EYE_HORAUD:
+            method_str = "horaud"
+        elif method == cv2.CALIB_HAND_EYE_ANDREFF:
+            method_str = "andreff"
+        elif method == cv2.CALIB_HAND_EYE_DANIILIDIS:
+            method_str = "daniilidis"
+        comment = (
+            "# This file was auto-generated by the ada_calibrate_camera node. "
+            f"# It used the following hand-eye calibration method: '{method_str}'."
+            f"# The rotation error is {rotation_error} and the translation error is {translation_error}."
+            "# See the README for more details."
+        )
+
+        # Save the camera calibration to the yaml file
+        with open(self.output_calib_file, "w", encoding="utf-8") as f:
+            f.write(comment)
+            f.write("\n")
+            yaml.dump(yaml_data, f)
+            f.write("\n")
+        print(f"Saved the camera calibration to {self.output_calib_file}", flush=True)
 
     def show_img(self, rate_hz: float = 10.0):
         """
