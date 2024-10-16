@@ -2,8 +2,10 @@ calibrate_camera:
   ros__parameters:
     # Whether to run camera calibration online or not
     run_online: true
-    # Where to save/load calibration data, relative to this package's share directory
+    # Where to save/load calibration data, relative to the source ada_ros2/ada_calibrate_camera
     data_dir: "data"
+    # Where to save the calibration results, relative to the source folder ada_ros2/ada_calibrate_camera
+    output_calib_name: config/calibs/auto.yaml
     # If run_online is false, this parameter specifies the folder to load data from
     offline_data_dir: "2024_10_09_21_12_30"
 
