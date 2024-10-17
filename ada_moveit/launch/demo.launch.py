@@ -32,6 +32,14 @@ def generate_launch_description():
         "ada", package_name="ada_moveit"
     ).to_moveit_configs()
 
+    # Calibration Launch Argument
+    calib_da = DeclareLaunchArgument(
+        "calib",
+        default_value="auto",
+        description="Which calibration folder to use. Files are located in the `ada_calibrate_camera` package.",
+    )
+    calib = LaunchConfiguration("calib")
+
     # Sim Launch Argument
     sim_da = DeclareLaunchArgument(
         "sim",
@@ -74,6 +82,7 @@ def generate_launch_description():
 
     # Copy from generate_demo_launch
     ld = LaunchDescription()
+    ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(use_octomap_da)
     ld.add_action(ctrl_da)
@@ -92,6 +101,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 "log_level": log_level,
+                "calibration_file_name": calib,
             }.items(),
         ),
     )

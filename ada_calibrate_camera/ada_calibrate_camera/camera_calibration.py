@@ -249,9 +249,57 @@ class CameraCalibration:
             data["t_target2cam"],
         )
 
+    @staticmethod
+    def translation_error(
+        t1: np.ndarray,
+        t2: np.ndarray,
+    ) -> float:
+        """
+        Compute the translation error between two translation vectors.
+
+        Parameters
+        ----------
+        t1 : np.ndarray
+            The first translation vector.
+        t2 : np.ndarray
+            The second translation vector.
+
+        Returns
+        -------
+        float
+            The translation error.
+        """
+        return np.linalg.norm(t1 - t2)
+
+    @staticmethod
+    def rotation_error(
+        R1: np.ndarray,
+        R2: np.ndarray,
+    ) -> float:
+        """
+        Compute the rotation error between two rotation matrices.
+
+        Parameters
+        ----------
+        R1 : np.ndarray
+            The first rotation matrix.
+        R2 : np.ndarray
+            The second rotation matrix.
+
+        Returns
+        -------
+        float
+            The rotation error.
+        """
+        return (R.from_matrix(R1).inv() * R.from_matrix(R2)).magnitude()
+
     def compute_calibration(
         self,
         save_data: bool = False,
+        ref_R_cam2gripper: Optional[np.ndarray] = None,
+        ref_t_cam2gripper: Optional[np.ndarray] = None,
+        ref_translation_error_threshold: Optional[float] = None,
+        ref_rotation_error_threshold: Optional[float] = None,
         verbose: bool = False,
     ) -> Tuple[
         Optional[np.ndarray],
@@ -276,6 +324,16 @@ class CameraCalibration:
         ----------
         save_data : bool
             Whether to save the data.
+        ref_R_cam2gripper : Optional[np.ndarray]
+            The reference rotation matrix from the camera to the gripper.
+        ref_t_cam2gripper : Optional[np.ndarray]
+            The reference translation vector from the camera to the gripper.
+        ref_translation_error_threshold : Optional[float]
+            The reference translation error threshold. If the translation error is
+            greater than this threshold, the calibration is considered invalid.
+        ref_rotation_error_threshold : Optional[float]
+            The reference rotation error threshold. If the rotation error is greater
+            than this threshold, the calibration is considered invalid.
         verbose : bool
             Whether to print the calibration results.
 
@@ -292,12 +350,24 @@ class CameraCalibration:
         int
             The calibration method that got the least error.
         """
-        # pylint: disable=too-many-locals
-        # One over is fine.
+        # pylint: disable=too-many-locals, too-many-branches, too-many-statements, too-many-arguments
+        # The comaprison to the reference data requires many arguments.
 
         if len(self.Rs_gripper2base) < 3:
             print("Need at least 3 samples to calibrate the camera.", flush=True)
             return None, None, None, None, None
+
+        # Check if we have reference data
+        check_reference = False
+        if (
+            ref_R_cam2gripper is not None
+            and ref_t_cam2gripper is not None
+            and (
+                ref_translation_error_threshold is not None
+                or ref_rotation_error_threshold is not None
+            )
+        ):
+            check_reference = True
 
         # Compute the camera extrinsics calibration
         best_R_cam2gripper = None
@@ -314,12 +384,45 @@ class CameraCalibration:
                 method=method,
             )
 
+            # Check if the calibration is valid
+            if check_reference:
+                translation_error = CameraCalibration.translation_error(
+                    ref_t_cam2gripper, t_cam2gripper
+                )
+                rotation_error = CameraCalibration.rotation_error(
+                    ref_R_cam2gripper, R_cam2gripper
+                )
+                if (
+                    ref_translation_error_threshold is not None
+                    and translation_error > ref_translation_error_threshold
+                ):
+                    print(
+                        (
+                            f"WARNING: Translation error {translation_error} is greater than the threshold "
+                            f"{ref_translation_error_threshold}. Rejecting."
+                        ),
+                        flush=True,
+                    )
+                    continue
+                if (
+                    ref_rotation_error_threshold is not None
+                    and rotation_error > ref_rotation_error_threshold
+                ):
+                    print(
+                        (
+                            f"WARNING: Rotation error {rotation_error} is greater than the threshold "
+                            f"{ref_rotation_error_threshold}. Rejecting."
+                        ),
+                        flush=True,
+                    )
+                    continue
+
             # Convert to a homogenous transform
             T_cam2gripper = np.eye(4)
             T_cam2gripper[:3, :3] = R_cam2gripper
             T_cam2gripper[:3, 3] = t_cam2gripper.reshape((3,))
 
-            # Compute the transformation error
+            # For each sample, get the target's pose is base frame
             Rs_target2base = []
             ts_target2base = []
             # pylint: disable=consider-using-enumerate
@@ -359,10 +462,14 @@ class CameraCalibration:
             ):  # pylint: disable=consider-using-enumerate
                 for j in range(i + 1, len(Rs_target2base)):
                     translation_errors.append(
-                        np.linalg.norm(ts_target2base[i] - ts_target2base[j])
+                        CameraCalibration.translation_error(
+                            ts_target2base[i], ts_target2base[j]
+                        )
                     )
                     rotation_errors.append(
-                        (Rs_target2base[i].inv() * Rs_target2base[j]).magnitude()
+                        CameraCalibration.rotation_error(
+                            Rs_target2base[i].as_matrix(), Rs_target2base[j].as_matrix()
+                        )
                     )
 
             # Average the errors
@@ -389,7 +496,7 @@ class CameraCalibration:
                 best_method = method
 
         # Save the calibration
-        if save_data and self.data_dir is not None:
+        if save_data and self.data_dir is not None and best_R_cam2gripper is not None:
             np.savez_compressed(
                 os.path.join(self.data_dir, f"{self.sample_i}_calib.npz"),
                 R_cam2gripper=best_R_cam2gripper,
