@@ -57,8 +57,6 @@ from ada_calibrate_camera.helpers import (
 # pylint: disable=too-many-lines
 # It is only slightly over.
 
-PACKAGE_SRC_DIR = Path(__file__).parent.parent.absolute()
-
 
 class CalibrateCameraNode(Node):
     """
@@ -101,7 +99,7 @@ class CalibrateCameraNode(Node):
             node=self,
             joint_names=kinova.joint_names(),
             base_link_name=kinova.base_link_name(),
-            end_effector_name=kinova.end_effector_name(),
+            end_effector_name=self.robot_end_effector_frame,
             group_name="jaco_arm",
             callback_group=callback_group,
         )
@@ -168,7 +166,7 @@ class CalibrateCameraNode(Node):
                 read_only=True,
             ),
         ).value
-        relative_data_dir = self.declare_parameter(
+        data_dir = self.declare_parameter(
             "data_dir",
             "data",
             ParameterDescriptor(
@@ -178,7 +176,7 @@ class CalibrateCameraNode(Node):
                 read_only=True,
             ),
         ).value
-        self.data_dir = os.path.join(PACKAGE_SRC_DIR, relative_data_dir)
+        self.data_dir = os.path.expanduser(data_dir)
         self.offline_data_dir = self.declare_parameter(
             "offline_data_dir",
             "2024_10_09_21_12_30",
@@ -190,7 +188,7 @@ class CalibrateCameraNode(Node):
             ),
         ).value
         self.offline_data_dir = os.path.join(self.data_dir, self.offline_data_dir)
-        output_calib_name = self.declare_parameter(
+        output_calib_file = self.declare_parameter(
             "output_calib_name",
             "config/calibs/auto.yaml",
             ParameterDescriptor(
@@ -200,7 +198,7 @@ class CalibrateCameraNode(Node):
                 read_only=True,
             ),
         ).value
-        self.output_calib_file = os.path.join(PACKAGE_SRC_DIR, output_calib_name)
+        self.output_calib_file = os.path.expanduser(output_calib_file)
         self.child_frame_id = self.declare_parameter(
             "child_frame_id",
             "camera_color_optical_frame",
@@ -208,6 +206,31 @@ class CalibrateCameraNode(Node):
                 name="child_frame_id",
                 type=ParameterType.PARAMETER_STRING,
                 description="The child frame ID (camera optical frame ID).",
+                read_only=True,
+            ),
+        ).value
+
+        # Frame names
+        self.robot_end_effector_frame = self.declare_parameter(
+            "robot_end_effector_frame",
+            "forkTip",
+            ParameterDescriptor(
+                name="robot_end_effector_frame",
+                type=ParameterType.PARAMETER_STRING,
+                description="The robot end effector frame. Used for cartesian motions.",
+                read_only=True,
+            ),
+        ).value
+        self.extrinsics_base_frame = self.declare_parameter(
+            "extrinsics_base_frame",
+            "j2n6s200_end_effector",
+            ParameterDescriptor(
+                name="extrinsics_base_frame",
+                type=ParameterType.PARAMETER_STRING,
+                description=(
+                    "The extrinsics base frame. The camera should have a static transform "
+                    "from this frame. This frame should be on the robot arm."
+                ),
                 read_only=True,
             ),
         ).value
@@ -392,7 +415,7 @@ class CalibrateCameraNode(Node):
                     )
                     return cleanup(False)
                 if self.get_clock().now() - start_time > timeout:
-                    self.get_logger().error("Timed out while gettine the joint states.")
+                    self.get_logger().error("Timed out while getting the joint states.")
                     return cleanup(False)
                 rate.sleep()
 
@@ -688,6 +711,7 @@ class CalibrateCameraNode(Node):
         only_linear: bool = False,
         only_angular: bool = False,
         do_not_oscillate: bool = True,
+        verbose: bool = False,
     ):
         """
         Move the end-effector to the specified pose via Cartesian motion.
@@ -711,6 +735,8 @@ class CalibrateCameraNode(Node):
         do_not_oscillate : bool
             If true, as soon as the sign of any of the velocities changes, zero out
             that dimension of the velocity.
+        verbose : bool
+            If true, print verbose output.
         """
         # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
         # pylint: disable=too-many-return-statements, too-many-statements
@@ -767,6 +793,7 @@ class CalibrateCameraNode(Node):
                 self.moveit2.end_effector_name,
                 self.get_remaining_time(start_time, timeout_secs),
             )
+            if verbose: print(f"Pose in end-effector frame: {pose_stamped_ee}", flush=True)
             if pose_stamped_ee is None:
                 return cleanup(False)
 
@@ -822,6 +849,7 @@ class CalibrateCameraNode(Node):
                         ]
                     )
                 )
+            if verbose: print(f"Twist in EE frame{twist_stamped}", flush=True)
 
             # Transform to the base frame
             twist_stamped_base = self.transform_stamped_msg(
@@ -829,6 +857,7 @@ class CalibrateCameraNode(Node):
                 self.moveit2.base_link_name,
                 self.get_remaining_time(start_time, timeout_secs),
             )
+            if verbose: print(f"Twist in base frame{twist_stamped_base}", flush=True)
             if twist_stamped_base is None:
                 return cleanup(False)
 
@@ -951,17 +980,19 @@ class CalibrateCameraNode(Node):
             )
 
             # Get the current end-effector pose in base frame
-            zero_pose = PoseStamped()
-            zero_pose.header.frame_id = self.moveit2.end_effector_name
-            zero_pose.pose.orientation.w = 1.0
+            zero_pose_ee_frame = PoseStamped()
+            zero_pose_ee_frame.header.frame_id = self.moveit2.end_effector_name
+            zero_pose_ee_frame.pose.orientation.w = 1.0
+            zero_pose_extrinsics_frame = copy.deepcopy(zero_pose_ee_frame)
+            zero_pose_extrinsics_frame.header.frame_id = self.extrinsics_base_frame
             init_ee_pose = self.transform_stamped_msg(
-                copy.deepcopy(zero_pose),
+                copy.deepcopy(zero_pose_ee_frame),
                 self.moveit2.base_link_name,
             )
             if init_ee_pose is None:
                 return
             init_ee_M = pose_to_matrix(init_ee_pose.pose)
-            print(f"Initial end-effector transform: {init_ee_M}", flush=True)
+            print(f"Initial end-effector transform: {init_ee_pose}", flush=True)
 
             # Capture the poses and images.
             camera_calibration = CameraCalibration(
@@ -971,9 +1002,11 @@ class CalibrateCameraNode(Node):
             lateral_radius = 0.10  # meters
             lateral_intervals = 5
             wait_before_capture = Duration(seconds=self.wait_before_capture_secs)
-            pitches = [-np.pi / 4, np.pi / 4, 0.0]
+            # In practice, modifying pitch resulted in too much variation in z, which hindered reliability.
+            # This is kept here for legacy purposes.
+            pitches = [0.0]
             prev_target_pose = None
-            for d_z in [0.0, 0.1, -0.08]:
+            for d_z in [0.0, 0.08, -0.08]:
                 for lateral_i in range(-1, lateral_intervals):
                     # Get the target pose
                     if lateral_i == -1:
@@ -987,9 +1020,9 @@ class CalibrateCameraNode(Node):
                         if (np.pi / 4 <= theta <= 3 * np.pi / 4) or (
                             5 * np.pi / 4 <= theta <= 7 * np.pi / 4
                         ):
-                            yaws = [np.pi / 2, 3 * np.pi / 2]
-                        else:
                             yaws = [0.0, np.pi]
+                        else:
+                            yaws = [np.pi / 2, 3 * np.pi / 2]
                     pitches.reverse()
                     for d_yaw in yaws:
                         for d_pitch in pitches:
@@ -997,7 +1030,7 @@ class CalibrateCameraNode(Node):
                             target_M = np.eye(4)
                             target_M[:3, :3] = (
                                 init_ee_M[:3, :3]
-                                @ R.from_euler("ZYX", [d_yaw, d_pitch, 0.0]).as_matrix()
+                                @ R.from_euler("ZYX", [d_yaw, 0.0, d_pitch]).as_matrix()
                             )
                             target_M[:3, 3] = init_ee_M[:3, 3] + [d_x, d_y, d_z]
 
@@ -1057,7 +1090,7 @@ class CalibrateCameraNode(Node):
 
                             # Capture the transform from the end effector to the base link
                             ee_pose_in_base_frame = self.transform_stamped_msg(
-                                copy.deepcopy(zero_pose),
+                                copy.deepcopy(zero_pose_extrinsics_frame),
                                 self.moveit2.base_link_name,
                             )
                             if ee_pose_in_base_frame is None:
@@ -1149,6 +1182,7 @@ class CalibrateCameraNode(Node):
             verbose=len(self.hand_eye_calibration_methods) > 1,
         )
         if R_cam2gripper is not None:
+            print(f"Used method: {method}", flush=True)
             print(f"Rotation error: {rotation_error}", flush=True)
             print(f"Translation error: {translation_error}", flush=True)
             print(
@@ -1209,19 +1243,19 @@ class CalibrateCameraNode(Node):
         # Okay since this is a utility function.
 
         # Generate the yaml data
-        x, y, z = t_cam2gripper
+        x, y, z = t_cam2gripper.flatten()
         yaw, pitch, roll = R.from_matrix(R_cam2gripper).as_euler("ZYX")
         yaml_data = {
             "calibrate_camera": {
                 "ros__parameters": {
-                    "x": x,
-                    "y": y,
-                    "z": z,
-                    "roll": roll,
-                    "pitch": pitch,
-                    "yaw": yaw,
+                    "x": float(x),
+                    "y": float(y),
+                    "z": float(z),
+                    "roll": float(roll),
+                    "pitch": float(pitch),
+                    "yaw": float(yaw),
                     "child_frame_id": self.child_frame_id,
-                    "frame_id": self.moveit2.end_effector_name,
+                    "frame_id": self.extrinsics_base_frame,
                 }
             }
         }
@@ -1239,24 +1273,24 @@ class CalibrateCameraNode(Node):
         elif method == cv2.CALIB_HAND_EYE_DANIILIDIS:
             method_str = "daniilidis"
         comment = (
-            "# This file was auto-generated by the ada_calibrate_camera node. "
-            f"# It used the following hand-eye calibration method: '{method_str}'."
-            f"# The rotation error is {rotation_error} and the translation error is {translation_error}."
-            "# See the README for more details."
+            "# This file was auto-generated by the ada_calibrate_camera node.\n"
+            f"# It used the following hand-eye calibration method: '{method_str}'.\n"
+            f"# The rotation error is {rotation_error} and the translation error is {translation_error}.\n"
+            "# See the README for more details.\n"
         )
 
         # Save the camera calibration to the yaml file
         with open(self.output_calib_file, "w", encoding="utf-8") as f:
             f.write(comment)
-            f.write("\n")
             yaml.dump(yaml_data, f)
-            f.write("\n")
         print(f"Saved the camera calibration to {self.output_calib_file}", flush=True)
 
     def show_img(self, rate_hz: float = 10.0):
         """
         Show the latest RGB image.
         """
+        if not self.run_node_online:
+            return
         # Configuration for the timeout
         rate = self.create_rate(rate_hz)
         try:

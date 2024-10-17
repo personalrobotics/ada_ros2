@@ -1,13 +1,19 @@
 calibrate_camera:
   ros__parameters:
+    # Frame names
+    robot_end_effector_frame: "forkTip"
+    extrinsics_base_frame: "j2n6s200_end_effector"
+
     # Whether to run camera calibration online or not
     run_online: true
-    # Where to save/load calibration data, relative to the source ada_ros2/ada_calibrate_camera
-    data_dir: "data"
-    # Where to save the calibration results, relative to the source folder ada_ros2/ada_calibrate_camera
-    output_calib_name: config/calibs/auto.yaml
+    # Where to save/load calibration data.
+    # NOTE: Although it is not good practice to hardcode paths, the only way to avoid this is to
+    # save the files to the built package's share directory, which hinders pushing it to Github.
+    data_dir: "~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/data"
+    # Where to save the calibration results
+    output_calib_name: ~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/auto.yaml
     # If run_online is false, this parameter specifies the folder to load data from
-    offline_data_dir: "2024_10_09_21_12_30"
+    offline_data_dir: "2024_10_16_17_16_32"
 
     # Charuco board parameters
     charuco_n_rows: 9
@@ -16,5 +22,6 @@ calibrate_camera:
     charuco_marker_length_m: 0.015 # 0.0257
     charuco_predefined_dictionary: 5  # https://docs.opencv.org/4.x/de/d67/group__objdetect__aruco.html#ga4e13135a118f497c6172311d601ce00d
 
-    # Hand-eye calibration method
-    hand_eye_calibration_method: 3  # https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gad10a5ef12ee3499a0774c7904a801b99
+    # Hand-eye calibration method. Options: "all", "tsai", "park", "andreff", "horaud", "daniilidis"
+    # More details: https://docs.opencv.org/4.5.4/d9/d0c/group__calib3d.html#gad10a5ef12ee3499a0774c7904a801b99
+    hand_eye_calibration_method: "andreff"
