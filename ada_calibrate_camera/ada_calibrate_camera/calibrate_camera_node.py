@@ -6,11 +6,10 @@ This module defines a node that calibrates the camera using a charucoboard.
 # Standard imports
 import copy
 import os
-from pathlib import Path
 import readline  # pylint: disable=unused-import
 import sys
 import threading
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 # Third-party imports
 from action_msgs.msg import GoalStatus
@@ -199,6 +198,43 @@ class CalibrateCameraNode(Node):
             ),
         ).value
         self.output_calib_file = os.path.expanduser(output_calib_file)
+        ref_calib_file = self.declare_parameter(
+            "reference_calib_name",
+            "config/calibs/manual.yaml",
+            ParameterDescriptor(
+                name="reference_calib_name",
+                type=ParameterType.PARAMETER_STRING,
+                description="The name of the reference calibration file, relative to the package's source directory",
+                read_only=True,
+            ),
+        ).value
+        self.ref_calib_file = os.path.expanduser(ref_calib_file)
+        self.ref_translation_error_threshold = self.declare_parameter(
+            "reference_translation_error_threshold",
+            0.03,
+            ParameterDescriptor(
+                name="reference_translation_error_threshold",
+                type=ParameterType.PARAMETER_DOUBLE,
+                description=(
+                    "If the computed camera calibration's translation differs from the reference by more than "
+                    "this threshold, the calibration is considered invalid."
+                ),
+                read_only=True,
+            ),
+        ).value
+        self.ref_rotation_error_threshold = self.declare_parameter(
+            "reference_rotation_error_threshold",
+            0.03,
+            ParameterDescriptor(
+                name="reference_rotation_error_threshold",
+                type=ParameterType.PARAMETER_DOUBLE,
+                description=(
+                    "If the computed camera calibration's rotation differs from the reference by more than "
+                    "this threshold, the calibration is considered invalid."
+                ),
+                read_only=True,
+            ),
+        ).value
         self.child_frame_id = self.declare_parameter(
             "child_frame_id",
             "camera_color_optical_frame",
@@ -793,7 +829,8 @@ class CalibrateCameraNode(Node):
                 self.moveit2.end_effector_name,
                 self.get_remaining_time(start_time, timeout_secs),
             )
-            if verbose: print(f"Pose in end-effector frame: {pose_stamped_ee}", flush=True)
+            if verbose:
+                print(f"Pose in end-effector frame: {pose_stamped_ee}", flush=True)
             if pose_stamped_ee is None:
                 return cleanup(False)
 
@@ -849,7 +886,8 @@ class CalibrateCameraNode(Node):
                         ]
                     )
                 )
-            if verbose: print(f"Twist in EE frame{twist_stamped}", flush=True)
+            if verbose:
+                print(f"Twist in EE frame{twist_stamped}", flush=True)
 
             # Transform to the base frame
             twist_stamped_base = self.transform_stamped_msg(
@@ -857,7 +895,8 @@ class CalibrateCameraNode(Node):
                 self.moveit2.base_link_name,
                 self.get_remaining_time(start_time, timeout_secs),
             )
-            if verbose: print(f"Twist in base frame{twist_stamped_base}", flush=True)
+            if verbose:
+                print(f"Twist in base frame{twist_stamped_base}", flush=True)
             if twist_stamped_base is None:
                 return cleanup(False)
 
@@ -978,6 +1017,9 @@ class CalibrateCameraNode(Node):
                 "table so the end-effector is around 10cm above the charuboard while "
                 "the charucoboard is still fully visible in the camera. Press Enter when done."
             )
+
+            # Load the reference calibration
+            ref_R_cam2gripper, ref_t_cam2gripper = self.load_yaml(self.ref_calib_file)
 
             # Get the current end-effector pose in base frame
             zero_pose_ee_frame = PoseStamped()
@@ -1126,6 +1168,10 @@ class CalibrateCameraNode(Node):
                                 method,
                             ) = camera_calibration.compute_calibration(
                                 save_data=False,
+                                ref_R_cam2gripper=ref_R_cam2gripper,
+                                ref_t_cam2gripper=ref_t_cam2gripper,
+                                ref_translation_error_threshold=self.ref_translation_error_threshold,
+                                ref_rotation_error_threshold=self.ref_rotation_error_threshold,
                             )
                             if R_cam2gripper is not None:
                                 print(f"Rotation error: {rotation_error}", flush=True)
@@ -1144,13 +1190,14 @@ class CalibrateCameraNode(Node):
                                 print(f"T_cam2gripper: {T_cam2gripper}", flush=True)
 
             # Save the latest camera calibration to the yaml file
-            self.save_yaml(
-                R_cam2gripper,
-                T_cam2gripper,
-                rotation_error,
-                translation_error,
-                method,
-            )
+            if R_cam2gripper is not None:
+                self.save_yaml(
+                    R_cam2gripper,
+                    T_cam2gripper,
+                    rotation_error,
+                    translation_error,
+                    method,
+                )
 
             if created_rate:
                 self.destroy_rate(rate)
@@ -1167,10 +1214,16 @@ class CalibrateCameraNode(Node):
         """
         Run the node offline.
         """
+        # Load the reference calibration
+        ref_R_cam2gripper, ref_t_cam2gripper = self.load_yaml(self.ref_calib_file)
+
+        # Load the camera calibration data
         camera_calibration = CameraCalibration(
             methods=self.hand_eye_calibration_methods,
         )
         camera_calibration.add_samples_from_folder(self.offline_data_dir)
+
+        # Compute the camera extrinsics calibration
         (
             R_cam2gripper,
             T_cam2gripper,
@@ -1179,8 +1232,14 @@ class CalibrateCameraNode(Node):
             method,
         ) = camera_calibration.compute_calibration(
             save_data=False,
+            ref_R_cam2gripper=ref_R_cam2gripper,
+            ref_t_cam2gripper=ref_t_cam2gripper,
+            ref_translation_error_threshold=self.ref_translation_error_threshold,
+            ref_rotation_error_threshold=self.ref_rotation_error_threshold,
             verbose=len(self.hand_eye_calibration_methods) > 1,
         )
+
+        # Print the results
         if R_cam2gripper is not None:
             print(f"Used method: {method}", flush=True)
             print(f"Rotation error: {rotation_error}", flush=True)
@@ -1194,14 +1253,14 @@ class CalibrateCameraNode(Node):
             )
             print(f"T_cam2gripper: {T_cam2gripper}", flush=True)
 
-        # Save the camera calibration to the yaml file
-        self.save_yaml(
-            R_cam2gripper,
-            T_cam2gripper,
-            rotation_error,
-            translation_error,
-            method,
-        )
+            # Save the camera calibration to the yaml file
+            self.save_yaml(
+                R_cam2gripper,
+                T_cam2gripper,
+                rotation_error,
+                translation_error,
+                method,
+            )
 
     def run(
         self,
@@ -1246,7 +1305,7 @@ class CalibrateCameraNode(Node):
         x, y, z = t_cam2gripper.flatten()
         yaw, pitch, roll = R.from_matrix(R_cam2gripper).as_euler("ZYX")
         yaml_data = {
-            "calibrate_camera": {
+            "publish_camera_extrinsics": {
                 "ros__parameters": {
                     "x": float(x),
                     "y": float(y),
@@ -1284,6 +1343,35 @@ class CalibrateCameraNode(Node):
             f.write(comment)
             yaml.dump(yaml_data, f)
         print(f"Saved the camera calibration to {self.output_calib_file}", flush=True)
+
+    def load_yaml(self, yaml_file: str) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Load the camera calibration from a yaml file.
+
+        Parameters
+        ----------
+        yaml_file : str
+            The yaml file to load.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray]
+            The rotation matrix and translation vector.
+        """
+        # Load the yaml file
+        with open(yaml_file, "r", encoding="utf-8") as f:
+            yaml_data = yaml.safe_load(f)
+        x = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["x"]
+        y = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["y"]
+        z = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["z"]
+        roll = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["roll"]
+        pitch = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["pitch"]
+        yaw = yaml_data["publish_camera_extrinsics"]["ros__parameters"]["yaw"]
+
+        # Create the rotation matrix and translation vector
+        R_cam2gripper = R.from_euler("ZYX", [yaw, pitch, roll]).as_matrix()
+        t_cam2gripper = np.array([x, y, z]).reshape((3, 1))
+        return R_cam2gripper, t_cam2gripper
 
     def show_img(self, rate_hz: float = 10.0):
         """
