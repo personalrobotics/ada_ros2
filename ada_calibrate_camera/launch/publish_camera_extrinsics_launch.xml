@@ -1,0 +1,8 @@
+<launch>
+  <arg name="calibration_file_name" default="auto" description="Name of the calibration file to save" />
+  <arg name="log_level" default="info" description="Log level to pass to create_action_servers: debug, info, warn" />
+
+  <node pkg="ada_calibrate_camera" exec="publish_camera_extrinsics" name="publish_camera_extrinsics" respawn="true" args="--ros-args --log-level $(var log_level) --log-level rcl:=INFO --log-level rmw_cyclonedds_cpp:=INFO">
+    <param from="$(find-pkg-share ada_calibrate_camera)/config/calibs/$(var calibration_file_name).yaml"/>
+  </node>
+</launch>
