@@ -372,13 +372,13 @@ class CameraCalibration:
             # Print the calibration results
             if verbose:
                 print(f"Method: {method}", flush=True)
+                print(f"Translation error: {translation_error}", flush=True)
+                print(f"Rotation error: {rotation_error}", flush=True)
                 print(
                     f"R_cam2gripper: {R.from_matrix(R_cam2gripper).as_euler('ZYX')}",
                     flush=True,
                 )
                 print(f"t_cam2gripper: {t_cam2gripper}", flush=True)
-                print(f"Translation error: {translation_error}", flush=True)
-                print(f"Rotation error: {rotation_error}", flush=True)
 
             # Save the best calibration
             if translation_error < best_translation_error:
@@ -399,9 +399,9 @@ class CameraCalibration:
             )
 
         return (
-            R_cam2gripper,
-            t_cam2gripper,
-            rotation_error,
-            translation_error,
+            best_R_cam2gripper,
+            best_t_cam2gripper,
+            best_rotation_error,
+            best_translation_error,
             best_method,
         )

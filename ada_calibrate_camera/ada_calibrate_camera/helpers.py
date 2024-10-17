@@ -12,6 +12,7 @@ from geometry_msgs.msg import (
     Pose,
     PoseStamped,
     Quaternion,
+    Transform,
     TwistStamped,
     Vector3,
 )
@@ -67,6 +68,26 @@ def pose_to_matrix(pose: Pose) -> np.ndarray:
     return M
 
 
+def transform_to_matrix(transform: Transform) -> np.ndarray:
+    """
+    Convert a Transform message to a homogenous transformation matrix.
+
+    Parameters
+    ----------
+    transform : Transform
+        The transform.
+
+    Returns
+    -------
+    np.ndarray
+        The homogenous transformation matrix.
+    """
+    M = np.eye(4)
+    M[:3, :3] = R.from_quat(ros2_numpy.numpify(transform.rotation)).as_matrix()
+    M[:3, 3] = ros2_numpy.numpify(transform.translation)
+    return M
+
+
 def matrix_to_pose(M: np.ndarray) -> Pose:
     """
     Convert a homogenous transformation matrix to a Pose message.
@@ -96,8 +117,8 @@ def matrix_to_pose(M: np.ndarray) -> Pose:
 def pose_to_twist(
     pose_stamped: PoseStamped,
     max_linear_speed: float = 0.1,  # m/s
-    max_angular_speed: float = 0.3,  # rad/s
-    round_decimals: Optional[int] = 3,
+    max_angular_speed: float = 0.5,  # rad/s
+    round_decimals: Optional[int] = 6,
     rate_hz: float = 10.0,
 ) -> TwistStamped:
     """
