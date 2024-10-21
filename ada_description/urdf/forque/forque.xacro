@@ -81,7 +81,8 @@
 	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
 	  		<inertia ixx="0.0000418078" iyy="0.0000177249" iyz="-0.000000210639" izz="0.00005200336" ixy="-0.000000396292" ixz="0.00000002424697"/>
 	  	</xacro:forque_assembly_link>
-		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.025 0 0"/>
+		<!-- The slight rotation was manually added due to empirical deformations in the robot gripped, such that the fingers and fork handle were slightly pitched up relative to the wrist. -->
+		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.0375 0 0.0125"/>
 
 	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
 	  		<inertia ixx="0.000005235822" iyy="0.000006264852" iyz="-0.00000004033694" izz="0.00000640797" ixy="-0.0000003129932" ixz="0.000000013798"/>
