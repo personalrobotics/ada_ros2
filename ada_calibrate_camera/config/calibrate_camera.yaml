@@ -11,10 +11,10 @@ calibrate_camera:
     # save the files to the built package's share directory, which hinders pushing it to Github.
     data_dir: "~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/data"
     # Where to save the calibration results
-    output_calib_name: ~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/auto.yaml
+    output_calib_name: ~/Workspace/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/auto.yaml
     # A calibration file to serve as reference. If the translation or rotation error from the reference
     # calibration is higher than thresholds, reject the calibration.
-    reference_calib_name: ~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/manual.yaml
+    reference_calib_name: ~/Workspace/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/manual.yaml
     reference_translation_error_threshold: 0.03 # meters
     reference_rotation_error_threshold: 0.15 # radians
     # If run_online is false, this parameter specifies the folder to load data from
