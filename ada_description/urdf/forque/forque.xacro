@@ -83,7 +83,7 @@
 	  	</xacro:forque_assembly_link>
 
 		<!-- The slight rotation was manually added due to empirical deformations in the robot gripped, such that the fingers and fork handle were slightly pitched up relative to the wrist. -->
-		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0.005 0.0013" joint_origin_rpy="-0.0375 0 0.0125"/>
+		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" parent="FTMount" child="forkHandle" joint_origin_xyz="0 0.005 0.0013" joint_origin_rpy="-0.025 0 -0.0065"/>
 
 		<xacro:forque_assembly_link link_name="forkHandleCover" link_mesh="2024_06_24_forkHandleCover" mass="0.004" cog="0.011157 -0.168451 0.006404">
 	  		<inertia ixx="0.0000027878" iyy="0.00000064518" iyz="0.00000016201" izz="0.000003363634" ixy="0.00000000012805" ixz="0.00000000006585"/>
