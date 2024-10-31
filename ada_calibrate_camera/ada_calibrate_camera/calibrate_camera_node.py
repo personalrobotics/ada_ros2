@@ -1048,7 +1048,7 @@ class CalibrateCameraNode(Node):
             # This is kept here for legacy purposes.
             pitches = [0.0]
             prev_target_pose = None
-            for d_z in [0.0, 0.08, -0.08]:
+            for d_z in [0.0, 0.05, -0.05]:
                 for lateral_i in range(-1, lateral_intervals):
                     # Get the target pose
                     if lateral_i == -1:

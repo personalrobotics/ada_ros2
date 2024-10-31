@@ -384,7 +384,7 @@ class CameraCalibration:
                 method=method,
             )
 
-            # Check if the calibration is valid
+            # Check if the calibration is valid relative to the reference
             if check_reference:
                 translation_error = CameraCalibration.translation_error(
                     ref_t_cam2gripper, t_cam2gripper
@@ -398,8 +398,8 @@ class CameraCalibration:
                 ):
                     print(
                         (
-                            f"WARNING: Translation error {translation_error} is greater than the threshold "
-                            f"{ref_translation_error_threshold}. Rejecting."
+                            f"WARNING: Translation error from reference is {translation_error}, greater than "
+                            f"the threshold {ref_translation_error_threshold}. Rejecting."
                         ),
                         flush=True,
                     )
@@ -410,8 +410,8 @@ class CameraCalibration:
                 ):
                     print(
                         (
-                            f"WARNING: Rotation error {rotation_error} is greater than the threshold "
-                            f"{ref_rotation_error_threshold}. Rejecting."
+                            f"WARNING: Rotation error from reference is {rotation_error}, greater than "
+                            f"the threshold {ref_rotation_error_threshold}. Rejecting."
                         ),
                         flush=True,
                     )

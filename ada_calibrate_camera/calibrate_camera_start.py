@@ -44,6 +44,13 @@ parser.add_argument(
     help="If set, only terminate the code in the screens.",
 )
 parser.add_argument(
+    "--dev",
+    action="store_true",
+    help=(
+        "If set, show RVIZ in `moveit`."
+    ),
+)
+parser.add_argument(
     "--real_domain_id",
     default=42,
     type=int,
@@ -146,11 +153,19 @@ async def main(args: argparse.Namespace, pwd: str) -> None:
             "ros2 launch nano_bridge receiver.launch.xml",
         ],
         "moveit": [
-            f"ros2 launch ada_moveit demo.launch.py use_rviz:=true sim:={args.sim} use_octomap:=false"
+            "Xvfb :5 -screen 0 800x600x24 &" if not args.dev else "",
+            "export DISPLAY=:5" if not args.dev else "",
+            (
+                f"ros2 launch ada_moveit demo.launch.py use_rviz:={'true' if args.dev else 'false'} "
+                f"sim:={args.sim} use_octomap:=false"
+            ),
         ],
         "calibrate": [
-            "ros2 run ada_calibrate_camera calibrate_camera --ros-args "
-            f"--params-file {os.path.join(pwd, 'src/ada_ros2/ada_calibrate_camera/config/calibrate_camera.yaml')}"
+            "export DISPLAY=:5" if not args.dev else "",
+            (
+                "ros2 run ada_calibrate_camera calibrate_camera --ros-args "
+                f"--params-file {os.path.join(pwd, 'src/ada_ros2/ada_calibrate_camera/config/calibrate_camera.yaml')}"
+            )
         ],
     }
     close_commands = {}

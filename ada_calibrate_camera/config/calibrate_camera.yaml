@@ -9,7 +9,7 @@ calibrate_camera:
     # Where to save/load calibration data.
     # NOTE: Although it is not good practice to hardcode paths, the only way to avoid this is to
     # save the files to the built package's share directory, which hinders pushing it to Github.
-    data_dir: "~/Workspaces/ada_ws/src/ada_ros2/ada_calibrate_camera/data"
+    data_dir: ~/Workspace/ada_ws/src/ada_ros2/ada_calibrate_camera/data
     # Where to save the calibration results
     output_calib_name: ~/Workspace/ada_ws/src/ada_ros2/ada_calibrate_camera/config/calibs/auto.yaml
     # A calibration file to serve as reference. If the translation or rotation error from the reference
@@ -23,8 +23,8 @@ calibrate_camera:
     # Charuco board parameters
     charuco_n_rows: 9
     charuco_n_cols: 14
-    charuco_sq_length_m: 0.02 # 0.0351
-    charuco_marker_length_m: 0.015 # 0.0257
+    charuco_sq_length_m: 0.0188 # 0.0351
+    charuco_marker_length_m: 0.0138 # 0.0257
     charuco_predefined_dictionary: 5  # https://docs.opencv.org/4.x/de/d67/group__objdetect__aruco.html#ga4e13135a118f497c6172311d601ce00d
 
     # Hand-eye calibration method. Options: "all", "tsai", "park", "horaud", "andreff", "daniilidis"
