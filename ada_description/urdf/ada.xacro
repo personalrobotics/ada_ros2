@@ -57,10 +57,28 @@
   </joint>
   -->
 
-  <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.03783" cog="0.010957 -0.019223 -0.03777">
-    <inertia ixx="0.000018817" iyy="0.00001119989" iyz="-0.00000120296" izz="0.000026883" ixy="-0.0000003327" ixz="-0.000000092476"/>
+  <xacro:forque_assembly_link
+      link_name="FTArmMount"
+      link_mesh="2024_01_18_FTArmMount"
+      mass="0.03783"
+      cog="0.010957 -0.019223 -0.03777">
+    <inertia
+        ixx="0.000018817"
+        iyy="0.00001119989"
+        iyz="-0.00000120296"
+        izz="0.000026883"
+        ixy="-0.0000003327"
+        ixz="-0.000000092476"/>
   </xacro:forque_assembly_link>
-  <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" parent="j2n6s200_link_6" child="FTArmMount" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
+  <xacro:forque_assembly_joint
+      joint_name="FTArmMount_to_arm"
+      type="fixed"
+      parent="j2n6s200_link_6"
+      child="FTArmMount"
+      joint_axis_xyz="0 0 1"
+      joint_origin_xyz="0.0065 -0.011 -0.0075"
+      joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"
+      fixed="true"/>
 
   <xacro:if value="$(arg use_forque)">
     <xacro:forque_assembly base_parent="FTArmMount"/>
