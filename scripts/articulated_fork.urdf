@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<robot name="articulated_fork">
+
+    <material name="white">
+        <color rgba="1 1 1 1"/>
+    </material>
+
+    <material name="orange">
+        <color rgba="1 0.3 0.1 1"/>
+    </material>
+
+    <material name="blue">
+        <color rgba="0.2 0.2 1 1"/>
+    </material>
+
+    <link name="world"></link>
+
+    <joint name="pitch_joint" type="revolute">
+        <origin xyz="0 0 0" rpy="0 -1.57 0"/>
+        <parent link="world"/>
+        <child link="pitch_link"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-1.57" upper="1.57" velocity="100" effort="100"/> 
+    </joint>
+
+    <link name="pitch_link">
+        <visual>
+            <origin xyz="0.0115 0 0" rpy="0 0 0"/>
+            <geometry>                
+                <box size="0.023 0.020 0.020"/>
+            </geometry>
+            <material name="orange"/>
+        </visual>
+    </link>
+
+    <joint name="roll_joint" type="continuous">
+        <origin xyz="0.023 0 0" rpy="0 0 0"/>
+        <parent link="pitch_link"/>
+        <child link="roll_link"/>
+        <axis xyz="1 0 0"/>
+        <limit velocity="100" effort="100"/>
+    </joint>
+
+    <link name="roll_link">
+        <visual>
+            <origin xyz="0.03 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <box size="0.020 0.020 0.06"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+    </link>
+
+    <joint name="end_effector_joint" type="fixed">
+        <parent link="roll_link"/>
+        <child link="end_effector"/>
+        <axis xyz="0 0 0"/>
+        <origin xyz="0.06 0 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="end_effector">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <sphere radius="0.01"/>
+            </geometry>
+            <material name="white"/>
+        </visual>
+    </link>
+    
+</robot>
