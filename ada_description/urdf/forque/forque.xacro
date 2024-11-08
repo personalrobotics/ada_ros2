@@ -216,6 +216,111 @@
             joint_origin_rpy="-0.025 0 0"
             fixed="true"/>
 
+        <xacro:forque_assembly_link
+            link_name="AFBase"
+            link_mesh="fr12-h103"
+            mass="0.0907185"
+            cog="0.0 0.0 0.0">
+            <xacro:insert_block name="default_inertial"/>
+        </xacro:forque_assembly_link>
+        <xacro:forque_assembly_joint
+            joint_name="AFBase_to_forkHandle"
+            type="fixed"
+            parent="forkHandle"
+            child="AFBase"
+            joint_axis_xyz="0 0 1"
+            joint_origin_xyz="0.010929196 -0.278553 -0.011"
+            joint_origin_rpy="0 0 0"
+            fixed="true"/>
+
+        <xacro:forque_assembly_link
+            link_name="AFMotor1"
+            link_mesh="XC-430_idle"
+            mass="0.065"
+            cog="0.21641853 -14.751192 -16.796092">
+            <inertia
+                ixx="18680.931"
+                iyy="9585.9138"
+                iyz="-845.46678"
+                izz="17346.641"
+                ixy="1.3348619"
+                ixz="-45.354028"/>
+        </xacro:forque_assembly_link>
+        <xacro:forque_assembly_joint
+            joint_name="AFMotor1_to_AFBase"
+            type="revolute"
+            parent="AFBase"
+            child="AFMotor1"
+            joint_axis_xyz="0 0 1"
+            joint_origin_xyz="0 0 0"
+            joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"
+            joint_lower_limit="${-J_PI/2}"
+            joint_upper_limit="${J_PI/2}"
+            joint_velocity_limit="1"
+            joint_torque_limit="1.4"
+            fixed="false"/>
+
+        <xacro:forque_assembly_link
+            link_name="AFMotorFixture1"
+            link_mesh="fr12-s101"
+            mass="0.0453592"
+            cog="0 0 0">
+            <xacro:insert_block name="default_inertial"/>
+        </xacro:forque_assembly_link>
+        <xacro:forque_assembly_joint
+            joint_name="AFMotorFixture1_to_AFMotor1"
+            type="fixed"
+            parent="AFMotor1"
+            child="AFMotorFixture1"
+            joint_axis_xyz="0 0 1"
+            joint_origin_xyz="0 0 0"
+            joint_origin_rpy="0 ${-J_PI/2} 0"
+            fixed="true"/>
+
+        <xacro:forque_assembly_link
+            link_name="AFMotor2"
+            link_mesh="XC-430_idle"
+            mass="0.065"
+            cog="0.21641853 -14.751192 -16.796092">
+            <inertia
+                ixx="18680.931"
+                iyy="9585.9138"
+                iyz="-845.46678"
+                izz="17346.641"
+                ixy="1.3348619"
+                ixz="-45.354028"/>
+        </xacro:forque_assembly_link>
+        <xacro:forque_assembly_joint
+            joint_name="AFMotor2_to_AFMotorFixture1"
+            type="fixed"
+            parent="AFMotor1"
+            child="AFMotor2"
+            joint_axis_xyz="0 0 1"
+            joint_origin_xyz="-0.03825 0 0"
+            joint_origin_rpy="0 ${-J_PI/2} 0"
+            fixed="true"/>
+
+        <xacro:forque_assembly_link
+            link_name="AFFTAdapter"
+            link_mesh="roll_to_ft_adapter"
+            mass="0.001"
+            cog="0 0 0">
+            <xacro:insert_block name="default_inertial"/>
+        </xacro:forque_assembly_link>
+        <xacro:forque_assembly_joint
+            joint_name="AFFTAdapter_to_AFMotor2"
+            type="revolute"
+            parent="AFMotor2"
+            child="AFFTAdapter"
+            joint_axis_xyz="0 1 0"
+            joint_origin_xyz="0 0 0.019"
+            joint_origin_rpy="${-J_PI/2} 0 0"
+            joint_lower_limit="${-J_PI}"
+            joint_upper_limit="${J_PI}"
+            joint_velocity_limit="1"
+            joint_torque_limit="1.4"
+            fixed="false"/>
+
 	  	<xacro:forque_assembly_link
             link_name="forque"
             link_mesh="ATI-9105-TW-NANO25-E"
@@ -230,12 +335,12 @@
                 ixz="0.000000013798"/>
 	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint
-            joint_name="forque_to_forkHandle"
+            joint_name="forque_to_AFFTAdapter"
             type="fixed"
-            parent="forkHandle"
+            parent="AFFTAdapter"
             child="forque"
             joint_axis_xyz="0 0 1"
-            joint_origin_xyz="-0.00634 -0.222553 -0.004286"
+            joint_origin_xyz="-0.0175 -0.011 0.004"
             joint_origin_rpy="${J_PI/2} ${J_PI/3} 0"
             fixed="true"/>
 
