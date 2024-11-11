@@ -74,6 +74,16 @@ if(BUILD_TESTING)
     hardware_interface
     sensor_msgs
   )
+
+  ament_add_gmock(test_dynamixel test/test_dynamixel.cpp)
+  ament_target_dependencies(test_dynamixel
+    pluginlib
+    ros2_control_test_assets
+    rclcpp
+    rclcpp_lifecycle
+    hardware_interface
+    sensor_msgs
+  )
 endif()
 
 ament_export_dependencies(rclcpp rclcpp_lifecycle pluginlib hardware_interface dynamixel_workbench_toolbox)
