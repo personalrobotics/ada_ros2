@@ -291,7 +291,7 @@
                 ixz="-45.354028"/>
         </xacro:forque_assembly_link>
         <xacro:forque_assembly_joint
-            joint_name="AFMotor2_to_AFMotorFixture1"
+            joint_name="AFMotor2_to_AFMotor1"
             type="fixed"
             parent="AFMotor1"
             child="AFMotor2"
