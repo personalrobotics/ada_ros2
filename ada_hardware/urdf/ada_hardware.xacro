@@ -7,6 +7,7 @@
 
   <xacro:arg name="sim" default="none" />
   <xacro:arg name="readonly" default="false" />
+  <xacro:arg name="use_forque" default="true" />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
@@ -14,6 +15,11 @@
 
   <xacro:ada_hardware_interface
     name="Jaco2"
+    sim="$(arg sim)"
+    readonly="$(arg readonly)" />
+
+  <xacro:dynamixel_hardware_interface
+    name="Dynamixel"
     sim="$(arg sim)"
     readonly="$(arg readonly)" />
 

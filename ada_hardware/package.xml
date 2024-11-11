@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>ada_hardware</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>ROS Hardware Interface for ADA</description>
   <maintainer email="ekgordon@cs.uw.edu">Ethan K. Gordon</maintainer>
   <license>BSD-3-Clause</license>
@@ -12,8 +12,10 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>pluginlib</depend>
+  <depend>lifecycle_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>sensor_msgs</depend>
+  <depend>dynamixel_workbench_toolbox</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>

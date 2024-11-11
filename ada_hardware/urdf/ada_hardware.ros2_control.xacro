@@ -107,4 +107,45 @@
 
   </xacro:macro>
 
+  <xacro:macro name="dynamixel_hardware_interface" params="name sim readonly:=false">
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <xacro:if value="${sim == 'mock'}">
+          <plugin>mock_components/GenericSystem</plugin>
+          <param name="mock_sensor_commands">false</param>
+          <param name="state_following_offset">0.0</param>
+        </xacro:if>
+        <xacro:if value="${sim == 'none'}">
+          <plugin>ada_hardware/Dynamixel</plugin>
+          <param name="port" value="/dev/ttyUSB0" />
+          <param name="baud_rate" value="1000000" />
+        </xacro:if>
+      </hardware>
+
+      <joint name="AFMotor1_to_AFBase">
+        <param name="id">1</param>
+        <xacro:unless value="${readonly}">
+          <command_interface name="position" />
+          <command_interface name="velocity" />
+          <!-- <command_interface name="effort" /> -->
+        </xacro:unless>
+        <state_interface name="position" />
+        <state_interface name="velocity" />
+        <state_interface name="effort" />
+      </joint>
+      <joint name="AFFTAdapter_to_AFMotor2">
+        <param name="id">2</param>
+        <xacro:unless value="${readonly}">
+          <command_interface name="position" />
+          <command_interface name="velocity" />
+          <!-- <command_interface name="effort" /> -->
+        </xacro:unless>
+        <state_interface name="position" />
+        <state_interface name="velocity" />
+        <state_interface name="effort" />
+      </joint>
+    </ros2_control>
+
+  </xacro:macro>
+
 </robot>

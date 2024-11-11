@@ -14,4 +14,12 @@
       Interface for controlling a 6DOF arm (+ 2 fingers) in IsaacSim.
     </description>
   </class>
+
+  <class name="ada_hardware/Dynamixel"
+         type="ada_hardware::Dynamixel"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ROBOTIS Dynamixel system interface.
+    </description>
+  </class>
 </library>
