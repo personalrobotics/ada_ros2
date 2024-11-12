@@ -37,18 +37,17 @@ const auto TIME = rclcpp::Time(0);
 const auto PERIOD = rclcpp::Duration::from_seconds(0.01);
 } // namespace
 
-class TestDynamixel : public ::testing::Test {
+class TestDynamixelHardware : public ::testing::Test {
 protected:
   void SetUp() override {
     hardware_system_articulable_fork_ =
         R"(
   <ros2_control name="articulable_fork" type="system">
     <hardware>
-        <plugin>ada_hardware/Dynamixel</plugin>
-        <param name="usb_port">/dev/ttyUSB0</param>
-        <param name="baud_rate">1000000</param>
+      <plugin>ada_hardware/DynamixelHardware</plugin>
+      <param name="usb_port">/dev/ttyUSB0</param>
+      <param name="baud_rate">1000000</param>
     </hardware>
-
     <joint name="af_joint_1">
       <param name="id">1</param>
       <command_interface name="position" />
@@ -79,7 +78,7 @@ class ResourceStorage;
 
 class TestableResourceManager : public hardware_interface::ResourceManager {
 public:
-  friend TestDynamixel;
+  friend TestDynamixelHardware;
 
   TestableResourceManager() : hardware_interface::ResourceManager() {}
 
@@ -90,7 +89,7 @@ public:
                                             activate_all) {}
 };
 
-TEST_F(TestDynamixel, load_articulable_fork) {
+TEST_F(TestDynamixelHardware, load_articulable_fork) {
   auto urdf = ros2_control_test_assets::urdf_head +
               hardware_system_articulable_fork_ +
               ros2_control_test_assets::urdf_tail;

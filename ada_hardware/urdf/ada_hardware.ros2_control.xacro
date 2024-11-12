@@ -116,7 +116,7 @@
           <param name="state_following_offset">0.0</param>
         </xacro:if>
         <xacro:if value="${sim == 'none'}">
-          <plugin>ada_hardware/Dynamixel</plugin>
+          <plugin>ada_hardware/DynamixelHardware</plugin>
           <param name="port" value="/dev/ttyUSB0" />
           <param name="baud_rate" value="1000000" />
         </xacro:if>
@@ -127,7 +127,6 @@
         <xacro:unless value="${readonly}">
           <command_interface name="position" />
           <command_interface name="velocity" />
-          <!-- <command_interface name="effort" /> -->
         </xacro:unless>
         <state_interface name="position" />
         <state_interface name="velocity" />
@@ -138,7 +137,6 @@
         <xacro:unless value="${readonly}">
           <command_interface name="position" />
           <command_interface name="velocity" />
-          <!-- <command_interface name="effort" /> -->
         </xacro:unless>
         <state_interface name="position" />
         <state_interface name="velocity" />

@@ -25,8 +25,8 @@ forward_position_controller:
       - j2n6s200_joint_6
       - j2n6s200_joint_finger_1
       - j2n6s200_joint_finger_2
-      - AFMotor1_to_AFBase
-      - AFFTAdapter_to_AFMotor2
+      - af_joint_1
+      - af_joint_2
 
 forward_velocity_controller:
   ros__parameters:
@@ -39,8 +39,8 @@ forward_velocity_controller:
       - j2n6s200_joint_6
       - j2n6s200_joint_finger_1
       - j2n6s200_joint_finger_2
-      - AFMotor1_to_AFBase
-      - AFFTAdapter_to_AFMotor2
+      - af_joint_1
+      - af_joint_2
 
 forward_effort_controller:
   ros__parameters:
@@ -53,5 +53,5 @@ forward_effort_controller:
       - j2n6s200_joint_6
       - j2n6s200_joint_finger_1
       - j2n6s200_joint_finger_2
-      - AFMotor1_to_AFBase
-      - AFFTAdapter_to_AFMotor2
+      - af_joint_1
+      - af_joint_2

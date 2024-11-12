@@ -19,7 +19,7 @@
     readonly="$(arg readonly)" />
 
   <xacro:dynamixel_hardware_interface
-    name="Dynamixel"
+    name="DynamixelHardware"
     sim="$(arg sim)"
     readonly="$(arg readonly)" />
 

@@ -15,8 +15,8 @@
     </description>
   </class>
 
-  <class name="ada_hardware/Dynamixel"
-         type="ada_hardware::Dynamixel"
+  <class name="ada_hardware/DynamixelHardware"
+         type="ada_hardware::DynamixelHardware"
          base_class_type="hardware_interface::SystemInterface">
     <description>
       The ROBOTIS Dynamixel system interface.
