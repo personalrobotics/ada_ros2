@@ -117,7 +117,7 @@
         </xacro:if>
         <xacro:if value="${sim == 'none'}">
           <plugin>ada_hardware/DynamixelHardware</plugin>
-          <param name="port" value="/dev/ttyUSB0" />
+          <param name="usb_port" value="/dev/ttyUSB0" />
           <param name="baud_rate" value="1000000" />
         </xacro:if>
       </hardware>
