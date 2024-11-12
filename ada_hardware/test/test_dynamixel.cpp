@@ -41,7 +41,7 @@ class TestDynamixelHardware : public ::testing::Test {
 protected:
   void SetUp() override {
     hardware_system_articulable_fork_ =
-      R"(
+        R"(
   <ros2_control name="articulable_fork" type="system">
     <hardware>
       <plugin>ada_hardware/DynamixelHardware</plugin>
@@ -52,16 +52,14 @@ protected:
       <param name="id">1</param>
       <command_interface name="position"/>
       <command_interface name="velocity"/>
-      <command_interface name="effort"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
       <state_interface name="effort"/>
     </joint>
-    <joint name="j2n6s200_joint_2">
+    <joint name="af_joint_2">
       <param name="id">2</param>
       <command_interface name="position"/>
       <command_interface name="velocity"/>
-      <command_interface name="effort"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
       <state_interface name="effort"/>
