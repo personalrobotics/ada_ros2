@@ -14,4 +14,8 @@
         initial_positions_file="$(arg initial_positions_file)"
         sim="$(arg sim)" />
 
+    <xacro:af_ros2_control name="AFHardware"
+        initial_positions_file="$(arg initial_positions_file)"
+        sim="$(arg sim)" />
+
 </robot>
