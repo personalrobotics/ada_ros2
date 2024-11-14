@@ -44,7 +44,7 @@ protected:
         R"(
   <ros2_control name="articulable_fork" type="system">
     <hardware>
-      <plugin>ada_hardware/DynamixelHardware</plugin>
+      <plugin>dynamixel_hardware/DynamixelHardware</plugin>
       <param name="usb_port">/dev/ttyUSB0</param>
       <param name="baud_rate">1000000</param>
     </hardware>
