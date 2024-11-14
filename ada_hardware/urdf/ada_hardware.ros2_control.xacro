@@ -115,8 +115,8 @@
           <param name="mock_sensor_commands">false</param>
           <param name="state_following_offset">0.0</param>
         </xacro:if>
-        <xacro:if value="${sim == 'none'}">
-          <plugin>ada_hardware/DynamixelHardware</plugin>
+        <xacro:if value="${sim == 'real'}">
+          <plugin>dynamixel_hardware/DynamixelHardware</plugin>
           <param name="usb_port">/dev/ttyUSB0</param>
           <param name="baud_rate">1000000</param>
         </xacro:if>
