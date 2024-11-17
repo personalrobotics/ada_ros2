@@ -23,12 +23,11 @@ controller_manager:
       type: cartesian_twist_controller/CartesianTwistController
 
 
-    articulable_fork_controller:
-      type: force_gate_controller/ForceGateController
+    af_velocity_controller:
+      type: velocity_controllers/JointGroupVelocityController
 
-
-    articulable_fork_cartesian_controller:
-      type: cartesian_twist_controller/CartesianTwistController
+    af_joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
 
 jaco_arm_cartesian_controller:
     ros__parameters:
@@ -91,36 +90,23 @@ jaco_arm_servo_controller:
       - j2n6s200_joint_5
       - j2n6s200_joint_6
 
-articulable_fork_cartesian_controller:
-    ros__parameters:
-      end_effector_link: "forkTip"
-      robot_base_link: "af_link_base"
-      ik_solver: "selectively_damped_least_squares"
-      joints:
-        - af_joint_1
-        - af_joint_2
-      command_interfaces:
-        - position
-
-articulable_fork_controller:
+af_velocity_controller:
   ros__parameters:
     joints:
       - af_joint_1
       - af_joint_2
+
+af_joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - af_joint_1
+      - af_joint_2
+
     command_interfaces:
       - position
+
     state_interfaces:
       - position
-    allow_partial_joints_goal: false
-    open_loop_control: false
-    stopped_velocity_tolerance: 0.01
-    # No gains on position interface
-    af_joint_1:
-      goal: 0.02
-      trajectory: 0.05
-    af_joint_2:
-      goal: 0.02
-      trajectory: 0.05
 
 hand_controller:
   ros__parameters:

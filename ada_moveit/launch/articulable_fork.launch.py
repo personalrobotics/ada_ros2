@@ -63,7 +63,6 @@ def generate_launch_description():
     ctrl_da = DeclareLaunchArgument(
         "controllers_file",
         default_value=[sim, "_controllers.yaml"],
-        # default_value=["hybrid_controllers.yaml"],
         description="ROS2 Controller YAML configuration in config folder",
     )
     controllers_file = LaunchConfiguration("controllers_file")
