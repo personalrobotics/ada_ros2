@@ -26,6 +26,7 @@ controller_manager:
     af_velocity_controller:
       type: velocity_controllers/JointGroupVelocityController
 
+
     af_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
