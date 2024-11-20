@@ -9,6 +9,8 @@ moveit_simple_controller_manager:
     - jaco_arm_servo_controller
     - af_velocity_controller
     - af_joint_trajectory_controller
+    - jaco_af_controller
+    - jaco_af_cartesian_controller
     - hand_controller
 
   jaco_arm_controller:
@@ -60,6 +62,34 @@ moveit_simple_controller_manager:
     action_ns: cart_commands
     default: false
     joints:
+      - af_joint_1
+      - af_joint_2
+
+  jaco_af_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - j2n6s200_joint_1
+      - j2n6s200_joint_2
+      - j2n6s200_joint_3
+      - j2n6s200_joint_4
+      - j2n6s200_joint_5
+      - j2n6s200_joint_6
+      - af_joint_1
+      - af_joint_2
+
+  jaco_af_cartesian_controller:
+    type: ""
+    action_ns: cart_commands
+    default: false
+    joints:
+      - j2n6s200_joint_1
+      - j2n6s200_joint_2
+      - j2n6s200_joint_3
+      - j2n6s200_joint_4
+      - j2n6s200_joint_5
+      - j2n6s200_joint_6
       - af_joint_1
       - af_joint_2
 
