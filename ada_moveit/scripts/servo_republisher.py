@@ -43,6 +43,8 @@ JOINT_NAMES = [
     "j2n6s200_joint_4",
     "j2n6s200_joint_5",
     "j2n6s200_joint_6",
+    "af_joint_1",
+    "af_joint_2",
 ]
 POSITION_INTERFACE_NAME = "position"
 VELOCITY_INTERFACE_NAME = "velocity"
