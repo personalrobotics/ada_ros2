@@ -23,16 +23,12 @@ controller_manager:
       type: cartesian_twist_controller/CartesianTwistController
 
 
-    af_velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
-
-    af_joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
-
-
     jaco_af_controller:
       type: force_gate_controller/ForceGateController
+
+
+    jaco_af_servo_controller:
+      type: force_gate_controller/ForceGatePositionController
 
 
     jaco_af_cartesian_controller:
@@ -99,24 +95,6 @@ jaco_arm_servo_controller:
       - j2n6s200_joint_5
       - j2n6s200_joint_6
 
-af_velocity_controller:
-  ros__parameters:
-    joints:
-      - af_joint_1
-      - af_joint_2
-
-af_joint_trajectory_controller:
-  ros__parameters:
-    joints:
-      - af_joint_1
-      - af_joint_2
-
-    command_interfaces:
-      - position
-
-    state_interfaces:
-      - position
-
 jaco_af_controller:
   ros__parameters:
     joints:
@@ -161,11 +139,23 @@ jaco_af_controller:
       goal: 0.02
       trajectory: 0.05
 
+jaco_af_servo_controller:
+  ros__parameters:
+    joints:
+      - j2n6s200_joint_1
+      - j2n6s200_joint_2
+      - j2n6s200_joint_3
+      - j2n6s200_joint_4
+      - j2n6s200_joint_5
+      - j2n6s200_joint_6
+      - af_joint_1
+      - af_joint_2
+
 jaco_af_cartesian_controller:
     ros__parameters:
       end_effector_link: "forkTip"
       robot_base_link: "j2n6s200_link_base"
-      ik_solver: "selectively_damped_least_squares"
+      ik_solver: "damped_least_squares"
       joints:
         - j2n6s200_joint_1
         - j2n6s200_joint_2
