@@ -90,6 +90,8 @@ joint_control_bindings = {
     "4": "j2n6s200_joint_4",
     "5": "j2n6s200_joint_5",
     "6": "j2n6s200_joint_6",
+    "7": "af_joint_1",
+    "8": "af_joint_2",
 }
 reverse_joint_direction_key = "r"  # pylint: disable=invalid-name
 
@@ -109,7 +111,7 @@ def main(args=None):
     rclpy.init(args=args)
     node = rclpy.create_node("ada_keyboard_teleop")
     twist_pub = node.create_publisher(
-        TwistStamped, "/jaco_arm_cartesian_controller/twist_cmd", 1
+        TwistStamped, "/jaco_af_cartesian_controller/twist_cmd", 1
     )
     joint_pub = node.create_publisher(JointJog, "/servo_node/delta_joint_cmds", 1)
 
