@@ -43,7 +43,7 @@ servo_node:
       monitored_planning_scene_topic: "monitored_planning_scene"
 
       ## MoveIt properties
-      move_group_name:  jaco_arm  # Often 'manipulator' or 'arm'
+      move_group_name:  jaco_af  # Often 'manipulator' or 'arm'
       planning_frame: j2n6s200_link_base  # The MoveIt planning frame. Often 'base_link' or 'world'
 
       ## Other frames
@@ -67,7 +67,7 @@ servo_node:
       joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
       joint_topic: /joint_states
       status_topic: ~/status # Publish status to this topic
-      command_out_topic: /jaco_arm_servo_controller/commands # Publish outgoing commands here
+      command_out_topic: /jaco_af_servo_controller/commands # Publish outgoing commands here
 
       ## Collision checking for the entire robot body
       check_collisions: true # Check collisions?
