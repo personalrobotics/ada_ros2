@@ -41,6 +41,7 @@ def parse_args():
                         help='Linear velocity in x, y, z directions (m/s)')
     parser.add_argument('--duration', type=float, default=DEFAULT_DURATION_S,
                         help='Duration of the motion (seconds)')
+    parser.add_argument('--frame_id', type=str, default=BASE_FRAME, choices=[BASE_FRAME, EE_FRAME], help='Frame ID for the twist message')
     return parser.parse_args()
 
 def publish_zero_twist(node, twist_pub):
@@ -68,12 +69,19 @@ def main(args=None):
     tf_buffer = Buffer()
     tf_listener = TransformListener(tf_buffer, node)  # pylint: disable=unused-variable
 
+    # Parse command-line arguments
+    args = parse_args()
+    frame_id = args.frame_id
+    angular = args.angular
+    linear = args.linear
+    duration_s = args.duration
+    print(f"angular (rad/s) = {angular}, linear (m/s) = {linear}, duration (s) = {duration_s}")
+
     # Create the cartesian control messages
     # The linear velocity is always in the base frame
     linear_msg = Vector3Stamped()
     linear_msg.header.stamp = Time().to_msg()  # use latest time
-    # linear_msg.header.frame_id = BASE_FRAME
-    linear_msg.header.frame_id = EE_FRAME
+    linear_msg.header.frame_id = frame_id
     # The angular velocity is always in the end effector frame
     angular_msg = Vector3Stamped()
     angular_msg.header.stamp = Time().to_msg()  # use latest time
@@ -82,13 +90,6 @@ def main(args=None):
     # It should match the `robot_link_command_frame`` servo param.
     twist_msg = TwistStamped()
     twist_msg.header.frame_id = BASE_FRAME
-
-    # Parse command-line arguments
-    args = parse_args()
-    angular = args.angular
-    linear = args.linear
-    duration_s = args.duration
-    print(f"angular (rad/s) = {angular}, linear (m/s) = {linear}, duration (s) = {duration_s}")
 
     # Delay for transforms to populate
     start_time_s = time.time()
