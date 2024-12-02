@@ -261,7 +261,9 @@ def generate_launch_description():
             package="controller_manager",
             executable="ros2_control_node",
             parameters=[robot_description, robot_controllers],
-            arguments=["--ros-args", "--log-level", log_level],
+            # Commented out the log-level since the joint state publisher logs every joint read
+            # when on debug level
+            arguments=["--ros-args"],#, "--log-level", log_level],
         )
     )
 
