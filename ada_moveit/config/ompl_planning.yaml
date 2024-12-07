@@ -76,9 +76,9 @@ jaco_arm:
     - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
-jaco_af:
+articulable_fork:
   enforce_constrained_state_space: true
-  projection_evaluator: joints(j2n6s200_joint_1,j2n6s200_joint_2)
+  projection_evaluator: joints(af_joint_1,af_joint_2)
   planner_configs:
     - SBLkConfigDefault
     - ESTkConfigDefault
