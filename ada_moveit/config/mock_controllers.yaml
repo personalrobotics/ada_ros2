@@ -30,10 +30,6 @@ controller_manager:
     af_servo_controller:
       type: force_gate_controller/ForceGatePositionController
 
-
-    af_cartesian_controller:
-      type: cartesian_twist_controller/CartesianTwistController
-
 jaco_arm_cartesian_controller:
     ros__parameters:
       end_effector_link: "j2n6s200_end_effector"
@@ -120,17 +116,6 @@ af_servo_controller:
     joints:
       - af_joint_1
       - af_joint_2
-
-af_cartesian_controller:
-    ros__parameters:
-      end_effector_link: "forkTip"
-      robot_base_link: "af_link_base"
-      ik_solver: "selectively_damped_least_squares"
-      joints:
-        - af_joint_1
-        - af_joint_2
-      command_interfaces:
-        - position
 
 hand_controller:
   ros__parameters:

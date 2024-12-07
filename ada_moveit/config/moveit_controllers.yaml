@@ -8,7 +8,6 @@ moveit_simple_controller_manager:
     - jaco_arm_cartesian_controller
     - jaco_arm_servo_controller
     - af_controller
-    - af_cartesian_controller
     - af_servo_controller
     - hand_controller
 
@@ -59,14 +58,6 @@ moveit_simple_controller_manager:
   af_servo_controller:
     type: ""
     action_ns: commands
-    default: false
-    joints:
-      - af_joint_1
-      - af_joint_2
-
-  af_cartesian_controller:
-    type: ""
-    action_ns: cart_commands
     default: false
     joints:
       - af_joint_1
