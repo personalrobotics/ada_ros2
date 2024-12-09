@@ -67,7 +67,7 @@ servo_node:
       joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
       joint_topic: /joint_states
       status_topic: ~/status # Publish status to this topic
-      command_out_topic: /jaco_servo_controller/commands # Publish outgoing commands here
+      command_out_topic: /jaco_arm_servo_controller/commands # Publish outgoing commands here
 
       ## Collision checking for the entire robot body
       check_collisions: true # Check collisions?
