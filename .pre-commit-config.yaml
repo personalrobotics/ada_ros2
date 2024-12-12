@@ -42,7 +42,7 @@ repos:
           - --comment-style
           - "<!--|  |-->"
         types_or: [xml]
-        exclude: ".*package.xml$"
+        exclude: ".*package\\.xml$|.*\\.xacro$"
 
   - repo: https://github.com/psf/black
     rev: 23.1.0
