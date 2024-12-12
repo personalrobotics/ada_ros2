@@ -18,7 +18,8 @@
   <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
   <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
 
-  <xacro:arg name="use_forque" default="true"/>
+  <xacro:arg name="end_effector_tool" default="fork"/>
+  <xacro:property name="cmp_end_effector_tool" value="$(arg end_effector_tool)"/>
 
   <link name="root"/>
   
@@ -80,7 +81,7 @@
       joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"
       fixed="true"/>
 
-  <xacro:if value="$(arg use_forque)">
+  <xacro:unless value="${cmp_end_effector_tool == 'none'}">
     <xacro:forque_assembly base_parent="FTArmMount"/>
 
     <link name="FTSensor" />
@@ -89,6 +90,6 @@
         <parent link="j2n6s200_end_effector"/>
         <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
     </joint>
-  </xacro:if>
+  </xacro:unless>
 
 </robot>
