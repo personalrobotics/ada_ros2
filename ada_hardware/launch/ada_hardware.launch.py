@@ -189,7 +189,6 @@ def generate_launch_description():
         output="both",
         on_exit=Shutdown(),
     )
-
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
