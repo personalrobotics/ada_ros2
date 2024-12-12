@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module defines the CharucoDetector class, which is used to detect a charucoboard in an image.
 """

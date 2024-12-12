@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Copyright (c) 2021 PickNik, Inc.
 #
 # Redistribution and use in source and binary forms, with or without

@@ -1,4 +1,7 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module contains a rclpy ROS2 node that takes in parameters for the translation
 and rotation (quaternion) as well as the frame_id's and publishes the requested transform.

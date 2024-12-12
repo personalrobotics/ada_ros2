@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 octomap_frame: camera_color_optical_frame
 octomap_resolution: 0.02
 sensors:
@@ -13,4 +16,3 @@ default_sensor:
   padding_offset: 0.03
   max_update_rate: 3.0
   filtered_cloud_topic: filtered_cloud
-  

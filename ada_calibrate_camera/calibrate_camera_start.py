@@ -1,5 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module starts all the screen sessions to run the ada_feeding demo.
 """
@@ -46,9 +48,7 @@ parser.add_argument(
 parser.add_argument(
     "--dev",
     action="store_true",
-    help=(
-        "If set, show RVIZ in `moveit`."
-    ),
+    help=("If set, show RVIZ in `moveit`."),
 )
 parser.add_argument(
     "--real_domain_id",
@@ -165,7 +165,7 @@ async def main(args: argparse.Namespace, pwd: str) -> None:
             (
                 "ros2 run ada_calibrate_camera calibrate_camera --ros-args "
                 f"--params-file {os.path.join(pwd, 'src/ada_ros2/ada_calibrate_camera/config/calibrate_camera.yaml')}"
-            )
+            ),
         ],
     }
     close_commands = {}

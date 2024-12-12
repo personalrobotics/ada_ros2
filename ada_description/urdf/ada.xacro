@@ -21,10 +21,10 @@
   <xacro:arg name="use_forque" default="true"/>
 
   <link name="root"/>
-  
+
   <link name="root_tilt"/>
   <joint name="robot_tilt" type="revolute">
-    <origin xyz="0 0 0" rpy="0 0 0" /> 
+    <origin xyz="0 0 0" rpy="0 0 0" />
     <child link="root_tilt" />
     <parent link="root" />
     <axis xyz="-1 0 0"/>
@@ -32,7 +32,7 @@
     lower and upper limits generously encompass the range of the wheelchair's tilt-->
     <limit effort="80" velocity="0.15" lower="${-J_PI}" upper="${J_PI}"/>
     <dynamics damping="0.0" friction="0.0"/>
-  </joint> 
+  </joint>
 
   <xacro:property name="robot_root" value="root_tilt" />
 

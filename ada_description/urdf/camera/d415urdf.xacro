@@ -17,7 +17,7 @@
 
 <!--
 This is the URDF model for the Intel RealSense 415 camera, in its
-aluminum peripherial evaluation case.
+aluminum peripheral evaluation case.
 -->
 
 <robot name="sensor_d415" xmlns:xacro="http://ros.org/wiki/xacro">
@@ -39,15 +39,15 @@ aluminum peripherial evaluation case.
     <xacro:property name="d415_cam_depth_to_infra2_offset" value="-0.055"/>
     <xacro:property name="d415_cam_depth_to_color_offset" value="0.015"/>
 
-    <!-- The following values model the aluminum peripherial case for the
+    <!-- The following values model the aluminum peripheral case for the
   	d415 camera, with the camera joint represented by the actual
-  	peripherial camera tripod mount -->
+  	peripheral camera tripod mount -->
     <xacro:property name="d415_cam_width" value="0.099"/>
     <xacro:property name="d415_cam_height" value="0.023"/>
     <xacro:property name="d415_cam_depth" value="0.02005"/>
     <xacro:property name="d415_cam_mount_from_center_offset" value="0.00987"/>
 
-    <!-- The following offset is relative the the physical d415 camera peripherial
+    <!-- The following offset is relative the the physical d415 camera peripheral
   	camera tripod mount -->
     <xacro:property name="d415_cam_depth_px" value="${d415_cam_mount_from_center_offset}"/>
     <xacro:property name="d415_cam_depth_py" value="0.020"/>
@@ -82,7 +82,7 @@ aluminum peripherial evaluation case.
           <geometry>
             <box size="${d415_cam_depth} ${d415_cam_width} ${d415_cam_height}"/>
           </geometry>
-        </xacro:unless>     
+        </xacro:unless>
       </visual>
       <collision>
         <origin xyz="0 ${-d415_cam_depth_py} 0" rpy="0 0 0"/>

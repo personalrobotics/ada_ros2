@@ -91,7 +91,7 @@
     <xacro:property name="joint_4_upper_limit" value="${330/180*J_PI}" />
     <xacro:property name="joint_4_velocity_limit" value="${36*J_PI/180}" />
     <xacro:property name="joint_4_torque_limit" value="40" />
-    
+
 
     <xacro:property name="joint_5" value="joint_5" />
     <xacro:property name="joint_5_type" value="continuous" />

@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module defines the CameraCalibration class, which allows users to add samples
 consisting of an RGB image, a gripper2base transform, and a target2cam transform.
@@ -201,7 +204,7 @@ class CameraCalibration:
             The target2cam translation vector.
         """
         # pylint: disable=too-many-arguments
-        # Necessay to get all the data for this sample.
+        # Necessary to get all the data for this sample.
         cv2.imwrite(os.path.join(data_dir, f"{sample_i}_rgb_img.png"), rgb_img)
         np.savez_compressed(
             os.path.join(data_dir, f"{sample_i}_sample.npz"),
@@ -351,7 +354,7 @@ class CameraCalibration:
             The calibration method that got the least error.
         """
         # pylint: disable=too-many-locals, too-many-branches, too-many-statements, too-many-arguments
-        # The comaprison to the reference data requires many arguments.
+        # The comparison to the reference data requires many arguments.
 
         if len(self.Rs_gripper2base) < 3:
             print("Need at least 3 samples to calibrate the camera.", flush=True)
@@ -417,7 +420,7 @@ class CameraCalibration:
                     )
                     continue
 
-            # Convert to a homogenous transform
+            # Convert to a homogeneous transform
             T_cam2gripper = np.eye(4)
             T_cam2gripper[:3, :3] = R_cam2gripper
             T_cam2gripper[:3, 3] = t_cam2gripper.reshape((3,))
@@ -427,7 +430,7 @@ class CameraCalibration:
             ts_target2base = []
             # pylint: disable=consider-using-enumerate
             for i in range(len(self.Rs_target2cam)):
-                # Get the homogenous transform from the gripper to the base
+                # Get the homogeneous transform from the gripper to the base
                 T_gripper2base = np.eye(4)
                 if self.Rs_gripper2base[i].shape == (3,):
                     T_gripper2base[:3, :3] = R.from_rotvec(
@@ -437,7 +440,7 @@ class CameraCalibration:
                     T_gripper2base[:3, :3] = self.Rs_gripper2base[i]
                 T_gripper2base[:3, 3] = self.ts_gripper2base[i]
 
-                # Get the homogenous transform from the target to the camera
+                # Get the homogeneous transform from the target to the camera
                 T_target2cam = np.eye(4)
                 if self.Rs_target2cam[i].shape == (3,):
                     T_target2cam[:3, :3] = R.from_rotvec(
@@ -447,7 +450,7 @@ class CameraCalibration:
                     T_target2cam[:3, :3] = self.Rs_target2cam[i]
                 T_target2cam[:3, 3] = self.ts_target2cam[i]
 
-                # Compute the homogenous transform from the target to the base
+                # Compute the homogeneous transform from the target to the base
                 T_target2base = T_gripper2base @ T_cam2gripper @ T_target2cam
 
                 # Extract the rotation and translation

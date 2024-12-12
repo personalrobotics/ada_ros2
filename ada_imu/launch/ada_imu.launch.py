@@ -1,5 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 Launch file for imu_jointstate_publisher with params from config/imu_params.yaml
 """

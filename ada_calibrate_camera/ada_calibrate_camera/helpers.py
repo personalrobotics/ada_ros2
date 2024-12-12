@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module contains helper functions for calibrating the camera.
 """
@@ -50,7 +53,7 @@ def pose_to_rot_trans(
 
 def pose_to_matrix(pose: Pose) -> np.ndarray:
     """
-    Convert a Pose message to a homogenous transformation matrix.
+    Convert a Pose message to a homogeneous transformation matrix.
 
     Parameters
     ----------
@@ -60,7 +63,7 @@ def pose_to_matrix(pose: Pose) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The homogenous transformation matrix.
+        The homogeneous transformation matrix.
     """
     M = np.eye(4)
     M[:3, :3] = R.from_quat(ros2_numpy.numpify(pose.orientation)).as_matrix()
@@ -70,7 +73,7 @@ def pose_to_matrix(pose: Pose) -> np.ndarray:
 
 def transform_to_matrix(transform: Transform) -> np.ndarray:
     """
-    Convert a Transform message to a homogenous transformation matrix.
+    Convert a Transform message to a homogeneous transformation matrix.
 
     Parameters
     ----------
@@ -80,7 +83,7 @@ def transform_to_matrix(transform: Transform) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The homogenous transformation matrix.
+        The homogeneous transformation matrix.
     """
     M = np.eye(4)
     M[:3, :3] = R.from_quat(ros2_numpy.numpify(transform.rotation)).as_matrix()
@@ -90,12 +93,12 @@ def transform_to_matrix(transform: Transform) -> np.ndarray:
 
 def matrix_to_pose(M: np.ndarray) -> Pose:
     """
-    Convert a homogenous transformation matrix to a Pose message.
+    Convert a homogeneous transformation matrix to a Pose message.
 
     Parameters
     ----------
     M : np.ndarray
-        The homogenous transformation matrix.
+        The homogeneous transformation matrix.
 
     Returns
     -------

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module contains a node, ADAWatchdogListener, which listens to the
 watchdog topic and kills itself if the watchdog fails. This is useful
@@ -66,7 +69,7 @@ class ADAWatchdogListenerNode(Node):
             response.success = True
             response.message = f"Successfully set is_on to {request.data}"
             if request.data:
-                self.get_logger().info("Succesfully turned the watchdog listener on.")
+                self.get_logger().info("Successfully turned the watchdog listener on.")
             else:
                 self.get_logger().warn(
                     "WARNING: You have turned the watchdog listener off. "

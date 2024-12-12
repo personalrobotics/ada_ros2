@@ -2,6 +2,9 @@
 
 
 
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 publish_camera_extrinsics:
   ros__parameters:
     child_frame_id: camera_color_optical_frame
