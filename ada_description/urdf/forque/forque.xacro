@@ -177,7 +177,7 @@
           <xacro:forque_assembly_joint joint_name="af_forque_joint" type="fixed" parent="af_ft_adapter_link" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0175 -0.011 0.004" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
       </xacro:if>
       <xacro:if value="${end_effector_tool == 'fork'}">
-          <xacro:forque_assembly_joint joint_name="forque_to_forkHandle" type="fixed" parent="forkHandle" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.00634 -0.222553 -0.004286" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
+          <xacro:forque_assembly_joint joint_name="af_forque_joint" type="fixed" parent="forkHandle" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.00634 -0.222553 -0.004286" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
       </xacro:if>
 
 	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine" mass="0.024" cog="0.013090 0.0180789 0.0445231">
