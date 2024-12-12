@@ -1,141 +1,197 @@
 <?xml version="1.0"?>
-<root xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz" xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model" xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor" xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body" xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom" xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint" xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller" xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface" xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering" xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable" xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:property name="forque_color" value="0.4 0.4 0.4 1"/>
-  <xacro:property name="J_PI" value="3.1415926535897931"/>
-  <xacro:property name="default_inertial">
-    <inertia ixx="0.000005" iyy="0.000005" iyz="0" izz="0.000005" ixy="0" ixz="0"/>
-  </xacro:property>
-  <xacro:macro name="forque_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
-    <link name="${link_name}">
-      <visual>
-        <geometry>
-          <mesh filename="package://ada_description/meshes/forque/${link_mesh}.stl" scale="0.001 0.001 0.001"/>
-        </geometry>
-        <material name="abs">
-          <color rgba="${forque_color}"/>
-        </material>
-      </visual>
-      <collision>
-        <geometry>
-          <mesh filename="package://ada_description/meshes/forque/${link_mesh}.stl" scale="0.001 0.001 0.001"/>
-        </geometry>
-      </collision>
-      <inertial>
-        <origin xyz="${cog}" rpy="0 0 0"/>
-        <mass value="${mass}"/>
-        <xacro:insert_block name="inertia"/>
-      </inertial>
-    </link>
-  </xacro:macro>
-  <xacro:macro name="forque_assembly_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${dummy_default_value} joint_upper_limit:=${dummy_default_value} joint_velocity_limit:=${dummy_default_value} joint_torque_limit:=${dummy_default_value} fixed:=false">
-    <xacro:if value="${(type == 'fixed' and not fixed) or (type != 'fixed' and fixed)}">
-      <xacro:ERROR_inconsistent_joint_type_specification/>
-    </xacro:if>
-    <xacro:if value="${type == 'revolute'}">
-      <xacro:if value="${joint_lower_limit == dummy_default_value}">
-        <xacro:ERROR_joint_lower_limit_needs_to_be_set_for_a_revolute_joint/>
-      </xacro:if>
-      <xacro:if value="${joint_upper_limit == dummy_default_value}">
-        <xacro:ERROR_joint_upper_limit_needs_to_be_set_for_a_revolute_joint/>
-      </xacro:if>
-    </xacro:if>
-    <xacro:unless value="${type =='fixed'}">
-      <xacro:if value="${joint_velocity_limit == dummy_default_value}">
-        <xacro:ERROR_joint_velocity_limit_needs_to_be_set_for_a_non_fixed_joint/>
-      </xacro:if>
-      <xacro:if value="${joint_torque_limit == dummy_default_value}">
-        <xacro:ERROR_joint_torque_limit_needs_to_be_set_for_a_non_fixed_joint/>
-      </xacro:if>
-    </xacro:unless>
-    <joint name="${joint_name}" type="${type}">
-      <parent link="${parent}"/>
-      <child link="${child}"/>
-      <axis xyz="${joint_axis_xyz}"/>
-      <xacro:if value="${type == 'revolute'}">
-        <limit effort="${joint_torque_limit}" velocity="${joint_velocity_limit}" lower="${joint_lower_limit}" upper="${joint_upper_limit}"/>
-      </xacro:if>
-      <xacro:if value="${type == 'continuous'}">
-        <limit effort="${joint_torque_limit}" velocity="${joint_velocity_limit}"/>
-      </xacro:if>
-      <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
-      <dynamics damping="0.0" friction="0.0"/>
-    </joint>
-    <xacro:unless value="${fixed}">
-      <transmission name="${joint_name}_trans">
-        <type>transmission_interface/SimpleTransmission</type>
-        <joint name="${joint_name}">
-          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+
+<root xmlns:xi="http://www.w3.org/2001/XInclude"
+	xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+    xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+	xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+	xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+    xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+    xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+	xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+	xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+	xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+    xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+    xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+	xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:property name="forque_color" value="0.4 0.4 0.4 1" />
+	<xacro:property name="J_PI" value="3.1415926535897931" />
+	<xacro:property name="default_inertial">
+		<inertia ixx="0.000005" iyy="0.000005" iyz="0" izz="0.000005" ixy="0" ixz="0"/>
+	</xacro:property>
+
+
+	<xacro:macro name="forque_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
+		<link name="${link_name}">
+			<visual>
+				<geometry>
+					<mesh
+						filename="package://ada_description/meshes/forque/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
+				</geometry>
+				<material name="abs">
+					<color rgba="${forque_color}" />
+				</material>
+			</visual>
+			<collision>
+                <geometry>
+                    <mesh
+						filename="package://ada_description/meshes/forque/${link_mesh}.stl"
+						scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <inertial>
+            	<origin xyz="${cog}" rpy="0 0 0"/>
+            	<mass value="${mass}"/>
+            	<xacro:insert_block name="inertia"/>
+            </inertial>
+		</link>
+	</xacro:macro>
+
+	<xacro:macro name="forque_assembly_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${dummy_default_value} joint_upper_limit:=${dummy_default_value} joint_velocity_limit:=${dummy_default_value} joint_torque_limit:=${dummy_default_value} fixed:=false">
+
+        <xacro:if value="${(type == 'fixed' and not fixed) or (type != 'fixed' and fixed)}">
+            <xacro:ERROR_inconsistent_joint_type_specification/>
+        </xacro:if>
+        <xacro:if value="${type == 'revolute'}">
+            <xacro:if value="${joint_lower_limit == dummy_default_value}">
+                <xacro:ERROR_joint_lower_limit_needs_to_be_set_for_a_revolute_joint/>
+            </xacro:if>
+            <xacro:if value="${joint_upper_limit == dummy_default_value}">
+                <xacro:ERROR_joint_upper_limit_needs_to_be_set_for_a_revolute_joint/>
+            </xacro:if>
+        </xacro:if>
+        <xacro:unless value="${type =='fixed'}">
+            <xacro:if value="${joint_velocity_limit == dummy_default_value}">
+                <xacro:ERROR_joint_velocity_limit_needs_to_be_set_for_a_non_fixed_joint/>
+            </xacro:if>
+            <xacro:if value="${joint_torque_limit == dummy_default_value}">
+                <xacro:ERROR_joint_torque_limit_needs_to_be_set_for_a_non_fixed_joint/>
+            </xacro:if>
+        </xacro:unless>
+
+        <joint name="${joint_name}" type="${type}">
+            <parent link="${parent}"/>
+            <child link="${child}"/>
+            <axis xyz="${joint_axis_xyz}"/>
+            <xacro:if value="${type == 'revolute'}">
+                <limit
+                    effort="${joint_torque_limit}"
+                    velocity="${joint_velocity_limit}"
+                    lower="${joint_lower_limit}"
+                    upper="${joint_upper_limit}"/>
+            </xacro:if>
+            <xacro:if value="${type == 'continuous'}">
+                <limit effort="${joint_torque_limit}" velocity="${joint_velocity_limit}"/>
+            </xacro:if>
+            <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
+            <dynamics damping="0.0" friction="0.0"/>
         </joint>
         <actuator name="${joint_name}_actuator">
           <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
           <mechanicalReduction>160</mechanicalReduction>
         </actuator>
-      </transmission>
-      <!--For torque sensing in simulation-->
-      <gazebo reference="${joint_name}">
-        <provideFeedback>true</provideFeedback>
-      </gazebo>
-      <gazebo>
-        <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
-          <updateRate>30.0</updateRate>
-          <topicName>${joint_name}_ft_sensor_topic</topicName>
-          <jointName>${joint_name}</jointName>
-        </plugin>
-      </gazebo>
-    </xacro:unless>
-  </xacro:macro>
-  <xacro:macro name="forque_assembly" params="base_parent use_antenna:=false">
-    <xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.103" cog="0.010934 -0.138522 -0.05066">
-      <inertia ixx="0.00017623" iyy="0.000068428" iyz="-0.00001757133" izz="0.00021455" ixy="0.00000095729" ixz="-0.0000000562908"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="FTMount_to_world" type="fixed" parent="${base_parent}" child="FTMount" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 -0.005" joint_origin_rpy="0 0 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT" mass="0.280" cog="0.0111446 -0.0882070 -0.0544936">
-      <inertia ixx="0.000543925" iyy="0.000165428" iyz="-0.00000001487288" izz="0.000691232" ixy="-0.00000128367" ixz="0"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="FT_to_FTMount" type="fixed" parent="FTMount" child="FT" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0" fixed="true"/>
-    <xacro:if value="${use_antenna}">
-      <xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna" mass="0.018" cog="-0.0162965 0.0666626 -0.0545096">
-        <xacro:insert_block name="default_inertial"/>
-      </xacro:forque_assembly_link>
-      <xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" type="fixed" parent="FT" child="FTAntenna" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0" fixed="true"/>
-    </xacro:if>
-    <xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
-      <inertia ixx="0.0000418078" iyy="0.0000177249" iyz="-0.000000210639" izz="0.00005200336" ixy="-0.000000396292" ixz="0.00000002424697"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" type="fixed" parent="FTMount" child="forkHandle" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.025 0 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="af_link_base" link_mesh="fr12-h103" mass="0.0907185" cog="0.0 0.0 0.0">
-      <xacro:insert_block name="default_inertial"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_joint_base" type="fixed" parent="forkHandle" child="af_link_base" joint_axis_xyz="0 0 1" joint_origin_xyz="0.010929196 -0.278553 -0.011" joint_origin_rpy="0 0 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="af_link_1" link_mesh="XC-430_idle" mass="0.065" cog="0.21641853 -14.751192 -16.796092">
-      <inertia ixx="18680.931" iyy="9585.9138" iyz="-845.46678" izz="17346.641" ixy="1.3348619" ixz="-45.354028"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_joint_1" type="revolute" parent="af_link_base" child="af_link_1" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}" joint_lower_limit="${-J_PI/2}" joint_upper_limit="${J_PI/2}" joint_velocity_limit="1" joint_torque_limit="1.4" fixed="false"/>
-    <xacro:forque_assembly_link link_name="af_motor_fixture_link" link_mesh="fr12-s101" mass="0.0453592" cog="0 0 0">
-      <xacro:insert_block name="default_inertial"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_motor_fixture_joint_1" type="fixed" parent="af_link_1" child="af_motor_fixture_link" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 ${-J_PI/2} 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="af_link_2" link_mesh="XC-430_idle" mass="0.065" cog="0.21641853 -14.751192 -16.796092">
-      <inertia ixx="18680.931" iyy="9585.9138" iyz="-845.46678" izz="17346.641" ixy="1.3348619" ixz="-45.354028"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_motor_fixture_joint_2" type="fixed" parent="af_link_1" child="af_link_2" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.03825 0 0" joint_origin_rpy="0 ${-J_PI/2} 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="af_ft_adapter_link" link_mesh="roll_to_ft_adapter" mass="0.001" cog="0 0 0">
-      <xacro:insert_block name="default_inertial"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_joint_2" type="revolute" parent="af_link_2" child="af_ft_adapter_link" joint_axis_xyz="0 1 0" joint_origin_xyz="0 0 0.019" joint_origin_rpy="${-J_PI/2} 0 0" joint_lower_limit="${-J_PI}" joint_upper_limit="${J_PI}" joint_velocity_limit="1" joint_torque_limit="1.4" fixed="false"/>
-    <xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
-      <inertia ixx="0.000005235822" iyy="0.000006264852" iyz="-0.00000004033694" izz="0.00000640797" ixy="-0.0000003129932" ixz="0.000000013798"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="af_forque_joint" type="fixed" parent="af_ft_adapter_link" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0175 -0.011 0.004" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
-    <xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine" mass="0.024" cog="0.013090 0.0180789 0.0445231">
-      <inertia ixx="0.0000098769" iyy="0.000009848103" iyz="0.00000057639" izz="0.0000015674" ixy="0.000000000806182" ixz="-0.00000000296036"/>
-    </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="forkTine_to_forque" type="fixed" parent="forque" child="forkTine" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}" fixed="true"/>
-    <link name="forkTip"/>
-    <joint name="forkTip_to_forkTine" type="fixed">
-      <child link="forkTip"/>
-      <parent link="forkTine"/>
-      <origin rpy="${J_PI} 0 0" xyz="0.0135 0.007 0"/>
-    </joint>
-  </xacro:macro>
+
+        <xacro:unless value="${fixed}">
+            <transmission name="${joint_name}_trans">
+                <type>transmission_interface/SimpleTransmission</type>
+                <joint name="${joint_name}">
+                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                </joint>
+                <actuator name="${joint_name}_actuator">
+                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+                    <mechanicalReduction>160</mechanicalReduction>
+                </actuator>
+            </transmission>
+             
+            <!--For torque sensing in simulation-->
+            <gazebo reference="${joint_name}">
+                <provideFeedback>true</provideFeedback>
+            </gazebo>
+            <gazebo>
+                <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+                    <updateRate>30.0</updateRate>
+                    <topicName>${joint_name}_ft_sensor_topic</topicName>
+                    <jointName>${joint_name}</jointName>
+                </plugin>
+            </gazebo>
+        </xacro:unless>
+	</xacro:macro>
+
+	<xacro:macro name="forque_assembly" params="base_parent end_effector_tool use_antenna:=false">
+
+		<xacro:forque_assembly_link link_name="FTMount" link_mesh="2024_01_18_FTMount" mass="0.103" cog="0.010934 -0.138522 -0.05066">
+			<inertia ixx="0.00017623" iyy="0.000068428" iyz="-0.00001757133" izz="0.00021455" ixy="0.00000095729" ixz="-0.0000000562908"/>
+        </xacro:forque_assembly_link>
+	  	<xacro:forque_assembly_joint joint_name="FTMount_to_world" type="fixed" parent="${base_parent}" child="FTMount" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 -0.005" joint_origin_rpy="0 0 0" fixed="true"/>
+
+	  	<xacro:forque_assembly_link link_name="FT" link_mesh="2023_03_09_wirelessFT" mass="0.280" cog="0.0111446 -0.0882070 -0.0544936">
+	  		<inertia ixx="0.000543925" iyy="0.000165428" iyz="-0.00000001487288" izz="0.000691232" ixy="-0.00000128367" ixz="0"/>
+	  	</xacro:forque_assembly_link>
+	  	<xacro:forque_assembly_joint joint_name="FT_to_FTMount" type="fixed" parent="FTMount" child="FT" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0" fixed="true"/>
+
+
+	  	<xacro:if value="${use_antenna}">
+            <xacro:forque_assembly_link link_name="FTAntenna" link_mesh="2023_03_09_wirelessFTAntenna" mass="0.018" cog="-0.0162965 0.0666626 -0.0545096">
+                <xacro:insert_block name="default_inertial"/>
+            </xacro:forque_assembly_link>
+    	  	<xacro:forque_assembly_joint joint_name="FTAntenna_to_FT" type="fixed" parent="FT" child="FTAntenna" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 0 0" fixed="true"/>
+		</xacro:if>
+
+	  	<xacro:forque_assembly_link link_name="forkHandle" link_mesh="2023_03_09_forkHandle" mass="0.0506" cog="0.0110024 -0.151715 -0.00934664">
+	  		<inertia ixx="0.0000418078" iyy="0.0000177249" iyz="-0.000000210639" izz="0.00005200336" ixy="-0.000000396292" ixz="0.00000002424697"/>
+	  	</xacro:forque_assembly_link>
+		<xacro:forque_assembly_joint joint_name="forkHandle_to_FTMount" type="fixed" parent="FTMount" child="forkHandle" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="-0.025 0 0" fixed="true"/>
+
+      <xacro:if value="${end_effector_tool == 'articulable_fork'}">
+          <xacro:forque_assembly_link link_name="af_link_base" link_mesh="fr12-h103" mass="0.0907185" cog="0.0 0.0 0.0">
+              <xacro:insert_block name="default_inertial"/>
+          </xacro:forque_assembly_link>
+          <xacro:forque_assembly_joint joint_name="af_joint_base" type="fixed" parent="forkHandle" child="af_link_base" joint_axis_xyz="0 0 1" joint_origin_xyz="0.010929196 -0.278553 -0.011" joint_origin_rpy="0 0 0" fixed="true"/>
+
+          <xacro:forque_assembly_link link_name="af_link_1" link_mesh="XC-430_idle" mass="0.065" cog="0.21641853 -14.751192 -16.796092">
+              <inertia ixx="18680.931" iyy="9585.9138" iyz="-845.46678" izz="17346.641" ixy="1.3348619" ixz="-45.354028"/>
+          </xacro:forque_assembly_link>
+          <xacro:forque_assembly_joint joint_name="af_joint_1" type="revolute" parent="af_link_base" child="af_link_1" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}" joint_lower_limit="${-J_PI/2}" joint_upper_limit="${J_PI/2}" joint_velocity_limit="1" joint_torque_limit="1.4" fixed="false"/>
+
+          <xacro:forque_assembly_link link_name="af_motor_fixture_link" link_mesh="fr12-s101" mass="0.0453592" cog="0 0 0">
+              <xacro:insert_block name="default_inertial"/>
+          </xacro:forque_assembly_link>
+          <xacro:forque_assembly_joint joint_name="af_motor_fixture_joint_1" type="fixed" parent="af_link_1" child="af_motor_fixture_link" joint_axis_xyz="0 0 1" joint_origin_xyz="0 0 0" joint_origin_rpy="0 ${-J_PI/2} 0" fixed="true"/>
+
+          <xacro:forque_assembly_link link_name="af_link_2" link_mesh="XC-430_idle" mass="0.065" cog="0.21641853 -14.751192 -16.796092">
+              <inertia ixx="18680.931" iyy="9585.9138" iyz="-845.46678" izz="17346.641" ixy="1.3348619" ixz="-45.354028"/>
+          </xacro:forque_assembly_link>
+          <xacro:forque_assembly_joint joint_name="af_motor_fixture_joint_2" type="fixed" parent="af_link_1" child="af_link_2" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.03825 0 0" joint_origin_rpy="0 ${-J_PI/2} 0" fixed="true"/>
+
+          <xacro:forque_assembly_link link_name="af_ft_adapter_link" link_mesh="roll_to_ft_adapter" mass="0.001" cog="0 0 0">
+              <xacro:insert_block name="default_inertial"/>
+          </xacro:forque_assembly_link>
+          <xacro:forque_assembly_joint joint_name="af_joint_2" type="revolute" parent="af_link_2" child="af_ft_adapter_link" joint_axis_xyz="0 1 0" joint_origin_xyz="0 0 0.019" joint_origin_rpy="${-J_PI/2} 0 0" joint_lower_limit="${-J_PI}" joint_upper_limit="${J_PI}" joint_velocity_limit="1" joint_torque_limit="1.4" fixed="false"/>
+      </xacro:if>
+
+	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
+	  		<inertia ixx="0.000005235822" iyy="0.000006264852" iyz="-0.00000004033694" izz="0.00000640797" ixy="-0.0000003129932" ixz="0.000000013798"/>
+	  	</xacro:forque_assembly_link>
+      <xacro:if value="${end_effector_tool == 'articulable_fork'}">
+          <xacro:forque_assembly_joint joint_name="af_forque_joint" type="fixed" parent="af_ft_adapter_link" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0175 -0.011 0.004" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
+      </xacro:if>
+      <xacro:if value="${end_effector_tool == 'fork'}">
+          <xacro:forque_assembly_joint joint_name="af_forque_joint" type="fixed" parent="forkHandle" child="forque" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.00634 -0.222553 -0.004286" joint_origin_rpy="${J_PI/2} ${J_PI/3} 0" fixed="true"/>
+      </xacro:if>
+
+	  	<xacro:forque_assembly_link link_name="forkTine" link_mesh="fork_tine" mass="0.024" cog="0.013090 0.0180789 0.0445231">
+	  		<inertia ixx="0.0000098769" iyy="0.000009848103" iyz="0.00000057639" izz="0.0000015674" ixy="0.000000000806182" ixz="-0.00000000296036"/>
+	  	</xacro:forque_assembly_link>
+	  	<xacro:forque_assembly_joint joint_name="forkTine_to_forque" type="fixed" parent="forque" child="forkTine" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}" fixed="true"/>
+
+	  	<link name="forkTip" />
+	  	<joint name="forkTip_to_forkTine" type="fixed">
+		    <child link="forkTip"/>
+		    <parent link="forkTine"/>
+		    <origin rpy="${J_PI} 0 0" xyz="0.0135 0.007 0"/>
+		</joint>
+
+	</xacro:macro>
+
 </root>
