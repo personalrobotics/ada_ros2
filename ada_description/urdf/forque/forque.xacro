@@ -20,6 +20,7 @@
 		<inertia ixx="0.000005" iyy="0.000005" iyz="0" izz="0.000005" ixy="0" ixz="0"/>
 	</xacro:property>
 
+
 	<xacro:macro name="forque_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
 		<link name="${link_name}">
 			<visual>
@@ -184,7 +185,7 @@
 	  	</xacro:forque_assembly_link>
 	  	<xacro:forque_assembly_joint joint_name="forkTine_to_forque" type="fixed" parent="forque" child="forkTine" joint_axis_xyz="0 0 1" joint_origin_xyz="-0.0054 0.008 0.093" joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}" fixed="true"/>
 
-	  	<link name="forkTip"/>
+	  	<link name="forkTip" />
 	  	<joint name="forkTip_to_forkTine" type="fixed">
 		    <child link="forkTip"/>
 		    <parent link="forkTine"/>
