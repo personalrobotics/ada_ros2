@@ -17,11 +17,6 @@
                 <xacro:if value="${sim == 'real'}">
                   <plugin>ada_hardware/Jaco2</plugin>
                 </xacro:if>
-                <xacro:if value="${sim == 'hybrid'}">
-                  <plugin>mock_components/GenericSystem</plugin>
-                  <param name="mock_sensor_commands">false</param>
-                  <param name="state_following_offset">0.0</param>
-                </xacro:if>
               </hardware>
             <joint name="j2n6s200_joint_1">
                 <command_interface name="position"/>
@@ -154,11 +149,6 @@
             <param name="usb_port">/dev/ttyUSB0</param>
             <param name="baud_rate">1000000</param>
           </xacro:if>
-          <xacro:if value="${sim == 'hybrid'}">
-            <plugin>dynamixel_hardware/DynamixelHardware</plugin>
-            <param name="usb_port">/dev/ttyUSB0</param>
-            <param name="baud_rate">1000000</param>
-          </xacro:if>
         </hardware>
 
         <joint name="af_joint_1">
@@ -192,5 +182,4 @@
       </ros2_control>
 
     </xacro:macro>
-
 </robot>

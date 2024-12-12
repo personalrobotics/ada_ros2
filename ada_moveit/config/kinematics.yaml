@@ -40,4 +40,3 @@ articulable_fork:
   cost_threshold: 0.001
   minimal_displacement_weight: 0.0
   gd_step_size: 0.0001
-

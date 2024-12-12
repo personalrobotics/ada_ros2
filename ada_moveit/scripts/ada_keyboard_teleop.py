@@ -90,8 +90,6 @@ joint_control_bindings = {
     "4": "j2n6s200_joint_4",
     "5": "j2n6s200_joint_5",
     "6": "j2n6s200_joint_6",
-    "7": "af_joint_1",
-    "8": "af_joint_2",
 }
 reverse_joint_direction_key = "r"  # pylint: disable=invalid-name
 

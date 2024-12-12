@@ -22,15 +22,3 @@ initial_positions:
   j2n6s200_joint_finger_2: 1.317
   af_joint_1: 0.0
   af_joint_2: 0.0
-
-  # # OverPlate Position
-  # j2n6s200_joint_1: -2.3149168248766614 # j2n6s200_joint_1
-  # j2n6s200_joint_2: 3.1444595465032634 # j2n6s200_joint_2
-  # j2n6s200_joint_3: 1.7332586075115999 # j2n6s200_joint_3
-  # j2n6s200_joint_4: -2.3609596843308234 # j2n6s200_joint_4
-  # j2n6s200_joint_5: 4.43936623280362 # j2n6s200_joint_5
-  # j2n6s200_joint_6: 3.06866544924739 # j2n6s200_joint_6
-  # j2n6s200_joint_finger_1: 1.317
-  # j2n6s200_joint_finger_2: 1.317
-  # af_joint_1: 0.0
-  # af_joint_2: 0.0
