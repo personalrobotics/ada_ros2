@@ -82,7 +82,7 @@
       fixed="true"/>
 
   <xacro:unless value="${cmp_end_effector_tool == 'none'}">
-    <xacro:forque_assembly base_parent="FTArmMount"/>
+    <xacro:forque_assembly base_parent="FTArmMount" end_effector_tool="${cmp_end_effector_tool}"/>
 
     <link name="FTSensor" />
     <joint name="EE_to_FTSensor" type="fixed">
