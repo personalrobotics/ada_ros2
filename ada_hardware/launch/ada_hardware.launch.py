@@ -95,9 +95,9 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "use_forque",
-            default_value="true",
-            description="Whether to include F/T sensor.",
+            "end_effector_tool",
+            default_value="none",
+            description="The end-effector tool being used: none, fork, articulable_fork",
         )
     )
     declared_arguments.append(
@@ -137,7 +137,7 @@ def generate_launch_description():
     description_file = LaunchConfiguration("description_file")
     sim = LaunchConfiguration("sim")
     readonly = LaunchConfiguration("readonly")
-    use_forque = LaunchConfiguration("use_forque")
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
     robot_controller = LaunchConfiguration("robot_controller")
     start_controller = LaunchConfiguration("start_controller")
     start_rviz = LaunchConfiguration("start_rviz")
@@ -159,8 +159,8 @@ def generate_launch_description():
             "readonly:=",
             readonly,
             " ",
-            "use_forque:=",
-            use_forque,
+            "end_effector_tool:=",
+            end_effector_tool,
         ]
     )
     robot_description = {
