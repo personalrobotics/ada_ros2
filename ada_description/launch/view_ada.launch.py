@@ -63,9 +63,9 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "use_forque",
-            default_value="false",
-            description="If the forque apparatus is being used.",
+            "end_effector_tool",
+            default_value="none",
+            description="The end-effector tool being used: none, fork, articulable_fork",
         )
     )
 
@@ -73,7 +73,7 @@ def generate_launch_description():
     # General arguments
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
-    use_forque = LaunchConfiguration("use_forque")
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
 
     robot_description_content = Command(
         [
@@ -83,8 +83,8 @@ def generate_launch_description():
                 [FindPackageShare(description_package), "urdf", description_file]
             ),
             " ",
-            "use_forque:=",
-            use_forque,
+            "end_effector_tool:=",
+            end_effector_tool
         ]
     )
     robot_description = {
