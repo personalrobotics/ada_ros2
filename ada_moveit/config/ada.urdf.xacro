@@ -3,6 +3,10 @@
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
     <xacro:arg name="sim" default="real" />
 
+    <!-- TODO: figure out how to have ada.xacro inherit from this argument -->
+    <xacro:arg name="end_effector_tool" default="fork" />
+    <xacro:property name="cmp_end_effector_tool" value="$(arg end_effector_tool)"/>
+
     <!-- Import ada urdf file -->
     <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
 
@@ -14,8 +18,10 @@
         initial_positions_file="$(arg initial_positions_file)"
         sim="$(arg sim)" />
 
-    <xacro:af_ros2_control name="AFHardware"
-        initial_positions_file="$(arg initial_positions_file)"
-        sim="$(arg sim)" />
+    <xacro:if value="${cmp_end_effector_tool == 'articulable_fork'}">
+      <xacro:af_ros2_control name="AFHardware"
+          initial_positions_file="$(arg initial_positions_file)"
+          sim="$(arg sim)" />
+    </xacro:if>
 
 </robot>

@@ -48,6 +48,13 @@ def generate_launch_description():
     )
     sim = LaunchConfiguration("sim")
 
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used: none, fork, articulable_fork",
+    )
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
+
     ctrl_da = DeclareLaunchArgument(
         "controllers_file",
         default_value=[sim, "_controllers.yaml"],
@@ -74,6 +81,7 @@ def generate_launch_description():
     ld = LaunchDescription()
     ld.add_action(calib_da)
     ld.add_action(sim_da)
+    ld.add_action(eet_da)
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
@@ -208,6 +216,9 @@ def generate_launch_description():
             " ",
             "sim:=",
             sim,
+            " ",
+            "end_effector_tool:=",
+            end_effector_tool,
         ]
     )
     robot_description = {
