@@ -57,7 +57,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="ada.xacro",
+            default_value="ada_standalone.xacro",
             description="URDF/XACRO description file with the robot.",
         )
     )
@@ -65,7 +65,8 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "end_effector_tool",
             default_value="none",
-            description="The end-effector tool being used: none, fork, articulable_fork",
+            description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
+            choices=['none', 'fork', 'articulable_fork']
         )
     )
 
