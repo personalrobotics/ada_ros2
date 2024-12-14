@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 import os
 import yaml
 from ament_index_python.packages import get_package_share_directory
@@ -6,7 +9,10 @@ from moveit_configs_utils.launches import generate_demo_launch
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource, AnyLaunchDescriptionSource
+from launch.launch_description_sources import (
+    PythonLaunchDescriptionSource,
+    AnyLaunchDescriptionSource,
+)
 from launch.substitutions import (
     LaunchConfiguration,
     Command,
@@ -93,11 +99,16 @@ def generate_launch_description():
     ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
 
     # Camera Extrinsics Calibration
-    ada_calibrate_camera_package_path = get_package_share_directory("ada_calibrate_camera")
+    ada_calibrate_camera_package_path = get_package_share_directory(
+        "ada_calibrate_camera"
+    )
     ld.add_action(
         IncludeLaunchDescription(
             AnyLaunchDescriptionSource(
-                os.path.join(ada_calibrate_camera_package_path, "launch/publish_camera_extrinsics_launch.xml")
+                os.path.join(
+                    ada_calibrate_camera_package_path,
+                    "launch/publish_camera_extrinsics_launch.xml",
+                )
             ),
             launch_arguments={
                 "log_level": log_level,

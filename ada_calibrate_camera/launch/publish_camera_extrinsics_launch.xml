@@ -1,3 +1,8 @@
+<!--
+   Copyright (c) 2024, Personal Robotics Laboratory
+   License: BSD 3-Clause. See LICENSE.md file in root directory.
+-->
+
 <launch>
   <arg name="calibration_file_name" default="auto" description="Name of the calibration file to save" />
   <arg name="log_level" default="info" description="Log level to pass to create_action_servers: debug, info, warn" />

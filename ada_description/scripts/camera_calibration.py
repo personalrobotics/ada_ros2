@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Adapted from:
 # https://github.com/crigroup/handeye
 """
@@ -186,7 +189,7 @@ class CameraCalibrator(Node):
 
     def add_image(self):
         """
-        Collect the current image trasform
+        Collect the current image transform
         """
         self.get_logger().info("Saving Calibration Transform")
         with self.latest_image_lock:

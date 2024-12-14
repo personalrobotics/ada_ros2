@@ -109,7 +109,7 @@ hardware_interface::CallbackReturn Jaco2::on_init(const hardware_interface::Hard
         }
       }
     }
-    
+
     for (const hardware_interface::InterfaceInfo & interface_info : joint.state_interfaces) {
       if (!(interface_info.name == hardware_interface::HW_IF_POSITION ||
             interface_info.name == hardware_interface::HW_IF_VELOCITY ||
@@ -793,7 +793,7 @@ hardware_interface::return_type Jaco2::read(
   AngularPosition arm_vel;
   AngularPosition arm_eff;
 
-  // Requires 3 seperate calls to the USB
+  // Requires 3 separate calls to the USB
   int r = NO_ERROR_KINOVA;
   r = GetAngularPosition(arm_pos);
   if (r != NO_ERROR_KINOVA) {

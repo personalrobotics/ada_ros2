@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Adapted from https://github.com/ros-planning/moveit2/blob/humble/moveit_ros/moveit_servo/config/panda_simulated_config.yaml
 ###############################################
 # Modify all parameters related to servoing here

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
 This module defines the ServoRepublisher node, which listens for servo commands
 (either TwistStamped or JointJog) on input topics, and republishes them on output
@@ -230,26 +233,35 @@ class ServoRepublisher(Node):
             return
 
         # Check if we are already waiting for a response
-        if (self.joint_controller_get_parameter_future is not None):
+        if self.joint_controller_get_parameter_future is not None:
             # If the future is done, wait for the callback to be called
             if self.joint_controller_get_parameter_future.done():
                 return
             # If the future is not done, then wait for it to finish
-            if (self.get_clock().now() - self.joint_controller_get_parameter_invoke_time) < Duration(seconds=timeout):
+            if (
+                self.get_clock().now() - self.joint_controller_get_parameter_invoke_time
+            ) < Duration(seconds=timeout):
                 return
             # If the future is not done and it has been too long, then cancel it
-            self.joint_controller_get_parameter.remove_pending_request(self.joint_controller_get_parameter_future)
-        
+            self.joint_controller_get_parameter.remove_pending_request(
+                self.joint_controller_get_parameter_future
+            )
+
         # Send the request
         request = GetParameters.Request(
             names=[parameter_name],
         )
-        self.joint_controller_get_parameter_future = self.joint_controller_get_parameter.call_async(request)
+        self.joint_controller_get_parameter_future = (
+            self.joint_controller_get_parameter.call_async(request)
+        )
         self.joint_controller_get_parameter_invoke_time = self.get_clock().now()
-        self.joint_controller_get_parameter_future.add_done_callback(self.get_joint_controller_interface_name_callback)
-        
+        self.joint_controller_get_parameter_future.add_done_callback(
+            self.get_joint_controller_interface_name_callback
+        )
 
-    def get_joint_controller_interface_name_callback(self, future: rclpy.task.Future) -> None:
+    def get_joint_controller_interface_name_callback(
+        self, future: rclpy.task.Future
+    ) -> None:
         """
         Callback for the get_joint_controller_interface_name service call.
         """
@@ -260,7 +272,7 @@ class ServoRepublisher(Node):
         # If the future succeeded, get the response
         try:
             response = future.result()
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             self.get_logger().error(
                 f"Failed to get the joint controller interface name: {e}"
             )
@@ -287,7 +299,7 @@ class ServoRepublisher(Node):
                     "This node only supports position or velocity joint controllers. "
                     "JointJog messages will be ignored."
                 )
-        
+
         # Reset the future
         self.joint_controller_get_parameter_future = None
 
@@ -418,18 +430,19 @@ class ServoRepublisher(Node):
                 for i, joint_name in enumerate(JOINT_NAMES):
                     if joint_name in self.latest_joint_states:
                         # Get the joint position
-                        joint_position, joint_state_time = self.latest_joint_states[joint_name]
+                        joint_position, joint_state_time = self.latest_joint_states[
+                            joint_name
+                        ]
                         if (
                             self.last_published_joint_positions is not None
                             and self.last_published_joint_positions_time is not None
-                            and joint_state_time < self.last_published_joint_positions_time
+                            and joint_state_time
+                            < self.last_published_joint_positions_time
                         ):
                             # If the last published joint positions are newer than the joint state, use them
                             joint_position = self.last_published_joint_positions[i]
                         # Add the joint position to the list
-                        curr_joint_positions.append(
-                            joint_position
-                        )
+                        curr_joint_positions.append(joint_position)
                     else:
                         missing_joint_names.append(joint_name)
             if len(missing_joint_names) > 0:

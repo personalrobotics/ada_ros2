@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2023, Personal Robotics Laboratory
+Copyright (c) 2024, Personal Robotics Laboratory
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
