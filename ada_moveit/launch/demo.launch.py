@@ -17,6 +17,7 @@ from launch.substitutions import (
 
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+from launch_ros.substitutions import FindPackageShare
 
 from srdfdom.srdf import SRDF
 
@@ -27,11 +28,6 @@ from moveit_configs_utils.launch_utils import (
 
 
 def generate_launch_description():
-    # MoveIt Config
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
-
     # Calibration Launch Argument
     calib_da = DeclareLaunchArgument(
         "calib",
@@ -48,6 +44,7 @@ def generate_launch_description():
     )
     sim = LaunchConfiguration("sim")
 
+    # End-effector Tool Launch Argument
     eet_da = DeclareLaunchArgument(
         "end_effector_tool",
         default_value="fork",
@@ -86,6 +83,13 @@ def generate_launch_description():
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
+
+    # Get MoveIt Configs
+    builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    builder = builder.robot_description(
+        mappings={'sim': sim, 'end_effector_tool': end_effector_tool}
+    )
+    moveit_config = builder.to_moveit_configs()
 
     # Launch argument for whether to use moveit servo or not
     ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
@@ -150,7 +154,9 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
                 launch_arguments={
+                    "sim": sim,
                     "log_level": log_level,
+                    "end_effector_tool": end_effector_tool,
                 }.items(),
             )
         )
@@ -162,7 +168,9 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/rsp.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
             }.items(),
         )
     )
@@ -176,6 +184,7 @@ def generate_launch_description():
             launch_arguments={
                 "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
             }.items(),
         )
     )
@@ -187,7 +196,9 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/moveit_rviz.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
             }.items(),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
@@ -200,31 +211,13 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/warehouse_db.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
             }.items(),
             condition=IfCondition(LaunchConfiguration("db")),
         )
     )
-
-    # Get URDF via xacro
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                str(moveit_config.package_path / "config/ada.urdf.xacro")
-            ),
-            " ",
-            "sim:=",
-            sim,
-            " ",
-            "end_effector_tool:=",
-            end_effector_tool,
-        ]
-    )
-    robot_description = {
-        "robot_description": ParameterValue(robot_description_content, value_type=str)
-    }
 
     # Launch MoveIt Servo
     servo_config = PathJoinSubstitution(
@@ -237,7 +230,7 @@ def generate_launch_description():
             name="servo_node",
             parameters=[
                 servo_config,
-                robot_description,
+                moveit_config.robot_description,
                 moveit_config.robot_description_semantic,
                 moveit_config.robot_description_kinematics,  # If set, use IK instead of the inverse jacobian
             ],
@@ -256,7 +249,7 @@ def generate_launch_description():
         Node(
             package="controller_manager",
             executable="ros2_control_node",
-            parameters=[robot_description, robot_controllers],
+            parameters=[moveit_config.robot_description, robot_controllers],
             arguments=["--ros-args", "--log-level", log_level],
         )
     )
@@ -267,7 +260,9 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/spawn_controllers.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
             }.items(),
         )
     )

@@ -9,6 +9,16 @@ from moveit_configs_utils.launches import generate_warehouse_db_launch
 
 def generate_launch_description():
     ld = LaunchDescription()
+
+    # Sim Launch Argument
+    sim_da = DeclareLaunchArgument(
+        "sim",
+        default_value="real",
+        description="Which sim to use: 'mock', 'isaac', or 'real'",
+    )
+    sim = LaunchConfiguration("sim")
+    ld.add_action(sim_da)
+
     # Log Level
     log_level_da = DeclareLaunchArgument(
         "log_level",
@@ -19,9 +29,23 @@ def generate_launch_description():
     log_level_cmd_line_args = ["--ros-args", "--log-level", log_level]
     ld.add_action(log_level_da)
 
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
+    # End-effector Tool Launch Argument
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
+        choices=['none', 'fork', 'articulable_fork']
+    )
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
+    ld.add_action(eet_da)
+
+    # Get MoveIt Configs
+    builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    builder = builder.robot_description(
+        mappings={'sim': sim, 'end_effector_tool': end_effector_tool}
+    )
+    moveit_config = builder.to_moveit_configs()
+
     entities = generate_warehouse_db_launch(moveit_config).entities
     for entity in entities:
         if isinstance(entity, Node):
