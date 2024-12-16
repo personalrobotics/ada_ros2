@@ -263,7 +263,7 @@ def generate_launch_description():
             parameters=[robot_description, robot_controllers],
             # Commented out the log-level since the joint state publisher logs every joint read
             # when on debug level
-            arguments=["--ros-args"],#, "--log-level", log_level],
+            arguments=["--ros-args"],  # , "--log-level", log_level],
         )
     )
 
