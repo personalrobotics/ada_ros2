@@ -13,7 +13,7 @@ jaco_arm:
   minimal_displacement_weight: 0.0
   gd_step_size: 0.0001
 
-jaco_af:
+ada:
   kinematics_solver: pick_ik/PickIkPlugin
   kinematics_solver_timeout: 0.05
   kinematics_solver_attempts: 3
