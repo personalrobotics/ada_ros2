@@ -37,7 +37,7 @@ def generate_launch_description():
         "end_effector_tool",
         default_value="fork",
         description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
-        choices=['none', 'fork', 'articulable_fork']
+        choices=["none", "fork", "articulable_fork"],
     )
     end_effector_tool = LaunchConfiguration("end_effector_tool")
     ld.add_action(eet_da)
@@ -45,7 +45,7 @@ def generate_launch_description():
     # Get MoveIt Configs
     builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
     builder = builder.robot_description(
-        mappings={'sim': sim, 'end_effector_tool': end_effector_tool}
+        mappings={"sim": sim, "end_effector_tool": end_effector_tool}
     )
     moveit_config = builder.to_moveit_configs()
 

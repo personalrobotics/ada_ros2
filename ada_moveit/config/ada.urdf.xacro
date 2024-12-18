@@ -5,7 +5,7 @@
     <xacro:arg name="end_effector_tool" default="fork" />
 
     <!-- Import ada urdf file -->
-    <xacro:include filename="$(find ada_description)/urdf/ada.xacro" /> 
+    <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
 
     <link name="root"/>
     <xacro:property name="root" value="root" />
