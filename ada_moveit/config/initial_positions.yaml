@@ -23,3 +23,5 @@ initial_positions:
   j2n6s200_joint_6: 1.32575
   j2n6s200_joint_finger_1: 1.317
   j2n6s200_joint_finger_2: 1.317
+  af_joint_1: 0.0
+  af_joint_2: 0.0
