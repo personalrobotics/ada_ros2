@@ -7,11 +7,16 @@
 
   <xacro:arg name="sim" default="none" />
   <xacro:arg name="readonly" default="false" />
-  <xacro:arg name="end_effector_tool" default="articulable_fork" />
+  <xacro:arg name="end_effector_tool" default="fork" />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
   <xacro:include filename="$(find ada_hardware)/urdf/ada_hardware.ros2_control.xacro"/>
+
+  <link name="root"/>
+  <xacro:property name="root" value="root" />
+  <xacro:property name="end_effector_tool" value="$(arg end_effector_tool)" />
+  <xacro:ada base_parent="${root}" end_effector_tool="${end_effector_tool}" />
 
   <xacro:ada_hardware_interface
     name="Jaco2"

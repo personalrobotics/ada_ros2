@@ -48,7 +48,7 @@ enum class ControlMode {
   Position,
   Velocity,
   Torque,
-  Currrent,
+  Current,
   ExtendedPosition,
   MultiTurn,
   CurrentBasedPosition,

@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Copyright 2023 Personal Robotics Lab, University of Washington
 #
 # Redistribution and use in source and binary forms, with or without
@@ -97,7 +100,8 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "end_effector_tool",
             default_value="none",
-            description="The end-effector tool being used: none, fork, articulable_fork",
+            description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
+            choices=["none", "fork", "articulable_fork"],
         )
     )
     declared_arguments.append(

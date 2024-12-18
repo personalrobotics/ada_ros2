@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 import os
 import yaml
 from ament_index_python.packages import get_package_share_directory
@@ -6,7 +9,10 @@ from moveit_configs_utils.launches import generate_demo_launch
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo
 from launch.conditions import IfCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.launch_description_sources import (
+    PythonLaunchDescriptionSource,
+    AnyLaunchDescriptionSource,
+)
 from launch.substitutions import (
     LaunchConfiguration,
     Command,
@@ -31,8 +37,8 @@ def generate_launch_description():
     # Calibration Launch Argument
     calib_da = DeclareLaunchArgument(
         "calib",
-        default_value="manual",
-        description="Which calibration folder to use with calib_camera_pose.launch.py",
+        default_value="auto",
+        description="Which calibration folder to use. Files are located in the `ada_calibrate_camera` package.",
     )
     calib = LaunchConfiguration("calib")
 
@@ -53,6 +59,15 @@ def generate_launch_description():
     )
     end_effector_tool = LaunchConfiguration("end_effector_tool")
 
+    # Use Octomap Launch Argument
+    use_octomap_da = DeclareLaunchArgument(
+        "use_octomap",
+        default_value="true",
+        description="Whether to use octomap for collision checking",
+    )
+    use_octomap = LaunchConfiguration("use_octomap")
+
+    # Controllers File
     ctrl_da = DeclareLaunchArgument(
         "controllers_file",
         default_value=[sim, "_controllers.yaml"],
@@ -60,6 +75,7 @@ def generate_launch_description():
     )
     controllers_file = LaunchConfiguration("controllers_file")
 
+    # Servo File
     servo_da = DeclareLaunchArgument(
         "servo_file",
         default_value=[sim, "_servo.yaml"],
@@ -80,6 +96,7 @@ def generate_launch_description():
     ld.add_action(calib_da)
     ld.add_action(sim_da)
     ld.add_action(eet_da)
+    ld.add_action(use_octomap_da)
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
@@ -94,25 +111,23 @@ def generate_launch_description():
     # Launch argument for whether to use moveit servo or not
     ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
 
-    # Camera Calibration File
+    # Camera Extrinsics Calibration
+    ada_calibrate_camera_package_path = get_package_share_directory(
+        "ada_calibrate_camera"
+    )
     ld.add_action(
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                [
-                    PathJoinSubstitution(
-                        [
-                            str(moveit_config.package_path),
-                            "calib",
-                            calib,
-                            "calib_camera_pose.launch.py",
-                        ]
-                    )
-                ]
+            AnyLaunchDescriptionSource(
+                os.path.join(
+                    ada_calibrate_camera_package_path,
+                    "launch/publish_camera_extrinsics_launch.xml",
+                )
             ),
             launch_arguments={
                 "log_level": log_level,
+                "calibration_file_name": calib,
             }.items(),
-        )
+        ),
     )
 
     # Launch the IMU joint state publisher
@@ -183,6 +198,7 @@ def generate_launch_description():
             ),
             launch_arguments={
                 "sim": sim,
+                "use_octomap": use_octomap,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
             }.items(),
