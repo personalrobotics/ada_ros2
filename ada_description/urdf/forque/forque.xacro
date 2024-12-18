@@ -87,35 +87,6 @@
             <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
             <dynamics damping="0.0" friction="0.0"/>
         </joint>
-        <actuator name="${joint_name}_actuator">
-          <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-          <mechanicalReduction>160</mechanicalReduction>
-        </actuator>
-
-        <xacro:unless value="${fixed}">
-            <transmission name="${joint_name}_trans">
-                <type>transmission_interface/SimpleTransmission</type>
-                <joint name="${joint_name}">
-                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                </joint>
-                <actuator name="${joint_name}_actuator">
-                    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-                    <mechanicalReduction>160</mechanicalReduction>
-                </actuator>
-            </transmission>
-
-            <!--For torque sensing in simulation-->
-            <gazebo reference="${joint_name}">
-                <provideFeedback>true</provideFeedback>
-            </gazebo>
-            <gazebo>
-                <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
-                    <updateRate>30.0</updateRate>
-                    <topicName>${joint_name}_ft_sensor_topic</topicName>
-                    <jointName>${joint_name}</jointName>
-                </plugin>
-            </gazebo>
-        </xacro:unless>
 	</xacro:macro>
 
 	<xacro:macro name="forque_assembly" params="base_parent end_effector_tool use_antenna:=false">
