@@ -101,7 +101,7 @@ def generate_launch_description():
             "end_effector_tool",
             default_value="none",
             description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
-            choices=['none', 'fork', 'articulable_fork']
+            choices=["none", "fork", "articulable_fork"],
         )
     )
     declared_arguments.append(
