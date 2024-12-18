@@ -14,16 +14,18 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(dynamixel_workbench_toolbox REQUIRED)
 
 add_library(ada_hardware SHARED
   src/jaco2.cpp
-  src/isaacsim.cpp)
+  src/isaacsim.cpp
+  src/dynamixel_hardware.cpp)
 
 target_include_directories(ada_hardware PUBLIC include)
 
 target_link_libraries(ada_hardware -l:Kinova.API.CommLayerUbuntu.so -l:Kinova.API.USBCommandLayerUbuntu.so)
 
-ament_target_dependencies(ada_hardware rclcpp rclcpp_lifecycle pluginlib hardware_interface sensor_msgs)
+ament_target_dependencies(ada_hardware rclcpp rclcpp_lifecycle lifecycle_msgs pluginlib hardware_interface sensor_msgs dynamixel_workbench_toolbox)
 
 pluginlib_export_plugin_description_file(hardware_interface ada_hardware.xml)
 
@@ -72,7 +74,17 @@ if(BUILD_TESTING)
     hardware_interface
     sensor_msgs
   )
+
+  ament_add_gmock(test_dynamixel test/test_dynamixel.cpp)
+  ament_target_dependencies(test_dynamixel
+    pluginlib
+    ros2_control_test_assets
+    rclcpp
+    rclcpp_lifecycle
+    hardware_interface
+    sensor_msgs
+  )
 endif()
 
-ament_export_dependencies(rclcpp rclcpp_lifecycle pluginlib hardware_interface)
+ament_export_dependencies(rclcpp rclcpp_lifecycle pluginlib hardware_interface dynamixel_workbench_toolbox)
 ament_package()
