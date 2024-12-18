@@ -1,3 +1,8 @@
+<!--
+   Copyright (c) 2024, Personal Robotics Laboratory
+   License: BSD 3-Clause. See LICENSE.md file in root directory.
+-->
+
 <library path="ada_hardware">
   <class name="ada_hardware/Jaco2"
          type="ada_hardware::Jaco2"
