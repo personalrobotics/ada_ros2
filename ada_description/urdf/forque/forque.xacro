@@ -103,7 +103,7 @@
                     <mechanicalReduction>160</mechanicalReduction>
                 </actuator>
             </transmission>
-             
+
             <!--For torque sensing in simulation-->
             <gazebo reference="${joint_name}">
                 <provideFeedback>true</provideFeedback>
