@@ -297,6 +297,7 @@
     <disable_collisions link1="uncalibrated_camera_link" link2="screwHeadRight" reason="Adjacent"/>
 
     <!-- Disable collisions for Articulable Fork links -->
+    <disable_collisions link1="af_link_base" link2="forkHandle" reason="Adjacent"/>
     <disable_collisions link1="af_link_base" link2="af_link_1" reason="Adjacent"/>
     <disable_collisions link1="af_link_base" link2="af_link_2" reason="Adjacent"/>
     <disable_collisions link1="af_link_base" link2="af_ft_adapter_link" reason="Adjacent"/>
