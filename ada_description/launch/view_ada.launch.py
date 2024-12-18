@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Copyright (c) 2021 PickNik, Inc.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -66,7 +69,7 @@ def generate_launch_description():
             "end_effector_tool",
             default_value="none",
             description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
-            choices=['none', 'fork', 'articulable_fork']
+            choices=["none", "fork", "articulable_fork"],
         )
     )
 
@@ -85,7 +88,7 @@ def generate_launch_description():
             ),
             " ",
             "end_effector_tool:=",
-            end_effector_tool
+            end_effector_tool,
         ]
     )
     robot_description = {

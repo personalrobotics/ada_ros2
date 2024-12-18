@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.utilities import normalize_to_list_of_substitutions
@@ -16,6 +19,7 @@ def get_move_group_launch(context):
     Adapted from https://robotics.stackexchange.com/questions/104340/getting-the-value-of-launchargument-inside-python-launch-file
     """
     sim = LaunchConfiguration("sim").perform(context)
+    use_octomap = LaunchConfiguration("use_octomap").perform(context)
     log_level = LaunchConfiguration("log_level").perform(context)
 
     # Get MoveIt Configs
@@ -24,7 +28,7 @@ def get_move_group_launch(context):
     ).to_moveit_configs()
 
     # If sim is mock, set moveit_config.sensors_3d to an empty dictionary
-    if sim == "mock":
+    if sim == "mock" or use_octomap == "false":
         moveit_config.sensors_3d = {}
 
     entities = generate_move_group_launch(moveit_config).entities
@@ -47,6 +51,12 @@ def generate_launch_description():
         default_value="real",
         description="Which sim to use: 'mock', 'isaac', or 'real'",
     )
+    # Use Octomap
+    octomap_da = DeclareLaunchArgument(
+        "use_octomap",
+        default_value="true",
+        description="Whether to use octomap for collision checking",
+    )
     # Log Level
     log_level_da = DeclareLaunchArgument(
         "log_level",
@@ -56,6 +66,7 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(sim_da)
+    ld.add_action(octomap_da)
     ld.add_action(log_level_da)
     ld.add_action(OpaqueFunction(function=get_move_group_launch))
     return ld

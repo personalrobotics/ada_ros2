@@ -1,3 +1,6 @@
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 # Limits for the Pilz planner
 cartesian_limits:
   max_trans_vel: 1.0

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Copyright (c) 2024, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 """
-This module defines a node that continuously reads in accelerometer 
+This module defines a node that continuously reads in accelerometer
 data from the IMU to calculate the angle at which the wheelchair is
-currently tilted and publishes the angle and velocity to the 
+currently tilted and publishes the angle and velocity to the
 /joint_states topic.
 """
 
