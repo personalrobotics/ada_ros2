@@ -8,7 +8,6 @@
   <xacro:arg name="sim" default="none" />
   <xacro:arg name="readonly" default="false" />
   <xacro:arg name="end_effector_tool" default="fork" />
-  <xacro:property name="end_effector_tool" value="$(arg end_effector_tool)" />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
@@ -24,11 +23,9 @@
     sim="$(arg sim)"
     readonly="$(arg readonly)" />
 
-  <xacro:if value="${end_effector_tool == 'articulable_fork'}">
-    <xacro:dynamixel_hardware_interface
-      name="DynamixelHardware"
-      sim="$(arg sim)"
-      readonly="$(arg readonly)" />
-  </xacro:if>
+  <xacro:dynamixel_hardware_interface
+    name="DynamixelHardware"
+    sim="$(arg sim)"
+    readonly="$(arg readonly)" />
 
 </robot>
