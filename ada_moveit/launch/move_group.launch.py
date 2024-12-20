@@ -28,6 +28,9 @@ def get_move_group_launch(context):
     builder = builder.robot_description(
         mappings={"sim": sim, "end_effector_tool": end_effector_tool}
     )
+    builder = builder.robot_description_semantic(
+        mappings={"end_effector_tool": end_effector_tool}
+    )
     moveit_config = builder.to_moveit_configs()
 
     # If sim is mock, set moveit_config.sensors_3d to an empty dictionary

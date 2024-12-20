@@ -106,6 +106,9 @@ def generate_launch_description():
     builder = builder.robot_description(
         mappings={"sim": sim, "end_effector_tool": end_effector_tool}
     )
+    builder = builder.robot_description_semantic(
+        mappings={"end_effector_tool": end_effector_tool}
+    )
     moveit_config = builder.to_moveit_configs()
 
     # Launch argument for whether to use moveit servo or not
