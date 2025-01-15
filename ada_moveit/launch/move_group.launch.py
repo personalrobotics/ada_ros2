@@ -72,7 +72,7 @@ def generate_launch_description():
     eet_da = DeclareLaunchArgument(
         "end_effector_tool",
         default_value="fork",
-        description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
+        description="The end-effector tool being used",
         choices=["fork", "articulable_fork"],
     )
 
