@@ -73,7 +73,7 @@ def generate_launch_description():
         "end_effector_tool",
         default_value="fork",
         description="The end-effector tool being used: 'none', 'fork', 'articulable_fork'",
-        choices=["none", "fork", "articulable_fork"],
+        choices=["fork", "articulable_fork"],
     )
 
     ld = LaunchDescription()
