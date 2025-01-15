@@ -15,15 +15,11 @@ from launch.launch_description_sources import (
 )
 from launch.substitutions import (
     LaunchConfiguration,
-    Command,
     PathJoinSubstitution,
-    FindExecutable,
     TextSubstitution,
 )
 
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
-from launch_ros.substitutions import FindPackageShare
 
 from srdfdom.srdf import SRDF
 

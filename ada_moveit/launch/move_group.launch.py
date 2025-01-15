@@ -12,6 +12,9 @@ from moveit_configs_utils.launches import generate_move_group_launch
 
 
 def get_move_group_launch(context):
+    # pylint: disable=duplicate-code
+    # Launch arguments must be re-declared to be evaluated in context
+
     """
     Gets the launch description for MoveGroup, after removing sensors_3d
     if sim is mock.
@@ -51,6 +54,9 @@ def get_move_group_launch(context):
 
 
 def generate_launch_description():
+    # pylint: disable=duplicate-code
+    # Launch arguments must be re-declared to be evaluated in context
+
     # Sim Launch Argument
     sim_da = DeclareLaunchArgument(
         "sim",

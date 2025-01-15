@@ -11,6 +11,9 @@ from moveit_configs_utils.launches import generate_static_virtual_joint_tfs_laun
 
 
 def generate_launch_description():
+    # pylint: disable=duplicate-code
+    # Launch arguments must be re-declared to be evaluated in context
+
     ld = LaunchDescription()
 
     # Sim Launch Argument
