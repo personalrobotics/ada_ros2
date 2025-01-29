@@ -19,6 +19,7 @@
 	<xacro:property name="default_inertial">
 		<inertia ixx="0.000005" iyy="0.000005" iyz="0" izz="0.000005" ixy="0" ixz="0"/>
 	</xacro:property>
+  <xacro:property name="forque_assembly_dummy_default_value" value="1234567890"/>
 
 
 	<xacro:macro name="forque_assembly_link" params="link_name link_mesh mass:=0 cog:='0 0 0' *inertia">
@@ -48,24 +49,24 @@
 		</link>
 	</xacro:macro>
 
-	<xacro:macro name="forque_assembly_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${dummy_default_value} joint_upper_limit:=${dummy_default_value} joint_velocity_limit:=${dummy_default_value} joint_torque_limit:=${dummy_default_value} fixed:=false">
+	<xacro:macro name="forque_assembly_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${forque_assembly_dummy_default_value} joint_upper_limit:=${forque_assembly_dummy_default_value} joint_velocity_limit:=${forque_assembly_dummy_default_value} joint_torque_limit:=${forque_assembly_dummy_default_value} fixed:=false">
 
         <xacro:if value="${(type == 'fixed' and not fixed) or (type != 'fixed' and fixed)}">
             <xacro:ERROR_inconsistent_joint_type_specification/>
         </xacro:if>
         <xacro:if value="${type == 'revolute'}">
-            <xacro:if value="${joint_lower_limit == dummy_default_value}">
+            <xacro:if value="${joint_lower_limit == forque_assembly_dummy_default_value}">
                 <xacro:ERROR_joint_lower_limit_needs_to_be_set_for_a_revolute_joint/>
             </xacro:if>
-            <xacro:if value="${joint_upper_limit == dummy_default_value}">
+            <xacro:if value="${joint_upper_limit == forque_assembly_dummy_default_value}">
                 <xacro:ERROR_joint_upper_limit_needs_to_be_set_for_a_revolute_joint/>
             </xacro:if>
         </xacro:if>
         <xacro:unless value="${type =='fixed'}">
-            <xacro:if value="${joint_velocity_limit == dummy_default_value}">
+            <xacro:if value="${joint_velocity_limit == forque_assembly_dummy_default_value}">
                 <xacro:ERROR_joint_velocity_limit_needs_to_be_set_for_a_non_fixed_joint/>
             </xacro:if>
-            <xacro:if value="${joint_torque_limit == dummy_default_value}">
+            <xacro:if value="${joint_torque_limit == forque_assembly_dummy_default_value}">
                 <xacro:ERROR_joint_torque_limit_needs_to_be_set_for_a_non_fixed_joint/>
             </xacro:if>
         </xacro:unless>
