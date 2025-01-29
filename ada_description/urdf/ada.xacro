@@ -14,16 +14,19 @@
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
   xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="ada" params="base_parent end_effector_tool">
+  <!-- Robot name must be defined in the Xacro file that instantiates the ada macro -->
+  <xacro:macro name="ada" params="end_effector_tool">
+    <!-- Import macros associated with forque, robot, and camera. Macros are added to the tree below -->
     <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
 
+    <link name="root"/>
     <link name="root_tilt"/>
     <joint name="robot_tilt" type="revolute">
       <origin xyz="0 0 0" rpy="0 0 0" />
       <child link="root_tilt" />
-      <parent link="${base_parent}" />
+      <parent link="root" />
       <axis xyz="-1 0 0"/>
       <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
       lower and upper limits generously encompass the range of the wheelchair's tilt-->
@@ -57,7 +60,7 @@
     <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.03783" cog="0.010957 -0.019223 -0.03777">
       <inertia ixx="0.000018817" iyy="0.00001119989" iyz="-0.00000120296" izz="0.000026883" ixy="-0.0000003327" ixz="-0.000000092476"/>
     </xacro:forque_assembly_link>
-    <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" type="fixed" parent="j2n6s200_link_6" child="FTArmMount" joint_axis_xyz="0 0 1" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}" fixed="true"/>
+    <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" type="fixed" parent="j2n6s200_link_6" child="FTArmMount" joint_axis_xyz="0 0 1" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
 
     <xacro:unless value="${end_effector_tool == 'none'}">
       <xacro:forque_assembly base_parent="FTArmMount" end_effector_tool="${end_effector_tool}"/>
