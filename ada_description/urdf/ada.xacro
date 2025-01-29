@@ -14,6 +14,7 @@
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
   xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- Robot name must be defined in the Xacro file that instantiates the ada macro -->
   <xacro:macro name="ada" params="end_effector_tool">
     <!-- Import macros associated with forque, robot, and camera. Macros are added to the tree below -->
     <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
