@@ -51,43 +51,43 @@
 
 	<xacro:macro name="forque_assembly_joint" params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${forque_assembly_dummy_default_value} joint_upper_limit:=${forque_assembly_dummy_default_value} joint_velocity_limit:=${forque_assembly_dummy_default_value} joint_torque_limit:=${forque_assembly_dummy_default_value} fixed:=false">
 
-        <xacro:if value="${(type == 'fixed' and not fixed) or (type != 'fixed' and fixed)}">
-            <xacro:ERROR_inconsistent_joint_type_specification/>
-        </xacro:if>
-        <xacro:if value="${type == 'revolute'}">
-            <xacro:if value="${joint_lower_limit == forque_assembly_dummy_default_value}">
-                <xacro:ERROR_joint_lower_limit_needs_to_be_set_for_a_revolute_joint/>
-            </xacro:if>
-            <xacro:if value="${joint_upper_limit == forque_assembly_dummy_default_value}">
-                <xacro:ERROR_joint_upper_limit_needs_to_be_set_for_a_revolute_joint/>
-            </xacro:if>
-        </xacro:if>
-        <xacro:unless value="${type =='fixed'}">
-            <xacro:if value="${joint_velocity_limit == forque_assembly_dummy_default_value}">
-                <xacro:ERROR_joint_velocity_limit_needs_to_be_set_for_a_non_fixed_joint/>
-            </xacro:if>
-            <xacro:if value="${joint_torque_limit == forque_assembly_dummy_default_value}">
-                <xacro:ERROR_joint_torque_limit_needs_to_be_set_for_a_non_fixed_joint/>
-            </xacro:if>
-        </xacro:unless>
+    <xacro:if value="${(type == 'fixed' and not fixed) or (type != 'fixed' and fixed)}">
+      <xacro:ERROR_inconsistent_joint_type_specification/>
+    </xacro:if>
+    <xacro:if value="${type == 'revolute'}">
+      <xacro:if value="${joint_lower_limit == forque_assembly_dummy_default_value}">
+        <xacro:ERROR_joint_lower_limit_needs_to_be_set_for_a_revolute_joint/>
+      </xacro:if>
+      <xacro:if value="${joint_upper_limit == forque_assembly_dummy_default_value}">
+        <xacro:ERROR_joint_upper_limit_needs_to_be_set_for_a_revolute_joint/>
+      </xacro:if>
+    </xacro:if>
+    <xacro:unless value="${type =='fixed'}">
+      <xacro:if value="${joint_velocity_limit == forque_assembly_dummy_default_value}">
+        <xacro:ERROR_joint_velocity_limit_needs_to_be_set_for_a_non_fixed_joint/>
+      </xacro:if>
+      <xacro:if value="${joint_torque_limit == forque_assembly_dummy_default_value}">
+        <xacro:ERROR_joint_torque_limit_needs_to_be_set_for_a_non_fixed_joint/>
+      </xacro:if>
+    </xacro:unless>
 
-        <joint name="${joint_name}" type="${type}">
-            <parent link="${parent}"/>
-            <child link="${child}"/>
-            <axis xyz="${joint_axis_xyz}"/>
-            <xacro:if value="${type == 'revolute'}">
-                <limit
-                    effort="${joint_torque_limit}"
-                    velocity="${joint_velocity_limit}"
-                    lower="${joint_lower_limit}"
-                    upper="${joint_upper_limit}"/>
-            </xacro:if>
-            <xacro:if value="${type == 'continuous'}">
-                <limit effort="${joint_torque_limit}" velocity="${joint_velocity_limit}"/>
-            </xacro:if>
-            <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
-            <dynamics damping="0.0" friction="0.0"/>
-        </joint>
+    <joint name="${joint_name}" type="${type}">
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <axis xyz="${joint_axis_xyz}"/>
+      <xacro:if value="${type == 'revolute'}">
+        <limit
+          effort="${joint_torque_limit}"
+          velocity="${joint_velocity_limit}"
+          lower="${joint_lower_limit}"
+          upper="${joint_upper_limit}"/>
+      </xacro:if>
+      <xacro:if value="${type == 'continuous'}">
+        <limit effort="${joint_torque_limit}" velocity="${joint_velocity_limit}"/>
+      </xacro:if>
+      <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}"/>
+      <dynamics damping="0.0" friction="0.0"/>
+    </joint>
 	</xacro:macro>
 
 	<xacro:macro name="forque_assembly" params="base_parent end_effector_tool use_antenna:=false">
