@@ -14,17 +14,18 @@
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
   xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="ada" params="base_parent end_effector_tool">
+  <xacro:macro name="ada" params="end_effector_tool">
     <!-- Import macros associated with forque, robot, and camera. Macros are added to the tree below -->
     <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
 
+    <link name="root"/>
     <link name="root_tilt"/>
     <joint name="robot_tilt" type="revolute">
       <origin xyz="0 0 0" rpy="0 0 0" />
       <child link="root_tilt" />
-      <parent link="${base_parent}" />
+      <parent link="root" />
       <axis xyz="-1 0 0"/>
       <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
       lower and upper limits generously encompass the range of the wheelchair's tilt-->
