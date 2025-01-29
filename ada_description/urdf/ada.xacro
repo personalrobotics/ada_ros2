@@ -15,6 +15,7 @@
   xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="ada" params="base_parent end_effector_tool">
+    <!-- Import macros associated with forque, robot, and camera. Macros are added to the tree below -->
     <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
