@@ -124,7 +124,7 @@
           <xacro:forque_assembly_link link_name="af_ft_adapter_link" link_mesh="roll_to_ft_adapter" mass="0.001" cog="0 0 0">
               <xacro:insert_block name="default_inertial"/>
           </xacro:forque_assembly_link>
-          <xacro:forque_assembly_joint joint_name="af_joint_2" type="revolute" parent="af_link_2" child="af_ft_adapter_link" joint_axis_xyz="0 1 0" joint_origin_xyz="0 0 0.019" joint_origin_rpy="${-J_PI/2} 0 0" joint_lower_limit="${-J_PI}" joint_upper_limit="${J_PI}" joint_velocity_limit="1" joint_torque_limit="1.4"/>
+          <xacro:forque_assembly_joint joint_name="af_joint_2" type="revolute" parent="af_link_2" child="af_ft_adapter_link" joint_axis_xyz="0 -1 0" joint_origin_xyz="0 0 0.019" joint_origin_rpy="${-J_PI/2} 0 0" joint_lower_limit="${-J_PI}" joint_upper_limit="${J_PI}" joint_velocity_limit="1" joint_torque_limit="1.4"/>
       </xacro:if>
 
 	  	<xacro:forque_assembly_link link_name="forque" link_mesh="ATI-9105-TW-NANO25-E" mass="0.0634" cog="0.0124692 0.0137169 0.010558">
