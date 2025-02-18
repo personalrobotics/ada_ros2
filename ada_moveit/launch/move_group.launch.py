@@ -12,6 +12,9 @@ from moveit_configs_utils.launches import generate_move_group_launch
 
 
 def get_move_group_launch(context):
+    # pylint: disable=duplicate-code
+    # Launch arguments must be re-declared to be evaluated in context
+
     """
     Gets the launch description for MoveGroup, after removing sensors_3d
     if sim is mock.
@@ -21,11 +24,17 @@ def get_move_group_launch(context):
     sim = LaunchConfiguration("sim").perform(context)
     use_octomap = LaunchConfiguration("use_octomap").perform(context)
     log_level = LaunchConfiguration("log_level").perform(context)
+    end_effector_tool = LaunchConfiguration("end_effector_tool").perform(context)
 
     # Get MoveIt Configs
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
+    builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    builder = builder.robot_description(
+        mappings={"sim": sim, "end_effector_tool": end_effector_tool}
+    )
+    builder = builder.robot_description_semantic(
+        mappings={"end_effector_tool": end_effector_tool}
+    )
+    moveit_config = builder.to_moveit_configs()
 
     # If sim is mock, set moveit_config.sensors_3d to an empty dictionary
     if sim == "mock" or use_octomap == "false":
@@ -45,6 +54,9 @@ def get_move_group_launch(context):
 
 
 def generate_launch_description():
+    # pylint: disable=duplicate-code
+    # Launch arguments must be re-declared to be evaluated in context
+
     # Sim Launch Argument
     sim_da = DeclareLaunchArgument(
         "sim",
@@ -63,10 +75,17 @@ def generate_launch_description():
         default_value="info",
         description="Logging level (debug, info, warn, error, fatal)",
     )
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used",
+        choices=["fork", "articulable_fork"],
+    )
 
     ld = LaunchDescription()
     ld.add_action(sim_da)
     ld.add_action(octomap_da)
     ld.add_action(log_level_da)
+    ld.add_action(eet_da)
     ld.add_action(OpaqueFunction(function=get_move_group_launch))
     return ld

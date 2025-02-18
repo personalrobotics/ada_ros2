@@ -15,7 +15,7 @@ imu_jointstate_publisher:
       - -232.50333333333336
       - 40.96
 
-    serial_port: '/dev/ttyUSB0'
+    serial_port: '/dev/ttyUSB1'
     velocity_thresh: 0.05 # radians per second
 
     # weights used in exponential rolling averages, between 0 and 1

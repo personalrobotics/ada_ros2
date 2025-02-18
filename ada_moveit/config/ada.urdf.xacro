@@ -2,9 +2,13 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada">
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
     <xacro:arg name="sim" default="real" />
+    <xacro:arg name="end_effector_tool" default="fork" />
 
     <!-- Import ada urdf file -->
     <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
+
+    <xacro:property name="end_effector_tool" value="$(arg end_effector_tool)" />
+    <xacro:ada end_effector_tool="${end_effector_tool}" />
 
     <!-- Import control_xacro -->
     <xacro:include filename="ada.ros2_control.xacro" />
@@ -13,5 +17,11 @@
     <xacro:ada_ros2_control name="ADAHardware"
         initial_positions_file="$(arg initial_positions_file)"
         sim="$(arg sim)" />
+
+    <xacro:if value="${end_effector_tool == 'articulable_fork'}">
+      <xacro:af_ros2_control name="AFHardware"
+          initial_positions_file="$(arg initial_positions_file)"
+          sim="$(arg sim)" />
+    </xacro:if>
 
 </robot>
