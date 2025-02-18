@@ -99,7 +99,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "end_effector_tool",
-            default_value="none",
+            default_value="fork",
             description="The end-effector tool being used:",
             choices=["none", "fork", "articulable_fork"],
         )
