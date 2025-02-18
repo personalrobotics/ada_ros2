@@ -7,13 +7,22 @@
 
   <xacro:arg name="sim" default="none" />
   <xacro:arg name="readonly" default="false" />
+  <xacro:arg name="end_effector_tool" default="fork" />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
   <xacro:include filename="$(find ada_hardware)/urdf/ada_hardware.ros2_control.xacro"/>
 
+  <xacro:property name="end_effector_tool" value="$(arg end_effector_tool)" />
+  <xacro:ada end_effector_tool="${end_effector_tool}" />
+
   <xacro:ada_hardware_interface
     name="Jaco2"
+    sim="$(arg sim)"
+    readonly="$(arg readonly)" />
+
+  <xacro:dynamixel_hardware_interface
+    name="DynamixelHardware"
     sim="$(arg sim)"
     readonly="$(arg readonly)" />
 
