@@ -12,65 +12,66 @@
   xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
     xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
     xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
-  xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada">
+  xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
-  <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
-  <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
+  <!-- Robot name must be defined in the Xacro file that instantiates the ada macro -->
+  <xacro:macro name="ada" params="end_effector_tool">
+    <!-- Import macros associated with forque, robot, and camera. Macros are added to the tree below -->
+    <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
+    <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
+    <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>
 
-  <xacro:arg name="use_forque" default="true"/>
-
-  <link name="root"/>
-
-  <link name="root_tilt"/>
-  <joint name="robot_tilt" type="revolute">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <child link="root_tilt" />
-    <parent link="root" />
-    <axis xyz="-1 0 0"/>
-    <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
-    lower and upper limits generously encompass the range of the wheelchair's tilt-->
-    <limit effort="80" velocity="0.15" lower="${-J_PI}" upper="${J_PI}"/>
-    <dynamics damping="0.0" friction="0.0"/>
-  </joint>
-
-  <xacro:property name="robot_root" value="root_tilt" />
-
-  <xacro:j2n6s200 base_parent="${robot_root}"/>
-
-  <xacro:camera_assembly base_parent="j2n6s200_link_6" base_xyz="0.0165 0 0.0011" base_rpy="${3*J_PI/2} 0 ${3*J_PI/2}"/>
-
-  <!-- Hard-coded Extrinsics -->
-  <link name="camera_link" />
-  <joint name="extrinsics" type="fixed">
-    <origin xyz="0.0194 -0.01606 0.029014" rpy="0.17234 -1.56127 2.96967" />
-    <parent link="cameraMount" />
-    <child link="camera_link" />
-  </joint>
-  <!-- Copy Realsense in case of simulation -->
-  <!--
-  <link name="camera_color_optical_frame" />
-  <joint name="optical_republish" type="fixed">
-    <origin xyz="0.000 -0.015 0.000" rpy="-1.564 0.000 -1.573" />
-    <parent link="camera_link" />
-    <child link="camera_color_optical_frame" />
-  </joint>
-  -->
-
-  <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.03783" cog="0.010957 -0.019223 -0.03777">
-    <inertia ixx="0.000018817" iyy="0.00001119989" iyz="-0.00000120296" izz="0.000026883" ixy="-0.0000003327" ixz="-0.000000092476"/>
-  </xacro:forque_assembly_link>
-  <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" parent="j2n6s200_link_6" child="FTArmMount" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
-
-  <xacro:if value="$(arg use_forque)">
-    <xacro:forque_assembly base_parent="FTArmMount"/>
-
-    <link name="FTSensor" />
-    <joint name="EE_to_FTSensor" type="fixed">
-        <child link="FTSensor"/>
-        <parent link="j2n6s200_end_effector"/>
-        <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
+    <link name="root"/>
+    <link name="root_tilt"/>
+    <joint name="robot_tilt" type="revolute">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <child link="root_tilt" />
+      <parent link="root" />
+      <axis xyz="-1 0 0"/>
+      <!-- effort copied from j2n6s200 joint 2, velocity is max velocity the wheelchair can tilt,
+      lower and upper limits generously encompass the range of the wheelchair's tilt-->
+      <limit effort="80" velocity="0.15" lower="${-J_PI}" upper="${J_PI}"/>
+      <dynamics damping="0.0" friction="0.0"/>
     </joint>
-  </xacro:if>
+
+    <xacro:property name="robot_root" value="root_tilt" />
+
+    <xacro:j2n6s200 base_parent="${robot_root}"/>
+
+    <xacro:camera_assembly base_parent="j2n6s200_link_6" base_xyz="0.0165 0 0.0011" base_rpy="${3*J_PI/2} 0 ${3*J_PI/2}"/>
+
+    <!-- Hard-coded Extrinsics -->
+    <link name="camera_link" />
+    <joint name="extrinsics" type="fixed">
+      <origin xyz="0.0194 -0.01606 0.029014" rpy="0.17234 -1.56127 2.96967" />
+      <parent link="cameraMount" />
+      <child link="camera_link" />
+    </joint>
+    <!-- Copy Realsense in case of simulation -->
+    <!--
+    <link name="camera_color_optical_frame" />
+    <joint name="optical_republish" type="fixed">
+      <origin xyz="0.000 -0.015 0.000" rpy="-1.564 0.000 -1.573" />
+      <parent link="camera_link" />
+      <child link="camera_color_optical_frame" />
+    </joint>
+    -->
+
+    <xacro:forque_assembly_link link_name="FTArmMount" link_mesh="2024_01_18_FTArmMount" mass="0.03783" cog="0.010957 -0.019223 -0.03777">
+      <inertia ixx="0.000018817" iyy="0.00001119989" iyz="-0.00000120296" izz="0.000026883" ixy="-0.0000003327" ixz="-0.000000092476"/>
+    </xacro:forque_assembly_link>
+    <xacro:forque_assembly_joint joint_name="FTArmMount_to_arm" type="fixed" parent="j2n6s200_link_6" child="FTArmMount" joint_axis_xyz="0 0 1" joint_origin_xyz="0.0065 -0.011 -0.0075" joint_origin_rpy="${J_PI/2} 0 ${J_PI/2}"/>
+
+    <xacro:unless value="${end_effector_tool == 'none'}">
+      <xacro:forque_assembly base_parent="FTArmMount" end_effector_tool="${end_effector_tool}"/>
+
+      <link name="FTSensor" />
+      <joint name="EE_to_FTSensor" type="fixed">
+          <child link="FTSensor"/>
+          <parent link="j2n6s200_end_effector"/>
+          <origin rpy="0 0 0" xyz="0.0 0.0 0.092"/>
+      </joint>
+    </xacro:unless>
+  </xacro:macro>
 
 </robot>

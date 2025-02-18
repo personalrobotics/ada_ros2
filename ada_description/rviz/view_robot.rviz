@@ -67,6 +67,30 @@ Visualization Manager:
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
+        af_link_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        af_link_1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        af_motor_fixture_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        af_link_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        af_ft_adapter_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         FT:
           Alpha: 1
           Show Axes: false
