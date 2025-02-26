@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <xacro:macro name="ada_hardware_interface" params="name prefix:=j2n6s200 sim readonly:=false">
-
-    <ros2_control name="${name}" type="system">
-
+  <xacro:macro
+    name="ada_hardware_interface"
+    params="name prefix:=j2n6s200 sim readonly:=false"
+  >
+    <ros2_control
+      name="${name}"
+      type="system"
+    >
       <hardware>
         <xacro:if value="${sim == 'mock'}">
           <plugin>mock_components/GenericSystem</plugin>
@@ -104,7 +107,5 @@
         <state_interface name="effort"/>
       </joint>
     </ros2_control>
-
   </xacro:macro>
-
 </robot>

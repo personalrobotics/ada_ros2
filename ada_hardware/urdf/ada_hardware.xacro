@@ -1,12 +1,18 @@
 <?xml version="1.0"?>
 <!-- j2n6s200 refers to jaco v2 6DOF non-spherical 2fingers -->
-
-
-<robot xmlns:xi="http://www.w3.org/2001/XInclude"
-	xmlns:xacro="http://www.ros.org/wiki/xacro" name="ada_hardware">
-
-  <xacro:arg name="sim" default="none" />
-  <xacro:arg name="readonly" default="false" />
+<robot
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:xacro="http://www.ros.org/wiki/xacro"
+  name="ada_hardware"
+>
+  <xacro:arg
+    name="sim"
+    default="none"
+  />
+  <xacro:arg
+    name="readonly"
+    default="false"
+  />
 
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
@@ -15,6 +21,6 @@
   <xacro:ada_hardware_interface
     name="Jaco2"
     sim="$(arg sim)"
-    readonly="$(arg readonly)" />
-
+    readonly="$(arg readonly)"
+  />
 </robot>

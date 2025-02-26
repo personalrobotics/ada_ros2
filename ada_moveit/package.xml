@@ -3,9 +3,7 @@
 <package format="3">
   <name>ada_moveit</name>
   <version>0.3.0</version>
-  <description>
-     An automatically generated package with all the configuration and launch files for using the ada with the MoveIt Motion Planning Framework
-  </description>
+  <description>An automatically generated package with all the configuration and launch files for using the ada with the MoveIt Motion Planning Framework</description>
   <maintainer email="ekgordon@cs.uw.edu">Ethan K. Gordon</maintainer>
 
   <license>BSD</license>
@@ -50,8 +48,7 @@
   <!-- <exec_depend>joint_trajectory_controller</exec_depend> -->
   <!-- <exec_depend>gazebo_ros_control</exec_depend> -->
 
-
   <export>
-      <build_type>ament_cmake</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
