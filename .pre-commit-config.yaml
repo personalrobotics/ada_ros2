@@ -67,3 +67,10 @@ repos:
       - id: codespell
         args:
           - --ignore-words=.codespell-ignore
+
+  - repo: https://github.com/jjaime2/pre-commit-hooks-ros
+    rev: v1.0.0
+    hooks:
+      - id: prettier-xacro
+      - id: prettier-launch-xml
+      - id: prettier-package-xml
