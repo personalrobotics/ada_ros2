@@ -68,7 +68,7 @@ repos:
         args:
           - --ignore-words=.codespell-ignore
 
-  - repo: https://github.com/jjaime2/pre-commit-hooks-ros
+  - repo: https://github.com/personalrobotics/pr-pre-commit-hooks
     rev: v1.0.0
     hooks:
       - id: prettier-xacro
