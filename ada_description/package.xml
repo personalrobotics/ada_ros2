@@ -3,9 +3,7 @@
 <package format="3">
   <name>ada_description</name>
   <version>0.0.2</version>
-  <description>
-    URDF description for Assistive Dexterous Arm
-  </description>
+  <description>URDF description for Assistive Dexterous Arm</description>
 
   <author>Ethan K. Gordon</author>
 
