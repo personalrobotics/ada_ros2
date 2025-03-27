@@ -48,7 +48,7 @@ Joint control:
 CTRL-C to quit
 """
 BASE_FRAME = "j2n6s200_link_base"
-EE_FRAME = "forkTip"
+EE_FRAME = "j2n6s200_end_effector"
 LINEAR_VEL_CMD = 0.1  # m/s
 ANGULAR_VEL_CMD = 0.3  # rad/s
 JOINT_VEL_CMD = 0.5  # rad/s
@@ -112,9 +112,9 @@ def main(args=None):
     rclpy.init(args=args)
     node = rclpy.create_node("ada_keyboard_teleop")
     twist_pub = node.create_publisher(
-        TwistStamped, "/jaco_arm_cartesian_controller/twist_cmd", 1
+        TwistStamped, "/ada/jaco_arm_cartesian_controller/twist_cmd", 1
     )
-    joint_pub = node.create_publisher(JointJog, "/servo_node/delta_joint_cmds", 1)
+    joint_pub = node.create_publisher(JointJog, "/ada/servo_node/delta_joint_cmds", 1)
 
     # Initialize the tf2 buffer and listener
     tf_buffer = Buffer()
