@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<robot xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+  xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+  xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+  xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+  xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+  xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+  xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+  xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
+  xmlns:xacro="http://www.ros.org/wiki/xacro"
+  name="ada">
+
+  <xacro:arg name="use_forque" default="true" />
+
+  <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
+
+  <xacro:property name="root" value="root" />
+  <xacro:property name="use_forque" value="$(arg use_forque)" />
+  <xacro:ada use_forque="${use_forque}" />
+
+</robot>
