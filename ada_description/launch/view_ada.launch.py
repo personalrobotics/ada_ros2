@@ -60,16 +60,15 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="ada_standalone.xacro",
+            default_value="ada.xacro",
             description="URDF/XACRO description file with the robot.",
         )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "end_effector_tool",
-            default_value="fork",
-            description="The end-effector tool being used.",
-            choices=["none", "fork"],
+            "use_forque",
+            default_value="false",
+            description="If the forque apparatus is being used.",
         )
     )
 
@@ -77,7 +76,7 @@ def generate_launch_description():
     # General arguments
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
-    end_effector_tool = LaunchConfiguration("end_effector_tool")
+    use_forque = LaunchConfiguration("use_forque")
 
     robot_description_content = Command(
         [
@@ -87,8 +86,8 @@ def generate_launch_description():
                 [FindPackageShare(description_package), "urdf", description_file]
             ),
             " ",
-            "end_effector_tool:=",
-            end_effector_tool,
+            "use_forque:=",
+            use_forque,
         ]
     )
     robot_description = {
