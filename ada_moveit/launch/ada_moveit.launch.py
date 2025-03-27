@@ -117,8 +117,21 @@ def generate_launch_description():
 
     actions = [
         PushRosNamespace("ada"),
+        # Combined Joint States Node
+        Node(
+            package='ada_moveit', #replace with your package name.
+            executable='combined_joint_states.py',
+            name='combined_joint_states',
+        ),
         # Robot State Publisher
-        *generate_rsp_launch(moveit_config).entities,
+        # *generate_rsp_launch(moveit_config).entities,
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            parameters=[moveit_config.robot_description],
+            remappings=[('/joint_states', '/ada/combined_joint_states')],
+        ),
         # Move Group
         *generate_move_group_launch(moveit_config).entities,
         # RViz
