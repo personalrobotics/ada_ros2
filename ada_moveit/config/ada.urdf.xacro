@@ -18,10 +18,8 @@
 
   <!-- Import ada urdf file -->
   <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
-  <xacro:include filename="$(find articutool_description)/urdf/articutool.xacro"/>
 
   <xacro:ada use_forque="$(arg use_forque)"/>
-  <xacro:articutool base_parent="j2n6s200_end_effector" end_effector_tool="fork" joint_origin_rpy="0 0 ${J_PI/2}" joint_origin_xyz="0 -2.25 -1"/>
 
   <!-- Import control_xacro -->
   <xacro:include filename="ada.ros2_control.xacro"/>
