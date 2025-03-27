@@ -32,10 +32,6 @@
       ixz="0"
     />
   </xacro:property>
-  <xacro:property
-    name="forque_assembly_dummy_default_value"
-    value="1234567890"
-  />
 
   <xacro:macro
     name="forque_assembly_link"
@@ -74,36 +70,18 @@
 
   <xacro:macro
     name="forque_assembly_joint"
-    params="joint_name type parent child joint_axis_xyz joint_origin_xyz joint_origin_rpy joint_lower_limit:=${forque_assembly_dummy_default_value} joint_upper_limit:=${forque_assembly_dummy_default_value} joint_velocity_limit:=${forque_assembly_dummy_default_value} joint_torque_limit:=${forque_assembly_dummy_default_value}"
+    params="joint_name parent child joint_origin_xyz joint_origin_rpy"
   >
     <joint
       name="${joint_name}"
-      type="${type}"
+      type="fixed"
     >
       <parent link="${parent}"/>
       <child link="${child}"/>
-      <axis xyz="${joint_axis_xyz}"/>
-      <xacro:if value="${type == 'revolute'}">
-        <limit
-          effort="${joint_torque_limit}"
-          velocity="${joint_velocity_limit}"
-          lower="${joint_lower_limit}"
-          upper="${joint_upper_limit}"
-        />
-      </xacro:if>
-      <xacro:if value="${type == 'continuous'}">
-        <limit
-          effort="${joint_torque_limit}"
-          velocity="${joint_velocity_limit}"
-        />
-      </xacro:if>
+      <axis xyz="0 0 1"/>
       <origin
         xyz="${joint_origin_xyz}"
         rpy="${joint_origin_rpy}"
-      />
-      <dynamics
-        damping="0.0"
-        friction="0.0"
       />
     </joint>
   </xacro:macro>
@@ -129,10 +107,8 @@
     </xacro:forque_assembly_link>
     <xacro:forque_assembly_joint
       joint_name="FTMount_to_world"
-      type="fixed"
       parent="${base_parent}"
       child="FTMount"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="0 0 -0.005"
       joint_origin_rpy="0 0 0"
     />
@@ -154,10 +130,8 @@
     </xacro:forque_assembly_link>
     <xacro:forque_assembly_joint
       joint_name="FT_to_FTMount"
-      type="fixed"
       parent="FTMount"
       child="FT"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="0 0 0"
       joint_origin_rpy="0 0 0"
     />
@@ -173,10 +147,8 @@
       </xacro:forque_assembly_link>
       <xacro:forque_assembly_joint
         joint_name="FTAntenna_to_FT"
-        type="fixed"
         parent="FT"
         child="FTAntenna"
-        joint_axis_xyz="0 0 1"
         joint_origin_xyz="0 0 0"
         joint_origin_rpy="0 0 0"
       />
@@ -201,10 +173,8 @@
     <!-- The slight rotation was manually added due to empirical deformations in the robot gripped, such that the fingers and fork handle were slightly pitched up relative to the wrist. -->
     <xacro:forque_assembly_joint
       joint_name="forkHandle_to_FTMount"
-      type="fixed"
       parent="FTMount"
       child="forkHandle"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="0 0.005 0.0013"
       joint_origin_rpy="-0.025 0 -0.0065"
     />
@@ -226,10 +196,8 @@
     </xacro:forque_assembly_link>
     <xacro:forque_assembly_joint
       joint_name="forkHandleCover_to_forkHandle"
-      type="fixed"
       parent="forkHandle"
       child="forkHandleCover"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="0 0 0"
       joint_origin_rpy="0 0 0"
     />
@@ -251,10 +219,8 @@
     </xacro:forque_assembly_link>
     <xacro:forque_assembly_joint
       joint_name="forque_to_forkHandle"
-      type="fixed"
       parent="forkHandle"
       child="forque"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="-0.00634 -0.222553 -0.004286"
       joint_origin_rpy="${J_PI/2} ${J_PI/3} 0"
     />
@@ -276,10 +242,8 @@
     </xacro:forque_assembly_link>
     <xacro:forque_assembly_joint
       joint_name="forkTine_to_forque"
-      type="fixed"
       parent="forque"
       child="forkTine"
-      joint_axis_xyz="0 0 1"
       joint_origin_xyz="-0.0054 0.008 0.093"
       joint_origin_rpy="0 ${J_PI} ${240*J_PI/180}"
     />
