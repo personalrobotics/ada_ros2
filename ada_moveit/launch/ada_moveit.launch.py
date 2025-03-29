@@ -115,6 +115,21 @@ def generate_launch_description():
         )
     )
 
+    # Launch the IMU joint state publisher
+    ada_imu_package_path = get_package_share_directory("ada_imu")
+    ld.add_action(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(ada_imu_package_path, "launch/ada_imu.launch.py")
+            ),
+            launch_arguments={
+                "sim": sim,
+                "log_level": log_level,
+            }.items(),
+        ),
+    )
+
+
     actions = [
         PushRosNamespace("ada"),
         # Combined Joint States Node
