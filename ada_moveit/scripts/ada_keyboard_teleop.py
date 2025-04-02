@@ -112,9 +112,9 @@ def main(args=None):
     rclpy.init(args=args)
     node = rclpy.create_node("ada_keyboard_teleop")
     twist_pub = node.create_publisher(
-        TwistStamped, "/ada/jaco_arm_cartesian_controller/twist_cmd", 1
+        TwistStamped, "/jaco_arm_cartesian_controller/twist_cmd", 1
     )
-    joint_pub = node.create_publisher(JointJog, "/ada/servo_node/delta_joint_cmds", 1)
+    joint_pub = node.create_publisher(JointJog, "/servo_node/delta_joint_cmds", 1)
 
     # Initialize the tf2 buffer and listener
     tf_buffer = Buffer()

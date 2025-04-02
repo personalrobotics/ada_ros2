@@ -2,7 +2,7 @@
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 # This config file is used by ros2_control
-ada/controller_manager:
+controller_manager:
   ros__parameters:
     update_rate: 100  # Hz
 
@@ -24,7 +24,7 @@ ada/controller_manager:
     jaco_arm_cartesian_controller:
       type: cartesian_twist_controller/CartesianTwistController
 
-ada/jaco_arm_cartesian_controller:
+jaco_arm_cartesian_controller:
     ros__parameters:
       end_effector_link: "j2n6s200_end_effector"
       robot_base_link: "j2n6s200_link_base"
@@ -42,7 +42,7 @@ ada/jaco_arm_cartesian_controller:
         topic: /wireless_ft/ftSensor3
         fMag: 1.0
 
-ada/jaco_arm_controller:
+jaco_arm_controller:
   ros__parameters:
     joints:
       - j2n6s200_joint_1
@@ -88,7 +88,7 @@ ada/jaco_arm_controller:
       goal: 0.02
       trajectory: 0.05
 
-ada/jaco_arm_servo_controller:
+jaco_arm_servo_controller:
   ros__parameters:
     joints:
       - j2n6s200_joint_1
@@ -101,7 +101,7 @@ ada/jaco_arm_servo_controller:
       topic: /wireless_ft/ftSensor3
       fMag: 1.0
 
-ada/hand_controller:
+hand_controller:
   ros__parameters:
     joints:
       - j2n6s200_joint_finger_1
