@@ -28,10 +28,3 @@ jaco_arm_with_articutool:
   cost_threshold: 0.001
   minimal_displacement_weight: 0.0
   gd_step_size: 0.0001
-  joint_map:
-    j2n6s200_joint_1: j2n6s200_joint_1
-    j2n6s200_joint_2: j2n6s200_joint_2
-    j2n6s200_joint_3: j2n6s200_joint_3
-    j2n6s200_joint_4: j2n6s200_joint_4
-    j2n6s200_joint_5: j2n6s200_joint_5
-    j2n6s200_joint_6: j2n6s200_joint_6
