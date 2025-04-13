@@ -10,6 +10,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/ada_keyboard_teleop.py
   scripts/servo_republisher.py
+  scripts/unified_joint_state_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

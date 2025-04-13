@@ -264,6 +264,9 @@ def generate_launch_description():
             # Commented out the log-level since the joint state publisher logs every joint read
             # when on debug level
             arguments=["--ros-args"],  # , "--log-level", log_level],
+            remappings=[
+                ("/joint_states", "/ada/joint_states")
+            ]
         )
     )
 
@@ -275,6 +278,16 @@ def generate_launch_description():
             launch_arguments={
                 "log_level": log_level,
             }.items(),
+        )
+    )
+
+    ld.add_action(
+        Node(
+            package='ada_moveit',
+            executable='unified_joint_state_publisher.py',
+            name='unified_joint_state_publisher',
+            output='screen',
+            prefix=['python3'],
         )
     )
 
