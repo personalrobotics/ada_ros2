@@ -21,6 +21,9 @@
         <joint name="j2n6s200_joint_finger_1"/>
         <joint name="j2n6s200_joint_finger_2"/>
     </group>
+    <group name="articutool">
+      <chain base_link="atool_base" tip_link="tool_tip"/>
+    </group>
     <group name="jaco_arm_with_articutool">
         <chain base_link="j2n6s200_link_base" tip_link="tool_tip"/>
     </group>
