@@ -11,6 +11,7 @@ install(PROGRAMS
   scripts/ada_keyboard_teleop.py
   scripts/servo_republisher.py
   scripts/unified_joint_state_publisher.py
+  scripts/simulated_orientation_publisher_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -19,6 +19,7 @@ from launch.substitutions import (
     PathJoinSubstitution,
     FindExecutable,
     TextSubstitution,
+    PythonExpression,
 )
 
 from launch_ros.actions import Node
@@ -290,5 +291,20 @@ def generate_launch_description():
             prefix=['python3'],
         )
     )
+
+    simulated_orientation_publisher_node = Node(
+        package="ada_moveit",
+        executable="simulated_orientation_publisher_node.py",
+        name="simulated_orientation_publisher",
+        output="screen",
+        parameters=[{
+            "target_link": "atool_imu_frame",
+            "reference_frame": "world",
+            "publish_topic": "/articutool/estimated_orientation",
+            "publish_rate": 50.0
+        }],
+        condition=IfCondition(PythonExpression(["'", sim, "' == 'mock'"]))
+    )
+    ld.add_action(simulated_orientation_publisher_node)
 
     return ld
