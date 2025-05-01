@@ -89,8 +89,6 @@ jaco_arm:
     - PRMkConfigDefault
     - PRMstarkConfigDefault
 articutool:
-  enforce_constrained_state_space: true
-  projection_evaluator: joints(j2n6s200_joint_1,j2n6s200_joint_2)
   planner_configs:
     - AnytimePathShortening
     - SBLkConfigDefault

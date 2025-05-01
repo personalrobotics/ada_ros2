@@ -51,3 +51,17 @@ joint_limits:
     max_velocity: 1.0
     has_acceleration_limits: false
     max_acceleration: 0
+  atool_joint1:
+    min_position: -1.57
+    max_position: 1.57
+    has_velocity_limits: true
+    max_velocity: 0.62831853071795862
+    has_acceleration_limits: false
+    max_acceleration: 0
+  atool_joint2:
+    min_position: -3.14
+    max_position: 3.14
+    has_velocity_limits: true
+    max_velocity: 0.62831853071795862
+    has_acceleration_limits: false
+    max_acceleration: 0
