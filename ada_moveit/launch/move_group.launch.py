@@ -23,9 +23,14 @@ def get_move_group_launch(context):
     log_level = LaunchConfiguration("log_level").perform(context)
 
     # Get MoveIt Configs
-    moveit_config = MoveItConfigsBuilder(
+    moveit_config_builder = MoveItConfigsBuilder(
         "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
+    )
+    moveit_config_builder.planning_pipelines(
+        pipelines=["ompl", "chomp"],
+        default_planning_pipeline="chomp"
+    )
+    moveit_config = moveit_config_builder.to_moveit_configs()
 
     # If sim is mock, set moveit_config.sensors_3d to an empty dictionary
     if sim == "mock" or use_octomap == "false":
