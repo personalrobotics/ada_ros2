@@ -23,12 +23,9 @@ def get_move_group_launch(context):
     log_level = LaunchConfiguration("log_level").perform(context)
 
     # Get MoveIt Configs
-    moveit_config_builder = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    )
+    moveit_config_builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
     moveit_config_builder.planning_pipelines(
-        pipelines=["ompl", "chomp"],
-        default_planning_pipeline="chomp"
+        pipelines=["ompl", "chomp"], default_planning_pipeline="ompl"
     )
     moveit_config = moveit_config_builder.to_moveit_configs()
 
