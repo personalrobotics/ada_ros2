@@ -265,9 +265,7 @@ def generate_launch_description():
             # Commented out the log-level since the joint state publisher logs every joint read
             # when on debug level
             arguments=["--ros-args"],  # , "--log-level", log_level],
-            remappings=[
-                ("/joint_states", "/ada/joint_states")
-            ]
+            remappings=[("/joint_states", "/ada/joint_states")],
         )
     )
 
@@ -284,27 +282,12 @@ def generate_launch_description():
 
     ld.add_action(
         Node(
-            package='ada_moveit',
-            executable='unified_joint_state_publisher.py',
-            name='unified_joint_state_publisher',
-            output='screen',
-            prefix=['python3'],
+            package="ada_moveit",
+            executable="unified_joint_state_publisher.py",
+            name="unified_joint_state_publisher",
+            output="screen",
+            prefix=["python3"],
         )
     )
-
-    simulated_orientation_publisher_node = Node(
-        package="ada_moveit",
-        executable="simulated_orientation_publisher_node.py",
-        name="simulated_orientation_publisher",
-        output="screen",
-        parameters=[{
-            "target_link": "atool_imu_frame",
-            "reference_frame": "world",
-            "publish_topic": "/articutool/estimated_orientation",
-            "publish_rate": 50.0
-        }],
-        condition=IfCondition(PythonExpression(["'", sim, "' == 'mock'"]))
-    )
-    ld.add_action(simulated_orientation_publisher_node)
 
     return ld
