@@ -2,9 +2,10 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
+
 class UnifiedJointStatePublisher(Node):
     def __init__(self):
-        super().__init__('unified_joint_state_publisher')
+        super().__init__("unified_joint_state_publisher")
         self.ada_joint_state = JointState()
         self.articutool_joint_state = JointState()
 
@@ -13,22 +14,25 @@ class UnifiedJointStatePublisher(Node):
         self.previous_articutool_joint_state = JointState()
 
         self.ada_sub = self.create_subscription(
-            JointState, '/ada/joint_states', self.ada_joint_state_callback, 10
+            JointState, "/ada/joint_states", self.ada_joint_state_callback, 10
         )
         self.articutool_sub = self.create_subscription(
-            JointState, '/articutool/joint_states', self.articutool_joint_state_callback, 10
+            JointState,
+            "/articutool/joint_states",
+            self.articutool_joint_state_callback,
+            10,
         )
-        self.unified_pub = self.create_publisher(
-            JointState, '/joint_states', 10
-        )
-        self.timer = self.create_timer(0.01, self.publish_unified_joint_state)
+        self.unified_pub = self.create_publisher(JointState, "/joint_states", 10)
+        self.timer = self.create_timer(0.05, self.publish_unified_joint_state)
 
     def ada_joint_state_callback(self, msg: JointState):
         self.previous_ada_joint_state = self.ada_joint_state  # Update previous
         self.ada_joint_state = msg
 
     def articutool_joint_state_callback(self, msg: JointState):
-        self.previous_articutool_joint_state = self.articutool_joint_state  # Update previous
+        self.previous_articutool_joint_state = (
+            self.articutool_joint_state
+        )  # Update previous
         self.articutool_joint_state = msg
 
     def publish_unified_joint_state(self):
@@ -85,13 +89,26 @@ class UnifiedJointStatePublisher(Node):
                     articutool_eff = self.previous_articutool_joint_state.effort[idx]
 
             # Append the appropriate values to the unified message
-            unified_msg.position.append(ada_pos if ada_pos is not None else articutool_pos if articutool_pos is not None else 0.0)
+            unified_msg.position.append(
+                ada_pos
+                if ada_pos is not None
+                else articutool_pos if articutool_pos is not None else 0.0
+            )
             if ada_vel is not None or articutool_vel is not None:
-                unified_msg.velocity.append(ada_vel if ada_vel is not None else articutool_vel if articutool_vel is not None else 0.0)
+                unified_msg.velocity.append(
+                    ada_vel
+                    if ada_vel is not None
+                    else articutool_vel if articutool_vel is not None else 0.0
+                )
             if ada_eff is not None or articutool_eff is not None:
-                unified_msg.effort.append(ada_eff if ada_eff is not None else articutool_eff if articutool_eff is not None else 0.0)
+                unified_msg.effort.append(
+                    ada_eff
+                    if ada_eff is not None
+                    else articutool_eff if articutool_eff is not None else 0.0
+                )
 
         self.unified_pub.publish(unified_msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -100,5 +117,6 @@ def main(args=None):
     unified_publisher.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
