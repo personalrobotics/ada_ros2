@@ -149,7 +149,7 @@ class CalibrateCameraNode(Node):
         # Create the service to re-tare the F/T sensor
         self.re_tare_ft_sensor_client = self.create_client(
             SetBool,
-            "/wireless_ft/set_bias",
+            "/ft_sensor/tare",
             qos_profile=QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE),
         )
 
