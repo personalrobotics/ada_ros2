@@ -21,9 +21,13 @@ def get_move_group_launch(context):
     sim = LaunchConfiguration("sim").perform(context)
     use_octomap = LaunchConfiguration("use_octomap").perform(context)
     log_level = LaunchConfiguration("log_level").perform(context)
+    end_effector_tool = LaunchConfiguration("end_effector_tool").perform(context)
 
     # Get MoveIt Configs
     moveit_config_builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    moveit_config_builder = moveit_config_builder.robot_description(
+        mappings={"sim": sim, "end_effector_tool": end_effector_tool}
+    )
     moveit_config_builder.planning_pipelines(
         pipelines=["ompl", "chomp"], default_planning_pipeline="ompl"
     )
@@ -65,10 +69,17 @@ def generate_launch_description():
         default_value="info",
         description="Logging level (debug, info, warn, error, fatal)",
     )
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used",
+        choices=["fork", "spoon"],
+    )
 
     ld = LaunchDescription()
     ld.add_action(sim_da)
     ld.add_action(octomap_da)
     ld.add_action(log_level_da)
+    ld.add_action(eet_da)
     ld.add_action(OpaqueFunction(function=get_move_group_launch))
     return ld
