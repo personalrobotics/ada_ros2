@@ -192,6 +192,16 @@
     <disable_collisions link1="atool_handle" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
     <disable_collisions link1="atool_handle" link2="j2n6s200_link_6" reason="Never"/>
     <disable_collisions link1="atool_handle" link2="atool_base" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="atool_handle_cover" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="atool_electronics_holder_upper_plate" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="atool_u2d2" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_1" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_2" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_upper_plate" link2="atool_electronics_holder_bottom_plate" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_upper_plate" link2="atool_electronics_holder_wire_guard" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_bottom_plate" link2="atool_electronics_holder_wire_guard" reason="Never"/>
     <disable_collisions link1="atool_base" link2="atool_link1" reason="Never"/>
     <disable_collisions link1="atool_link1" link2="atool_motor_link" reason="Never"/>
     <disable_collisions link1="atool_link1" link2="atool_link2" reason="Never"/>
