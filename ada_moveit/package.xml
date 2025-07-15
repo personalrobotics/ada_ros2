@@ -48,8 +48,9 @@
   <!-- <exec_depend>joint_trajectory_controller</exec_depend> -->
   <!-- <exec_depend>gazebo_ros_control</exec_depend> -->
 
-  <depend>chomp_motion_planner</depend>
-  <depend>moveit_planners_chomp</depend>
+  <!-- The following packages are required when using CHOMP, otherwise they should remain commented out -->
+  <!-- <depend>chomp_motion_planner</depend> -->
+  <!-- <depend>moveit_planners_chomp</depend> -->
 
   <export>
     <build_type>ament_cmake</build_type>
