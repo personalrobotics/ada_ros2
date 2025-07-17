@@ -3,8 +3,8 @@ project(ada_moveit)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(chomp_motion_planner REQUIRED)
-find_package(moveit_planners_chomp REQUIRED)
+# find_package(chomp_motion_planner REQUIRED)
+# find_package(moveit_planners_chomp REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
