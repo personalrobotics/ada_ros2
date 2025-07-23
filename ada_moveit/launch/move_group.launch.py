@@ -29,7 +29,7 @@ def get_move_group_launch(context):
         mappings={"sim": sim, "end_effector_tool": end_effector_tool}
     )
     moveit_config_builder.planning_pipelines(
-        pipelines=["ompl", "chomp"], default_planning_pipeline="ompl"
+        pipelines=["ompl"], default_planning_pipeline="ompl"
     )
     moveit_config = moveit_config_builder.to_moveit_configs()
 
