@@ -4,8 +4,8 @@
 # Adapted from: https://github.com/PickNikRobotics/pick_ik/blob/main/doc/USAGE.md
 jaco_arm:
   kinematics_solver: pick_ik/PickIkPlugin
-  kinematics_solver_timeout: 0.05
-  kinematics_solver_attempts: 3
+  kinematics_solver_timeout: 0.5
+  kinematics_solver_attempts: 10
   mode: global
   stop_optimization_on_valid_solution: true
   position_scale: 1.0
@@ -17,8 +17,8 @@ jaco_arm:
   gd_step_size: 0.0001
 articutool:
   kinematics_solver: pick_ik/PickIkPlugin
-  kinematics_solver_timeout: 0.05
-  kinematics_solver_attempts: 3
+  kinematics_solver_timeout: 0.5
+  kinematics_solver_attempts: 10
   mode: global
   stop_optimization_on_valid_solution: true
   position_scale: 1.0
@@ -31,7 +31,7 @@ articutool:
 jaco_arm_with_articutool:
   kinematics_solver: pick_ik/PickIkPlugin
   kinematics_solver_timeout: 0.5
-  kinematics_solver_attempts: 5
+  kinematics_solver_attempts: 10
   mode: global
   stop_optimization_on_valid_solution: true
   position_scale: 1.0
