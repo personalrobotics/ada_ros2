@@ -158,7 +158,7 @@ class ServoRepublisher(Node):
         self.linear_velocity.header.frame_id = input_linear_velocity_frame
         input_angular_velocity_frame = self.declare_parameter(
             "input_angular_velocity_frame",
-            "forkTip",
+            "j2n6s200_end_effector",
             descriptor=ParameterDescriptor(
                 name="input_angular_velocity_frame",
                 type=ParameterType.PARAMETER_STRING,
