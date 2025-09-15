@@ -91,6 +91,14 @@ def generate_launch_description():
     )
     end_effector_tool = LaunchConfiguration("end_effector_tool")
 
+    # Lock Joints Launch Argument
+    lock_joints_da = DeclareLaunchArgument(
+        "lock_joints",
+        default_value="false",
+        description="Whether to lock the Articutool joints, setting them as fixed",
+    )
+    lock_joints = LaunchConfiguration("lock_joints")
+
     # Copy from generate_demo_launch
     ld = LaunchDescription()
     ld.add_action(calib_da)
@@ -100,6 +108,7 @@ def generate_launch_description():
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
     ld.add_action(eet_da)
+    ld.add_action(lock_joints_da)
 
     # MoveIt Config
     builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
@@ -107,6 +116,7 @@ def generate_launch_description():
         mappings={
             "sim": sim,
             "end_effector_tool": end_effector_tool,
+            "lock_joints": lock_joints,
         }
     )
     moveit_config = builder.to_moveit_configs()
@@ -175,6 +185,7 @@ def generate_launch_description():
                     "sim": sim,
                     "log_level": log_level,
                     "end_effector_tool": end_effector_tool,
+                    "lock_joints": lock_joints,
                 }.items(),
             )
         )
@@ -189,6 +200,7 @@ def generate_launch_description():
                 "sim": sim,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
         )
     )
@@ -204,6 +216,7 @@ def generate_launch_description():
                 "use_octomap": use_octomap,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
         )
     )
@@ -218,6 +231,7 @@ def generate_launch_description():
                 "sim": sim,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
@@ -233,6 +247,7 @@ def generate_launch_description():
                 "sim": sim,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
             condition=IfCondition(LaunchConfiguration("db")),
         )
@@ -285,6 +300,7 @@ def generate_launch_description():
                 "sim": sim,
                 "log_level": log_level,
                 "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
         )
     )

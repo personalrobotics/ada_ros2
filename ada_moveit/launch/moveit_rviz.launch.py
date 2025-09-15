@@ -42,10 +42,22 @@ def generate_launch_description():
     end_effector_tool = LaunchConfiguration("end_effector_tool")
     ld.add_action(eet_da)
 
+    lock_joints_da = DeclareLaunchArgument(
+        "lock_joints",
+        default_value="false",
+        description="Whether to lock the Articutool joints, setting them as fixed",
+    )
+    lock_joints = LaunchConfiguration("lock_joints")
+    ld.add_action(lock_joints_da)
+
     # Get MoveIt Configs
     builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
     builder = builder.robot_description(
-        mappings={"sim": sim, "end_effector_tool": end_effector_tool}
+        mappings={
+            "sim": sim,
+            "end_effector_tool": end_effector_tool,
+            "lock_joints": lock_joints,
+        }
     )
     moveit_config = builder.to_moveit_configs()
     entities = generate_moveit_rviz_launch(moveit_config).entities
