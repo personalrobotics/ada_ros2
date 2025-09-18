@@ -6,6 +6,15 @@ from sensor_msgs.msg import JointState
 class UnifiedJointStatePublisher(Node):
     def __init__(self):
         super().__init__("unified_joint_state_publisher")
+        # Declare and get the lock_joints parameter
+        self.declare_parameter("lock_joints", False)
+        self.lock_joints = (
+            self.get_parameter("lock_joints").get_parameter_value().bool_value
+        )
+        if self.lock_joints:
+            self.get_logger().info(
+                "Articutool joints are LOCKED. Will not publish their state."
+            )
         self.ada_joint_state = JointState()
         self.articutool_joint_state = JointState()
 
@@ -45,7 +54,11 @@ class UnifiedJointStatePublisher(Node):
         unified_msg.effort = []
 
         ada_names_set = set(self.ada_joint_state.name)
-        articutool_names_set = set(self.articutool_joint_state.name)
+        # Conditionally include Articutool joint states
+        if self.lock_joints:
+            articutool_names_set = set()
+        else:
+            articutool_names_set = set(self.articutool_joint_state.name)
         unified_names = list(ada_names_set.union(articutool_names_set))
         unified_msg.name = unified_names
 

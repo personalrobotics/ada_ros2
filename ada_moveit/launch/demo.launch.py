@@ -312,6 +312,7 @@ def generate_launch_description():
             name="unified_joint_state_publisher",
             output="screen",
             prefix=["python3"],
+            parameters=[{"lock_joints": lock_joints}],
         )
     )
 
