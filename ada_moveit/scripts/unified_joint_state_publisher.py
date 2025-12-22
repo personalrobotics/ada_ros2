@@ -1,3 +1,6 @@
+# Copyright (c) 2025, Personal Robotics Laboratory
+# License: BSD 3-Clause. See LICENSE.md file in root directory.
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
@@ -105,19 +108,25 @@ class UnifiedJointStatePublisher(Node):
             unified_msg.position.append(
                 ada_pos
                 if ada_pos is not None
-                else articutool_pos if articutool_pos is not None else 0.0
+                else articutool_pos
+                if articutool_pos is not None
+                else 0.0
             )
             if ada_vel is not None or articutool_vel is not None:
                 unified_msg.velocity.append(
                     ada_vel
                     if ada_vel is not None
-                    else articutool_vel if articutool_vel is not None else 0.0
+                    else articutool_vel
+                    if articutool_vel is not None
+                    else 0.0
                 )
             if ada_eff is not None or articutool_eff is not None:
                 unified_msg.effort.append(
                     ada_eff
                     if ada_eff is not None
-                    else articutool_eff if articutool_eff is not None else 0.0
+                    else articutool_eff
+                    if articutool_eff is not None
+                    else 0.0
                 )
 
         self.unified_pub.publish(unified_msg)
