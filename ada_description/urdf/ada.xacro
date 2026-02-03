@@ -19,7 +19,6 @@
     name="ada"
     params="use_forque"
   >
-
     <xacro:include filename="$(find ada_description)/urdf/forque/forque.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/camera/camera.xacro"/>
     <xacro:include filename="$(find ada_description)/urdf/j2n6s200.xacro"/>

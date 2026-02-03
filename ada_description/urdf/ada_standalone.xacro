@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<robot xmlns:xi="http://www.w3.org/2001/XInclude"
+<robot
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
   xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
   xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
@@ -12,14 +13,22 @@
   xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
   xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics"
   xmlns:xacro="http://www.ros.org/wiki/xacro"
-  name="ada">
+  name="ada"
+>
+  <xacro:arg
+    name="use_forque"
+    default="true"
+  />
 
-  <xacro:arg name="use_forque" default="true" />
+  <xacro:include filename="$(find ada_description)/urdf/ada.xacro"/>
 
-  <xacro:include filename="$(find ada_description)/urdf/ada.xacro" />
-
-  <xacro:property name="root" value="root" />
-  <xacro:property name="use_forque" value="$(arg use_forque)" />
-  <xacro:ada use_forque="${use_forque}" />
-
+  <xacro:property
+    name="root"
+    value="root"
+  />
+  <xacro:property
+    name="use_forque"
+    value="$(arg use_forque)"
+  />
+  <xacro:ada use_forque="${use_forque}"/>
 </robot>
