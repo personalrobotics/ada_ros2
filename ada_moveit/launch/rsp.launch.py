@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 from launch import LaunchDescription
@@ -12,6 +12,16 @@ from moveit_configs_utils.launches import generate_rsp_launch
 
 def generate_launch_description():
     ld = LaunchDescription()
+
+    # Sim Launch Argument
+    sim_da = DeclareLaunchArgument(
+        "sim",
+        default_value="real",
+        description="Which sim to use: 'mock', 'isaac', or 'real'",
+    )
+    sim = LaunchConfiguration("sim")
+    ld.add_action(sim_da)
+
     # Log Level
     log_level_da = DeclareLaunchArgument(
         "log_level",
@@ -22,9 +32,34 @@ def generate_launch_description():
     log_level_cmd_line_args = ["--ros-args", "--log-level", log_level]
     ld.add_action(log_level_da)
 
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
+    # End-effector Tool Launch Argument
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used",
+        choices=["fork", "spoon"],
+    )
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
+    ld.add_action(eet_da)
+
+    lock_joints_da = DeclareLaunchArgument(
+        "lock_joints",
+        default_value="false",
+        description="Whether to lock the Articutool joints, setting them as fixed",
+    )
+    lock_joints = LaunchConfiguration("lock_joints")
+    ld.add_action(lock_joints_da)
+
+    # Get MoveIt Configs
+    builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    builder = builder.robot_description(
+        mappings={
+            "sim": sim,
+            "end_effector_tool": end_effector_tool,
+            "lock_joints": lock_joints,
+        }
+    )
+    moveit_config = builder.to_moveit_configs()
     entities = generate_rsp_launch(moveit_config).entities
     for entity in entities:
         if isinstance(entity, Node):

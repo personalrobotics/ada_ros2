@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 # Default initial positions for ada's ros2_control fake system
@@ -23,3 +23,5 @@ initial_positions:
   j2n6s200_joint_6: 1.32575
   j2n6s200_joint_finger_1: 1.317
   j2n6s200_joint_finger_2: 1.317
+  atool_joint1: 0.0
+  atool_joint2: 0.0

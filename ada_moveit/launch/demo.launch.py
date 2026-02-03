@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 import os
@@ -33,11 +33,6 @@ from moveit_configs_utils.launch_utils import (
 
 
 def generate_launch_description():
-    # MoveIt Config
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
-
     # Calibration Launch Argument
     calib_da = DeclareLaunchArgument(
         "calib",
@@ -86,6 +81,23 @@ def generate_launch_description():
     )
     log_level = LaunchConfiguration("log_level")
 
+    # End-effector Tool Launch Argument
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used",
+        choices=["fork", "spoon"],
+    )
+    end_effector_tool = LaunchConfiguration("end_effector_tool")
+
+    # Lock Joints Launch Argument
+    lock_joints_da = DeclareLaunchArgument(
+        "lock_joints",
+        default_value="false",
+        description="Whether to lock the Articutool joints, setting them as fixed",
+    )
+    lock_joints = LaunchConfiguration("lock_joints")
+
     # Copy from generate_demo_launch
     ld = LaunchDescription()
     ld.add_action(calib_da)
@@ -94,6 +106,19 @@ def generate_launch_description():
     ld.add_action(ctrl_da)
     ld.add_action(servo_da)
     ld.add_action(log_level_da)
+    ld.add_action(eet_da)
+    ld.add_action(lock_joints_da)
+
+    # MoveIt Config
+    builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    builder = builder.robot_description(
+        mappings={
+            "sim": sim,
+            "end_effector_tool": end_effector_tool,
+            "lock_joints": lock_joints,
+        }
+    )
+    moveit_config = builder.to_moveit_configs()
 
     # Launch argument for whether to use moveit servo or not
     ld.add_action(DeclareBooleanLaunchArg("use_servo", default_value=False))
@@ -156,7 +181,10 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(str(virtual_joints_launch)),
                 launch_arguments={
+                    "sim": sim,
                     "log_level": log_level,
+                    "end_effector_tool": end_effector_tool,
+                    "lock_joints": lock_joints,
                 }.items(),
             )
         )
@@ -168,7 +196,10 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/rsp.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
         )
     )
@@ -183,6 +214,8 @@ def generate_launch_description():
                 "sim": sim,
                 "use_octomap": use_octomap,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
         )
     )
@@ -194,7 +227,10 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/moveit_rviz.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         )
@@ -207,28 +243,14 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/warehouse_db.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
             condition=IfCondition(LaunchConfiguration("db")),
         )
     )
-
-    # Get URDF via xacro
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
-            PathJoinSubstitution(
-                str(moveit_config.package_path / "config/ada.urdf.xacro")
-            ),
-            " ",
-            "sim:=",
-            sim,
-        ]
-    )
-    robot_description = {
-        "robot_description": ParameterValue(robot_description_content, value_type=str)
-    }
 
     # Launch MoveIt Servo
     servo_config = PathJoinSubstitution(
@@ -241,7 +263,7 @@ def generate_launch_description():
             name="servo_node",
             parameters=[
                 servo_config,
-                robot_description,
+                moveit_config.robot_description,
                 moveit_config.robot_description_semantic,
                 moveit_config.robot_description_kinematics,  # If set, use IK instead of the inverse jacobian
             ],
@@ -260,10 +282,11 @@ def generate_launch_description():
         Node(
             package="controller_manager",
             executable="ros2_control_node",
-            parameters=[robot_description, robot_controllers],
+            parameters=[moveit_config.robot_description, robot_controllers],
             # Commented out the log-level since the joint state publisher logs every joint read
             # when on debug level
             arguments=["--ros-args"],  # , "--log-level", log_level],
+            remappings=[("/joint_states", "/ada/joint_states")],
         )
     )
 
@@ -273,8 +296,22 @@ def generate_launch_description():
                 str(moveit_config.package_path / "launch/spawn_controllers.launch.py")
             ),
             launch_arguments={
+                "sim": sim,
                 "log_level": log_level,
+                "end_effector_tool": end_effector_tool,
+                "lock_joints": lock_joints,
             }.items(),
+        )
+    )
+
+    ld.add_action(
+        Node(
+            package="ada_moveit",
+            executable="unified_joint_state_publisher.py",
+            name="unified_joint_state_publisher",
+            output="screen",
+            prefix=["python3"],
+            parameters=[{"lock_joints": lock_joints}],
         )
     )
 

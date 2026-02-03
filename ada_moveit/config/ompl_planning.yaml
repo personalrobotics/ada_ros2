@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 # Based on the MoveIt default: https://github.com/ros-planning/moveit2/blob/main/moveit_configs_utils/default_configs/ompl_defaults.yaml
@@ -53,8 +53,9 @@ planner_configs:
     range: 0.05  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup()
   RRTstarkConfigDefault:
     type: geometric::RRTstar
-    range: 100.0 # 3.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup() (in practice, for ADA, this default is ~7, around 20% of the maximum extent of the space)
-    goal_bias: 0.05  # When close to goal select goal, with this probability? default: 0.05
+    range: 0.0 # 3.0  # Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on setup() (in practice, for ADA, this default is ~7, around 20% of the maximum extent of the space)
+    goal_bias: 0.15  # When close to goal select goal, with this probability? default: 0.05
+    longest_valid_segment_fraction: 0.05
     delay_collision_checking: 1  # Stop collision checking as soon as C-free parent found. default 1
   TRRTkConfigDefault:
     type: geometric::TRRT
@@ -73,6 +74,36 @@ planner_configs:
   PRMstarkConfigDefault:
     type: geometric::PRMstar
 jaco_arm:
+  enforce_constrained_state_space: true
+  projection_evaluator: joints(j2n6s200_joint_1,j2n6s200_joint_2)
+  planner_configs:
+    - AnytimePathShortening
+    - SBLkConfigDefault
+    - ESTkConfigDefault
+    - LBKPIECEkConfigDefault
+    - BKPIECEkConfigDefault
+    - KPIECEkConfigDefault
+    - RRTkConfigDefault
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+    - TRRTkConfigDefault
+    - PRMkConfigDefault
+    - PRMstarkConfigDefault
+articutool:
+  planner_configs:
+    - AnytimePathShortening
+    - SBLkConfigDefault
+    - ESTkConfigDefault
+    - LBKPIECEkConfigDefault
+    - BKPIECEkConfigDefault
+    - KPIECEkConfigDefault
+    - RRTkConfigDefault
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+    - TRRTkConfigDefault
+    - PRMkConfigDefault
+    - PRMstarkConfigDefault
+jaco_arm_with_articutool:
   enforce_constrained_state_space: true
   projection_evaluator: joints(j2n6s200_joint_1,j2n6s200_joint_2)
   planner_configs:

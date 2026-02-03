@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 from launch import LaunchDescription
@@ -21,11 +21,22 @@ def get_move_group_launch(context):
     sim = LaunchConfiguration("sim").perform(context)
     use_octomap = LaunchConfiguration("use_octomap").perform(context)
     log_level = LaunchConfiguration("log_level").perform(context)
+    end_effector_tool = LaunchConfiguration("end_effector_tool").perform(context)
+    lock_joints = LaunchConfiguration("lock_joints").perform(context)
 
     # Get MoveIt Configs
-    moveit_config = MoveItConfigsBuilder(
-        "ada", package_name="ada_moveit"
-    ).to_moveit_configs()
+    moveit_config_builder = MoveItConfigsBuilder("ada", package_name="ada_moveit")
+    moveit_config_builder = moveit_config_builder.robot_description(
+        mappings={
+            "sim": sim,
+            "end_effector_tool": end_effector_tool,
+            "lock_joints": lock_joints,
+        }
+    )
+    moveit_config_builder.planning_pipelines(
+        pipelines=["ompl"], default_planning_pipeline="ompl"
+    )
+    moveit_config = moveit_config_builder.to_moveit_configs()
 
     # If sim is mock, set moveit_config.sensors_3d to an empty dictionary
     if sim == "mock" or use_octomap == "false":
@@ -63,10 +74,23 @@ def generate_launch_description():
         default_value="info",
         description="Logging level (debug, info, warn, error, fatal)",
     )
+    eet_da = DeclareLaunchArgument(
+        "end_effector_tool",
+        default_value="fork",
+        description="The end-effector tool being used",
+        choices=["fork", "spoon"],
+    )
+    lock_joints_da = DeclareLaunchArgument(
+        "lock_joints",
+        default_value="false",
+        description="Whether to lock the Articutool joints, setting them as fixed",
+    )
 
     ld = LaunchDescription()
     ld.add_action(sim_da)
     ld.add_action(octomap_da)
     ld.add_action(log_level_da)
+    ld.add_action(eet_da)
+    ld.add_action(lock_joints_da)
     ld.add_action(OpaqueFunction(function=get_move_group_launch))
     return ld

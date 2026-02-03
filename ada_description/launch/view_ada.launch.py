@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 # Copyright (c) 2021 PickNik, Inc.
@@ -60,7 +60,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "description_file",
-            default_value="ada.xacro",
+            default_value="ada_standalone.xacro",
             description="URDF/XACRO description file with the robot.",
         )
     )

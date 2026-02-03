@@ -10,7 +10,7 @@
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     <group name="jaco_arm">
-        <chain base_link="j2n6s200_link_base" tip_link="forkTip"/>
+        <chain base_link="j2n6s200_link_base" tip_link="j2n6s200_end_effector"/>
     </group>
     <group name="hand">
         <link name="j2n6s200_end_effector"/>
@@ -20,6 +20,12 @@
         <link name="j2n6s200_link_finger_tip_2"/>
         <joint name="j2n6s200_joint_finger_1"/>
         <joint name="j2n6s200_joint_finger_2"/>
+    </group>
+    <group name="articutool">
+      <chain base_link="atool_base" tip_link="tool_tip"/>
+    </group>
+    <group name="jaco_arm_with_articutool">
+        <chain base_link="j2n6s200_link_base" tip_link="tool_tip"/>
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="Home" group="jaco_arm">
@@ -54,32 +60,12 @@
     <end_effector name="hand" parent_link="j2n6s200_link_6" group="hand" parent_group="jaco_arm"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="world_to_root" type="fixed" parent_frame="world" child_link="root"/>
+    <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
+    <passive_joint name="atool_joint1" />
+    <passive_joint name="atool_joint2" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
-    <disable_collisions link1="FT" link2="FTArmMount" reason="Never"/>
-    <disable_collisions link1="FT" link2="FTMount" reason="Adjacent"/>
-    <disable_collisions link1="FT" link2="enclosureBottom" reason="Never"/>
-    <disable_collisions link1="FT" link2="enclosureTop" reason="Never"/>
-    <disable_collisions link1="FT" link2="forkHandle" reason="Never"/>
-    <disable_collisions link1="FT" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="FT" link2="forque" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_3" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_4" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_5" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_6" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_finger_1" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_finger_2" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
-    <disable_collisions link1="FT" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
-    <disable_collisions link1="FT" link2="nano" reason="Never"/>
-    <disable_collisions link1="FT" link2="nanoMount" reason="Never"/>
-    <disable_collisions link1="FT" link2="cameraMount" reason="Never"/>
-    <disable_collisions link1="FT" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="FTArmMount" link2="FTMount" reason="Adjacent"/>
     <disable_collisions link1="FTArmMount" link2="enclosureBottom" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="enclosureTop" reason="Never"/>
-    <disable_collisions link1="FTArmMount" link2="forkHandle" reason="Never"/>
-    <disable_collisions link1="FTArmMount" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="FTArmMount" link2="forque" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="j2n6s200_link_3" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="j2n6s200_link_4" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="j2n6s200_link_5" reason="Default"/>
@@ -92,27 +78,7 @@
     <disable_collisions link1="FTArmMount" link2="nanoMount" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="cameraMount" reason="Never"/>
     <disable_collisions link1="FTArmMount" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="enclosureBottom" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="enclosureTop" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="forkHandle" reason="Adjacent"/>
-    <disable_collisions link1="FTMount" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="forque" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_3" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_4" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_5" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_6" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_finger_1" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_finger_2" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="nano" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="nanoMount" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="cameraMount" reason="Never"/>
-    <disable_collisions link1="FTMount" link2="uncalibrated_camera_link" reason="Never"/>
     <disable_collisions link1="enclosureBottom" link2="enclosureTop" reason="Adjacent"/>
-    <disable_collisions link1="enclosureBottom" link2="forkHandle" reason="Never"/>
-    <disable_collisions link1="enclosureBottom" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="enclosureBottom" link2="forque" reason="Never"/>
     <disable_collisions link1="enclosureBottom" link2="j2n6s200_link_3" reason="Never"/>
     <disable_collisions link1="enclosureBottom" link2="j2n6s200_link_4" reason="Never"/>
     <disable_collisions link1="enclosureBottom" link2="j2n6s200_link_5" reason="User"/>
@@ -125,9 +91,6 @@
     <disable_collisions link1="enclosureBottom" link2="nanoMount" reason="Adjacent"/>
     <disable_collisions link1="enclosureBottom" link2="cameraMount" reason="Never"/>
     <disable_collisions link1="enclosureBottom" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="enclosureTop" link2="forkHandle" reason="Never"/>
-    <disable_collisions link1="enclosureTop" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="enclosureTop" link2="forque" reason="Never"/>
     <disable_collisions link1="enclosureTop" link2="j2n6s200_link_3" reason="Never"/>
     <disable_collisions link1="enclosureTop" link2="j2n6s200_link_4" reason="Never"/>
     <disable_collisions link1="enclosureTop" link2="j2n6s200_link_5" reason="Never"/>
@@ -140,50 +103,6 @@
     <disable_collisions link1="enclosureTop" link2="nanoMount" reason="Never"/>
     <disable_collisions link1="enclosureTop" link2="cameraMount" reason="Adjacent"/>
     <disable_collisions link1="enclosureTop" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="forkTine" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="forque" reason="Adjacent"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_3" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_4" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_5" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_6" reason="Default"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_finger_1" reason="Adjacent"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_finger_2" reason="Adjacent"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_finger_tip_1" reason="Adjacent"/>
-    <disable_collisions link1="forkHandle" link2="j2n6s200_link_finger_tip_2" reason="Adjacent"/>
-    <disable_collisions link1="forkHandle" link2="nano" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="nanoMount" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="cameraMount" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="forkHandle" link2="forkHandleCover" reason="Adjacent"/>
-    <disable_collisions link1="forkHandleCover" link2="j2n6s200_link_finger_1" reason="Adjacent"/>
-    <disable_collisions link1="forkHandleCover" link2="j2n6s200_link_finger_2" reason="Adjacent"/>
-    <disable_collisions link1="forkHandleCover" link2="j2n6s200_link_finger_tip_1" reason="Adjacent"/>
-    <disable_collisions link1="forkHandleCover" link2="j2n6s200_link_finger_tip_2" reason="Adjacent"/>
-    <disable_collisions link1="forkTine" link2="forque" reason="Adjacent"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_3" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_4" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_5" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_6" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_finger_1" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_finger_2" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="nano" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="nanoMount" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="cameraMount" reason="Never"/>
-    <disable_collisions link1="forkTine" link2="uncalibrated_camera_link" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_3" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_4" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_5" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_6" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_finger_1" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_finger_2" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
-    <disable_collisions link1="forque" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
-    <disable_collisions link1="forque" link2="nano" reason="Never"/>
-    <disable_collisions link1="forque" link2="nanoMount" reason="Never"/>
-    <disable_collisions link1="forque" link2="cameraMount" reason="Never"/>
-    <disable_collisions link1="forque" link2="uncalibrated_camera_link" reason="Never"/>
     <disable_collisions link1="j2n6s200_link_1" link2="j2n6s200_link_2" reason="Adjacent"/>
     <disable_collisions link1="j2n6s200_link_1" link2="j2n6s200_link_3" reason="Never"/>
     <disable_collisions link1="j2n6s200_link_1" link2="j2n6s200_link_4" reason="Never"/>
@@ -265,5 +184,43 @@
     <disable_collisions link1="cameraMount" link2="screwHeadRight" reason="Adjacent"/>
     <disable_collisions link1="uncalibrated_camera_link" link2="screwHeadLeft" reason="Adjacent"/>
     <disable_collisions link1="uncalibrated_camera_link" link2="screwHeadRight" reason="Adjacent"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_1" reason="Never"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_2" reason="Never"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_3" reason="Never"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_4" reason="Never"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_5" reason="Never"/>
+    <disable_collisions link1="screwHeadLeft" link2="j2n6s200_link_6" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_1" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_2" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_3" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_4" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_5" reason="Never"/>
+    <disable_collisions link1="screwHeadRight" link2="j2n6s200_link_6" reason="Never"/>
+
+    <!-- Disable collisions for the Articutool -->
+    <disable_collisions link1="atool_handle" link2="j2n6s200_link_finger_1" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="j2n6s200_link_finger_2" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="j2n6s200_link_6" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="atool_base" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="atool_handle_cover" reason="Never"/>
+    <disable_collisions link1="atool_handle" link2="atool_electronics_holder_upper_plate" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="atool_u2d2" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_1" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_2" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_tip_1" reason="Never"/>
+    <disable_collisions link1="atool_handle_cover" link2="j2n6s200_link_finger_tip_2" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_upper_plate" link2="atool_electronics_holder_bottom_plate" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_upper_plate" link2="atool_electronics_holder_wire_guard" reason="Never"/>
+    <disable_collisions link1="atool_electronics_holder_bottom_plate" link2="atool_electronics_holder_wire_guard" reason="Never"/>
+    <disable_collisions link1="atool_base" link2="atool_link1" reason="Never"/>
+    <disable_collisions link1="atool_link1" link2="atool_motor_link" reason="Never"/>
+    <disable_collisions link1="atool_link1" link2="atool_link2" reason="Never"/>
+    <disable_collisions link1="atool_link2" link2="atool_ft_adapter" reason="Never"/>
+    <disable_collisions link1="atool_link2" link2="atool_motor_link" reason="Never"/>
+    <disable_collisions link1="atool_ft_adapter" link2="ft" reason="Never"/>
+    <disable_collisions link1="ft" link2="tool" reason="Never"/>
+    <disable_collisions link1="tool" link2="tool_tip" reason="Never"/>
 
 </robot>

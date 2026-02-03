@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Personal Robotics Laboratory
+# Copyright (c) 2024-2026, Personal Robotics Laboratory
 # License: BSD 3-Clause. See LICENSE.md file in root directory.
 
 # This config file is used by ros2_control
@@ -22,7 +22,7 @@ controller_manager:
 
 jaco_arm_cartesian_controller:
     ros__parameters:
-      end_effector_link: "forkTip"
+      end_effector_link: "j2n6s200_end_effector"
       robot_base_link: "root"
       joints:
         - j2n6s200_joint_1
